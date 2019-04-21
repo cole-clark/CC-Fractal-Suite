@@ -8,18 +8,22 @@
 // Houdini never finds this dso without this included.
 #include <UT/UT_DSOVersion.h>
 
+#include <UT/UT_Matrix3.h>
+
 // For PRMoneDefaults
 #include <PRM/PRM_Include.h>
+#include <PRM/PRM_ChoiceList.h>
 
 // For FOR_EACH_UNCOOKED_TILE
 #include <TIL/TIL_Tile.h>
 
+#include "FractalSpace.h"
 #include "COP2_Mandelbrot.h"
 
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(7, "Fractal");
+COP_GENERATOR_SWITCHER(11, "Fractal");
 
 /// Private Constructor
 COP2_Mandelbrot::COP2_Mandelbrot(
@@ -40,23 +44,53 @@ COP2_Mandelbrot::myConstructor(
 /// Declare Parm Names
 static PRM_Name nameScale("scale", "Scale");
 static PRM_Name nameOffset("offset", "Offset");
+static PRM_Name nameRotate("rotate", "Rotate");
+static PRM_Name nameXOrd("xOrd", "Xform Order");
 static PRM_Name nameIter("iter", "Iterations");
 static PRM_Name namePow("pow", "Exponent");
 static PRM_Name nameBailout("bailout", "Bailout");
 static PRM_Name nameJDepth("jdepth", "Julia Depth");
 static PRM_Name nameJOffset("joffset", "Julia Offset");
+static PRM_Name nameSep1("sep1", "sep1");
+static PRM_Name nameSep2("sep2", "sep2");
+
+
+/// ChoiceList Lists
+static PRM_Name xordMenuNames[] =
+{
+	PRM_Name("TRS", "Translate Rotate Scale"),
+	PRM_Name("TSR", "Translate Scale Rotate"),
+	PRM_Name("RTS", "Rotate Translate Scale"),
+	PRM_Name("RST", "Rotate Scale Translate"),
+	PRM_Name("STR", "Scale Translate Rotate"),
+	PRM_Name("SRT", "Scale Rotate Translate"),
+	PRM_Name(0)
+};
+
+static PRM_ChoiceList xOrdMenu
+(
+	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+	::xordMenuNames
+);
 
 /// Declare Parm Defaults
 static PRM_Default defaultScale{ 1 };
 static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
 static PRM_Default defaultBailout{ 2 };
+static PRM_Default defaultXOrd{ 4 };  // Scale Translate Rotate
 
 /// Deflare Parm Ranges
 static PRM_Range rangeScale
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
 	PRM_RangeFlag::PRM_RANGE_UI, 20
+};
+
+static PRM_Range rangeRotate
+{
+	PRM_RangeFlag::PRM_RANGE_UI, -180,
+	PRM_RangeFlag::PRM_RANGE_UI, 180
 };
 
 static PRM_Range rangeIter
@@ -90,11 +124,15 @@ COP2_Mandelbrot::myTemplateList[]
 {
     // The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
 	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
 	PRM_Template()
@@ -130,7 +168,7 @@ COP2_Mandelbrot::newContextData
 (
 	const TIL_Plane*,  // planename
 	int,               // array index
-	float t,           // Not actually sure, maybe tile
+	float t,           // Not actually sure, maybe tile?
 	int,               // xsize
 	int,               // ysize
 	int,               // thread
@@ -140,15 +178,26 @@ COP2_Mandelbrot::newContextData
 	COP2_MandelbrotData* data{ new COP2_MandelbrotData };
 
 	/// Stash values by cooking the node
-	data->scale = evalFloat(nameScale.getToken(), 0, t);
-	data->offset.x() = evalFloat(nameOffset.getToken(), 0, t);
-	data->offset.y() = evalFloat(nameOffset.getToken(), 1, t);
-	data->iter = evalInt(nameIter.getToken(), 0, t);
-	data->pow = evalFloat(namePow.getToken(), 0, t);
-	data->bailout = evalFloat(nameBailout.getToken(), 0, t);
-	data->jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	data->joffset.x() = evalFloat(nameJOffset.getToken(), 0, t);
-	data->joffset.y() = evalFloat(nameJOffset.getToken(), 1, t);
+	// Space Xform Attributes
+	float scale = evalFloat(nameScale.getToken(), 0, t);
+	float offset_x = evalFloat(nameOffset.getToken(), 0, t);
+	float offset_y = evalFloat(nameOffset.getToken(), 1, t);
+	double rotate = evalFloat(nameRotate.getToken(), 0, t);
+
+	int xOrd = evalInt(nameXOrd.getToken(), 0, t);
+	
+	// TODO : Make XORD feed a UT_XformOrder::rstOrder enum
+	data->space = FractalSpace();
+
+	// Fractal Attributes
+	int iter = evalInt(nameIter.getToken(), 0, t);
+	float pow = evalFloat(namePow.getToken(), 0, t);
+	float bailout = evalFloat(nameBailout.getToken(), 0, t);
+	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
+	float joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
+	float joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
+
+	data->fractal = Mandelbrot(iter, pow, bailout, jdepth, UT_Vector2T<float>(joffset_x, joffset_y));
 
 	return data;
 }
@@ -159,6 +208,9 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
 	COP2_MandelbrotData* data{ static_cast<COP2_MandelbrotData*>(context.data()) };
 
+	// Set the size of the fractal space relative to this context's size.
+	data->space.set_image_size(context.myXsize, context.myYsize);
+
 	// Initialize float array the size of current tile list for values to write to.
 	float *dest = new float[tileList->mySize]{ 0 };
 
@@ -168,7 +220,8 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	// Forward declaring values
 	int size_x, size_y;
 	exint i;  // Huge because number of pixels may be crazy
-
+	WORLDPIXELCOORDS worldPixel;
+	FCOORDS fractalCoords;
 	// Comes from TIL/TIL_Tile.h
 	FOR_EACH_UNCOOKED_TILE(tileList, tile, tileIndex)
 	{
@@ -181,7 +234,20 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 			// They can choose which image plane the fractal goes onto by making it
 			// The first.
 			if (tileIndex == 0)
-				dest[i] = 1.0f;
+			{
+				// Calculate the 'world pixel', or literally where the pixel is in
+				// Terms of screen space, and not tile space.
+				worldPixel = CC::calculate_world_pixel(tileList, tile, i);
+				
+				// Cast this to the 'fractal coords'. This is initialized from the size
+				// of the picture plane, with an xform applied from the interface.
+				fractalCoords = data->space.get_fractal_coords(worldPixel);
+
+				// Calculate the fractal based on the fractal coords.				
+				dest[i] = data->fractal.calculate(fractalCoords);
+
+				//dest[i] = worldPixel.first / (float)context.myXsize;
+			}
 			else
 				dest[i] = 0.0f;
 		}
@@ -196,18 +262,6 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 /// Destructor
 COP2_Mandelbrot::~COP2_Mandelbrot() {}
-
-/// Declare default values when constructing Data Object
-COP2_MandelbrotData::COP2_MandelbrotData()
-{
-	scale = defaultScale.getFloat();
-	offset = (0.0f, 0.0f);
-	iter = defaultIter.getOrdinal();
-	pow = defaultPow.getFloat();
-	bailout = defaultBailout.getFloat();
-	jdepth = 0;
-	joffset = (0.0f, 0.0f);
-}
 
 /// Destructor
 COP2_MandelbrotData::~COP2_MandelbrotData() {}

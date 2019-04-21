@@ -9,6 +9,9 @@
 
 #include <COP2/COP2_Generator.h>
 
+#include "FractalSpace.h"
+#include "Mandelbrot.h"
+
 namespace CC
 {
 	/// Public Import the COP2_Generator base class
@@ -45,15 +48,10 @@ namespace CC
 	/// The data here is fed to several worker threads when cooking the node.
 	struct COP2_MandelbrotData : public COP2_ContextData
 	{
-		float scale;
-		UT_Vector2 offset;
-		int iter;
-		float pow;
-		float bailout;
-		int jdepth;
-		UT_Vector2 joffset;
+		FractalSpace space;
+		Mandelbrot fractal;
 
-		COP2_MandelbrotData();
+		COP2_MandelbrotData() = default;
 		virtual ~COP2_MandelbrotData();
 	};
 }
