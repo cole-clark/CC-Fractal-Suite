@@ -5,7 +5,11 @@
 	Code for a Mandelbrot Fractal.
  */
 
+#include <complex>
+
 #include "Mandelbrot.h"
+
+
 
 CC::Mandelbrot::Mandelbrot()
 {
@@ -13,15 +17,40 @@ CC::Mandelbrot::Mandelbrot()
 }
 
 CC::Mandelbrot::Mandelbrot(
-	int iter, float pow, float bailout, int jdepth, UT_Vector2T<float> joffset) :
-	iter(iter), pow(pow), bailout(bailout), jdepth(jdepth), joffset(joffset) { }
-
-CC::Mandelbrot::~Mandelbrot()
+	int maxiter, float fpow, float bailout, int jdepth, float joffset_x, float joffset_y) :
+	maxiter(maxiter), fpow(fpow), bailout(bailout), jdepth(jdepth)
 {
+	// Create joffset as a complex number.
+	joffset = COMPLEX(joffset_x, joffset_y);
 }
 
-// TODO : Implement
+CC::Mandelbrot::~Mandelbrot() {}
+
 int CC::Mandelbrot::calculate(FCOORDS coords)
 {
-	return 0;
+	COMPLEX z{ 0 };
+	COMPLEX c{ coords.first, coords.second };
+
+	int iterations{ 0 };
+
+	// Forward declare
+	int julia;
+
+	// Iter here means Max Iterations.
+	while (iterations < maxiter)
+	{
+		// Calculate Mandelbrot
+		z = pow(z, fpow) + c;
+
+		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
+		for (julia = 0; julia < jdepth; julia++)
+			z = pow(z, fpow) + joffset;
+
+		if (abs(z) > bailout)
+			break;
+
+		iterations++;
+	}
+
+	return iterations;
 }

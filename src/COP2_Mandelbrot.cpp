@@ -175,19 +175,33 @@ COP2_Mandelbrot::newContextData
 	int                // max_num_threads
 )
 {
+	// Create new empty data object.
 	COP2_MandelbrotData* data{ new COP2_MandelbrotData };
 
-	/// Stash values by cooking the node
 	// Space Xform Attributes
 	float scale = evalFloat(nameScale.getToken(), 0, t);
-	float offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	float offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	double rotate = evalFloat(nameRotate.getToken(), 0, t);
+	const float offset_x = evalFloat(nameOffset.getToken(), 0, t);
+	const float offset_y = evalFloat(nameOffset.getToken(), 1, t);
+	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
 
-	int xOrd = evalInt(nameXOrd.getToken(), 0, t);
-	
-	// TODO : Make XORD feed a UT_XformOrder::rstOrder enum
-	data->space = FractalSpace();
+	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
+
+	// This edit occurs because it's more sensible in the UI the think of the scale
+	// as 'Scaling Up' even though in reality we are 'scaling down' into the fractal.
+	// It's my opinion that big numbers are easier to work with for artists than
+	// infinitesimal numbers. Most fractals are more about zooming deep into them than
+	// scaling as far away from them as possible. :)
+	scale = 1 / scale;
+
+	data->space.set_xform(
+		offset_x,
+		offset_y,
+		rotate,
+		scale,
+		scale,
+		0.5,  // Center X of the Image
+		0.5,  // Center Y of the image
+		xOrd);
 
 	// Fractal Attributes
 	int iter = evalInt(nameIter.getToken(), 0, t);
@@ -197,7 +211,7 @@ COP2_Mandelbrot::newContextData
 	float joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
 	float joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 
-	data->fractal = Mandelbrot(iter, pow, bailout, jdepth, UT_Vector2T<float>(joffset_x, joffset_y));
+	data->fractal = Mandelbrot(iter, pow, bailout, jdepth, joffset_x, joffset_y);
 
 	return data;
 }
@@ -246,7 +260,6 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 				// Calculate the fractal based on the fractal coords.				
 				dest[i] = data->fractal.calculate(fractalCoords);
 
-				//dest[i] = worldPixel.first / (float)context.myXsize;
 			}
 			else
 				dest[i] = 0.0f;

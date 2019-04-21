@@ -16,11 +16,14 @@
 
 typedef std::pair<double, double> FCOORDS;
 typedef std::pair<int, int> WORLDPIXELCOORDS;
-
+typedef UT_XformOrder::rstOrder RSTORDER;
 
 namespace CC
 {
-	std::pair<int, int> calculate_world_pixel(
+	///Get the Houdini rstOrder enum value from the interface
+	RSTORDER get_rst_order(const int val);
+
+	WORLDPIXELCOORDS calculate_world_pixel(
 		TIL_TileList* tiles,
 		TIL_Tile* tile,
 		int pixel_index);
@@ -30,23 +33,27 @@ namespace CC
 	{
 		int image_x{ 0 };
 		int image_y{ 0 };
-		UT_Matrix3T<float> post_matrix;
-		UT_XformOrder::rstOrder xform_order{ UT_XformOrder::STR };  // Scale Translate Rotate
-
+		UT_Matrix3 post_matrix;
+		RSTORDER rstorder{ RSTORDER::TRS };
 
 	public:
 
 		FractalSpace();
-		FractalSpace(int x, int y);
+
+		void set_xform(
+			const float tx,
+			const float ty,
+			const float r,
+			const float sx,
+			const float sy,
+			const float pivx,
+			const float pivy,
+			const RSTORDER xord);
 
 		// TODO : Implement
-		FCOORDS get_fractal_coords(std::pair<int, int>pixel_coords);
+		FCOORDS get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 
 		void set_image_size(int x, int y);
-
-		// TODO : Implement
-		void set_xform(float scale, UT_Vector2T<float> translate, float rotate);
-
 
 		virtual ~FractalSpace();
 
