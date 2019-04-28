@@ -17,7 +17,7 @@ CC::Mandelbrot::Mandelbrot()
 }
 
 CC::Mandelbrot::Mandelbrot(
-	int maxiter, float fpow, float bailout, int jdepth, float joffset_x, float joffset_y) :
+	int maxiter, double fpow, double bailout, int jdepth, double joffset_x, double joffset_y) :
 	maxiter(maxiter), fpow(fpow), bailout(bailout), jdepth(jdepth)
 {
 	// Create joffset as a complex number.

@@ -41,13 +41,13 @@ namespace CC
 		FractalSpace();
 
 		void set_xform(
-			const float tx,
-			const float ty,
-			const float r,
-			const float sx,
-			const float sy,
-			const float pivx,
-			const float pivy,
+			const double tx,
+			const double ty,
+			const double r,
+			const double sx,
+			const double sy,
+			const double pivx,
+			const double pivy,
 			const RSTORDER xord);
 
 		// TODO : Implement

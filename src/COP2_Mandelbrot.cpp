@@ -179,9 +179,9 @@ COP2_Mandelbrot::newContextData
 	COP2_MandelbrotData* data{ new COP2_MandelbrotData };
 
 	// Space Xform Attributes
-	float scale = evalFloat(nameScale.getToken(), 0, t);
-	const float offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	const float offset_y = evalFloat(nameOffset.getToken(), 1, t);
+	double scale = evalFloat(nameScale.getToken(), 0, t);
+	const double offset_x = evalFloat(nameOffset.getToken(), 0, t);
+	const double offset_y = evalFloat(nameOffset.getToken(), 1, t);
 	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
 
 	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
@@ -205,11 +205,11 @@ COP2_Mandelbrot::newContextData
 
 	// Fractal Attributes
 	int iter = evalInt(nameIter.getToken(), 0, t);
-	float pow = evalFloat(namePow.getToken(), 0, t);
-	float bailout = evalFloat(nameBailout.getToken(), 0, t);
+	double pow = evalFloat(namePow.getToken(), 0, t);
+	double bailout = evalFloat(nameBailout.getToken(), 0, t);
 	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	float joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
-	float joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
+	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
+	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 
 	data->fractal = Mandelbrot(iter, pow, bailout, jdepth, joffset_x, joffset_y);
 
@@ -259,7 +259,6 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 				// Calculate the fractal based on the fractal coords.				
 				dest[i] = data->fractal.calculate(fractalCoords);
-
 			}
 			else
 				dest[i] = 0.0f;

@@ -34,7 +34,7 @@ WORLDPIXELCOORDS CC::calculate_world_pixel(TIL_TileList* tiles, TIL_Tile* tile, 
 
 	// Divide the pixel index into the size of x rounded down
 	// For the tile's y, and add the base Y pos.
-	y = SYSfloor((float)pixel_index / tile_x) + (tiles->myY1);
+	y = SYSfloor((double)pixel_index / tile_x) + (tiles->myY1);
 	return std::pair<int, int>(x, y);
 }
 
@@ -46,13 +46,13 @@ CC::FractalSpace::FractalSpace()
 
 /// Constructs the matrix. from fed parameters
 void CC::FractalSpace::set_xform(
-	const float tx,
-	const float ty,
-	const float r,
-	const float sx,
-	const float sy,
-	const float pivx = 0.5,
-	const float pivy = 0.5,
+	const double tx,
+	const double ty,
+	const double r,
+	const double sx,
+	const double sy,
+	const double pivx = 0.5,
+	const double pivy = 0.5,
 	const RSTORDER xord = RSTORDER::TRS)
 {
 	post_matrix.xform(xord, tx, ty, r, sx, sy, pivx, pivy, 0);
@@ -65,7 +65,7 @@ void CC::FractalSpace::set_xform(
 FCOORDS
 CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 {
-	FCOORDS fc{ pixel_coords.first / (float)image_x, pixel_coords.second / (float)image_y };
+	FCOORDS fc{ pixel_coords.first / (double)image_x, pixel_coords.second / (double)image_x };
 	UT_Matrix3 m;
 	m.identity();
 	m.xform(rstorder, fc.first, fc.second);

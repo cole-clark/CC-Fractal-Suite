@@ -15,14 +15,14 @@ namespace CC
 	class Mandelbrot : public Fractal
 	{
 		int maxiter{ 0 };
-		float fpow{ 2 };  // Fractal Pow
-		float bailout{ 2 };
+		double fpow{ 2 };  // Fractal Pow
+		double bailout{ 2 };
 		int jdepth{ 0 };  // Julia off by default.
 		COMPLEX joffset;
 
 	public:
 		Mandelbrot();
-		Mandelbrot(int maxiter, float pow, float bailout, int jdepth, float joffset_x, float joffset_y);
+		Mandelbrot(int maxiter, double pow, double bailout, int jdepth, double joffset_x, double joffset_y);
 
 		virtual ~Mandelbrot();
 		virtual int calculate(FCOORDS coords) override;
