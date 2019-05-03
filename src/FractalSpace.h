@@ -50,10 +50,10 @@ namespace CC
 			const double pivy,
 			const RSTORDER xord);
 
-		// TODO : Implement
 		FCOORDS get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 
 		void set_image_size(int x, int y);
+		WORLDPIXELCOORDS get_image_size();
 
 		virtual ~FractalSpace();
 

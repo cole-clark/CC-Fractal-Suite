@@ -22,6 +22,8 @@
 
 using namespace CC;
 
+// TODO: Add 'offset' parm vector2.
+
 /// Parm Switcher used by this interface
 COP_GENERATOR_SWITCHER(11, "Fractal");
 
@@ -74,7 +76,7 @@ static PRM_ChoiceList xOrdMenu
 );
 
 /// Declare Parm Defaults
-static PRM_Default defaultScale{ 1 };
+static PRM_Default defaultScale{ 100000 };
 static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
 static PRM_Default defaultBailout{ 2 };
@@ -84,7 +86,7 @@ static PRM_Default defaultXOrd{ 4 };  // Scale Translate Rotate
 static PRM_Range rangeScale
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 20
+	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
 };
 
 static PRM_Range rangeRotate
@@ -169,8 +171,8 @@ COP2_Mandelbrot::newContextData
 	const TIL_Plane*,  // planename
 	int,               // array index
 	float t,           // Not actually sure, maybe tile?
-	int,               // xsize
-	int,               // ysize
+	int image_sizex,         // xsize
+	int image_sizey,         // ysize
 	int,               // thread
 	int                // max_num_threads
 )
@@ -186,13 +188,14 @@ COP2_Mandelbrot::newContextData
 
 	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
 
-	// This edit occurs because it's more sensible in the UI the think of the scale
-	// as 'Scaling Up' even though in reality we are 'scaling down' into the fractal.
-	// It's my opinion that big numbers are easier to work with for artists than
-	// infinitesimal numbers. Most fractals are more about zooming deep into them than
-	// scaling as far away from them as possible. :)
-	scale = 1 / scale;
+	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
+	scale = scale / defaultScale.getFloat();
 
+	// Set the size of the fractal space relative to this context's size.
+	data->space.set_image_size(image_sizex, image_sizey);
+
+	// Sets the base xform of the fractal from the interface that will be calculated by
+	// The pixels.
 	data->space.set_xform(
 		offset_x,
 		offset_y,
@@ -220,10 +223,7 @@ COP2_Mandelbrot::newContextData
 OP_ERROR
 COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
-	COP2_MandelbrotData* data{ static_cast<COP2_MandelbrotData*>(context.data()) };
-
-	// Set the size of the fractal space relative to this context's size.
-	data->space.set_image_size(context.myXsize, context.myYsize);
+	COP2_MandelbrotData* data{static_cast<COP2_MandelbrotData*>(context.data()) };
 
 	// Initialize float array the size of current tile list for values to write to.
 	float *dest = new float[tileList->mySize]{ 0 };
@@ -252,7 +252,7 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 				// Calculate the 'world pixel', or literally where the pixel is in
 				// Terms of screen space, and not tile space.
 				worldPixel = CC::calculate_world_pixel(tileList, tile, i);
-				
+
 				// Cast this to the 'fractal coords'. This is initialized from the size
 				// of the picture plane, with an xform applied from the interface.
 				fractalCoords = data->space.get_fractal_coords(worldPixel);

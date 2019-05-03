@@ -51,11 +51,24 @@ void CC::FractalSpace::set_xform(
 	const double r,
 	const double sx,
 	const double sy,
-	const double pivx = 0.5,
-	const double pivy = 0.5,
+	const double pivx,
+	const double pivy,
 	const RSTORDER xord = RSTORDER::TRS)
 {
-	post_matrix.xform(xord, tx, ty, r, sx, sy, pivx, pivy, 0);
+	// First xform without pivot, only translate and scale
+	post_matrix.xform(xord, tx, ty, 0, sx, sy, 0, 0, 0);
+	
+	// Second xform with only rotate but with pivot set relative to screen space.
+	double image_relative_y_size = image_y / image_x;
+
+	// TODO: Make Y pivot relative to image size.
+
+	post_matrix.xform(
+		xord, 0, 0, r, 1, 1,
+		post_matrix(2, 0) + (sx * pivx),
+		post_matrix(2, 1) + (sy * pivy),
+		0);
+
 	rstorder = xord;
 }
 
@@ -86,6 +99,11 @@ void CC::FractalSpace::set_image_size(int x, int y)
 {
 	image_x = x;
 	image_y = y;
+}
+
+WORLDPIXELCOORDS CC::FractalSpace::get_image_size()
+{
+	return WORLDPIXELCOORDS(image_x, image_y);
 }
 
 /// Destructor
