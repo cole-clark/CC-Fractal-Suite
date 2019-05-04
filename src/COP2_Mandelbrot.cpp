@@ -22,10 +22,8 @@
 
 using namespace CC;
 
-// TODO: Add 'offset' parm vector2.
-
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(11, "Fractal");
+COP_GENERATOR_SWITCHER(12, "Fractal");
 
 /// Private Constructor
 COP2_Mandelbrot::COP2_Mandelbrot(
@@ -55,6 +53,7 @@ static PRM_Name nameJDepth("jdepth", "Julia Depth");
 static PRM_Name nameJOffset("joffset", "Julia Offset");
 static PRM_Name nameSep1("sep1", "sep1");
 static PRM_Name nameSep2("sep2", "sep2");
+static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
 
 
 /// ChoiceList Lists
@@ -81,6 +80,7 @@ static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
 static PRM_Default defaultBailout{ 2 };
 static PRM_Default defaultXOrd{ 4 };  // Scale Translate Rotate
+static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
 
 /// Deflare Parm Ranges
 static PRM_Range rangeScale
@@ -130,6 +130,7 @@ COP2_Mandelbrot::myTemplateList[]
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
@@ -185,6 +186,8 @@ COP2_Mandelbrot::newContextData
 	const double offset_x = evalFloat(nameOffset.getToken(), 0, t);
 	const double offset_y = evalFloat(nameOffset.getToken(), 1, t);
 	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
+	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
+	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
 
 	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
 
@@ -202,8 +205,8 @@ COP2_Mandelbrot::newContextData
 		rotate,
 		scale,
 		scale,
-		0.5,  // Center X of the Image
-		0.5,  // Center Y of the image
+		rotatePivot_x,
+		rotatePivot_y,
 		xOrd);
 
 	// Fractal Attributes

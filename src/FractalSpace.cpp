@@ -59,14 +59,13 @@ void CC::FractalSpace::set_xform(
 	post_matrix.xform(xord, tx, ty, 0, sx, sy, 0, 0, 0);
 	
 	// Second xform with only rotate but with pivot set relative to screen space.
-	double image_relative_y_size = image_y / image_x;
-
-	// TODO: Make Y pivot relative to image size.
+	// We are treating the parametric Y pivot relative to the size of the X axis.
+	double image_y_div_x = image_y / (double)image_x;
 
 	post_matrix.xform(
 		xord, 0, 0, r, 1, 1,
 		post_matrix(2, 0) + (sx * pivx),
-		post_matrix(2, 1) + (sy * pivy),
+		post_matrix(2, 1) + (sy * pivy * image_y_div_x),
 		0);
 
 	rstorder = xord;
