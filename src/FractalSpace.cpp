@@ -51,21 +51,25 @@ void CC::FractalSpace::set_xform(
 	const double r,
 	const double sx,
 	const double sy,
-	const double pivx,
-	const double pivy,
+	const double r_pivx,
+	const double r_pivy,
+	const double s_pivx,
+	const double s_pivy,
 	const RSTORDER xord = RSTORDER::TRS)
 {
-	// First xform without pivot, only translate and scale
-	post_matrix.xform(xord, tx, ty, 0, sx, sy, 0, 0, 0);
-	
-	// Second xform with only rotate but with pivot set relative to screen space.
 	// We are treating the parametric Y pivot relative to the size of the X axis.
-	double image_y_div_x = image_y / (double)image_x;
+	double r_image_pivy = r_pivy * image_y / (double)image_x;
+	double s_image_pivy = s_pivy * image_y / (double)image_x;
+
+	// First xform only translate and scale with scale pivot.
+	post_matrix.xform(xord, tx, ty, 0, sx, sy, s_pivx, s_image_pivy, 0);
+	
+	// Second xform with only rotate but with rotate pivot set relative to screen space.
 
 	post_matrix.xform(
 		xord, 0, 0, r, 1, 1,
-		post_matrix(2, 0) + (sx * pivx),
-		post_matrix(2, 1) + (sy * pivy * image_y_div_x),
+		post_matrix(2, 0) + (sx * r_pivx),
+		post_matrix(2, 1) + (sy * r_image_pivy),
 		0);
 
 	rstorder = xord;

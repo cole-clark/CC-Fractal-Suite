@@ -46,8 +46,10 @@ namespace CC
 			const double r,
 			const double sx,
 			const double sy,
-			const double pivx,
-			const double pivy,
+			const double r_pivx,
+			const double r_pivy,
+			const double s_pivx,
+			const double s_pivy,
 			const RSTORDER xord);
 
 		FCOORDS get_fractal_coords(WORLDPIXELCOORDS pixel_coords);

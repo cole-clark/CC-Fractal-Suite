@@ -23,7 +23,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(12, "Fractal");
+COP_GENERATOR_SWITCHER(14, "Fractal");
 
 /// Private Constructor
 COP2_Mandelbrot::COP2_Mandelbrot(
@@ -53,7 +53,9 @@ static PRM_Name nameJDepth("jdepth", "Julia Depth");
 static PRM_Name nameJOffset("joffset", "Julia Offset");
 static PRM_Name nameSep1("sep1", "sep1");
 static PRM_Name nameSep2("sep2", "sep2");
+static PRM_Name nameSep3("sep3", "sep3");
 static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
+static PRM_Name nameScalePivot("spivot", "Scale Pivot");
 
 
 /// ChoiceList Lists
@@ -79,8 +81,9 @@ static PRM_Default defaultScale{ 100000 };
 static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
 static PRM_Default defaultBailout{ 2 };
-static PRM_Default defaultXOrd{ 4 };  // Scale Translate Rotate
+static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
 static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
+static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
 
 /// Deflare Parm Ranges
 static PRM_Range rangeScale
@@ -130,12 +133,14 @@ COP2_Mandelbrot::myTemplateList[]
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
 	PRM_Template()
@@ -183,19 +188,28 @@ COP2_Mandelbrot::newContextData
 
 	// Space Xform Attributes
 	double scale = evalFloat(nameScale.getToken(), 0, t);
-	const double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	const double offset_y = evalFloat(nameOffset.getToken(), 1, t);
+	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
+	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
 	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
 	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
 	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
+	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
+	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
 
 	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
 
 	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
+	// The UI artificially inflates the numbers to make them more user friendly at
+	// shallow depths.
 	scale = scale / defaultScale.getFloat();
+	offset_x = offset_x / 1000;
+	offset_y = offset_y / 1000;
 
 	// Set the size of the fractal space relative to this context's size.
 	data->space.set_image_size(image_sizex, image_sizey);
+
+	// Sets the xform of the fractal based on 'good defaults' for mandelbrot/julias
+	data->space.set_xform(-0.2, -0.05, 0, 5, 5, 0.5, 0.5, 0.5, 0.5, RSTORDER::TRS);
 
 	// Sets the base xform of the fractal from the interface that will be calculated by
 	// The pixels.
@@ -207,6 +221,8 @@ COP2_Mandelbrot::newContextData
 		scale,
 		rotatePivot_x,
 		rotatePivot_y,
+		scalePivot_x,
+		scalePivot_y,
 		xOrd);
 
 	// Fractal Attributes
