@@ -58,23 +58,23 @@ void CC::FractalSpace::set_xform(
 	const RSTORDER xord = RSTORDER::TRS)
 {
 	// We are treating the parametric Y pivot relative to the size of the X axis.
-	double r_image_pivy = r_pivy * image_y / (double)image_x;
-	double s_image_pivy = s_pivy * image_y / (double)image_x;
+	double r_image_pivy_size = r_pivy * image_y / (double)image_x;
+	double s_image_pivy_size = s_pivy * image_y / (double)image_x;
 
-	// First xform only translate and scale with scale pivot.
-	post_matrix.xform(xord, tx, ty, 0, sx, sy, s_pivx, s_image_pivy, 0);
-	
-	// Second xform with only rotate but with rotate pivot set relative to screen space.
+	// First pre-xform only translate and scale with scale pivot.
+	post_matrix.xform(xord, tx, ty, 0, sx, sy,
+		s_pivx, s_pivy * s_image_pivy_size, 0);
 
+	// Second XForm with only rotate and rotate pivot.
 	post_matrix.xform(
 		xord, 0, 0, r, 1, 1,
 		post_matrix(2, 0) + (sx * r_pivx),
-		post_matrix(2, 1) + (sy * r_image_pivy),
+		post_matrix(2, 1) + (sy * r_image_pivy_size),
 		0);
 
+	// Sets RST Order to be used by node.
 	rstorder = xord;
 }
-
 
 /// Return the fractal coordinates, which use the size of the image as a relative
 /// Size. The scale is 0-1 in the x axis of the image.

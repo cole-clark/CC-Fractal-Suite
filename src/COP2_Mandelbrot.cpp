@@ -77,11 +77,12 @@ static PRM_ChoiceList xOrdMenu
 );
 
 /// Declare Parm Defaults
-static PRM_Default defaultScale{ 100000 };
+static PRM_Default defaultScale{ 500000 };
 static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
 static PRM_Default defaultBailout{ 2 };
 static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
+static PRM_Default defaultOffset[] = { -1000, -750 };
 static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
 static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
 
@@ -131,7 +132,7 @@ COP2_Mandelbrot::myTemplateList[]
 	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
@@ -201,15 +202,13 @@ COP2_Mandelbrot::newContextData
 	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
 	// The UI artificially inflates the numbers to make them more user friendly at
 	// shallow depths.
-	scale = scale / defaultScale.getFloat();
+	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
 	offset_x = offset_x / 1000;
 	offset_y = offset_y / 1000;
 
 	// Set the size of the fractal space relative to this context's size.
 	data->space.set_image_size(image_sizex, image_sizey);
 
-	// Sets the xform of the fractal based on 'good defaults' for mandelbrot/julias
-	data->space.set_xform(-0.2, -0.05, 0, 5, 5, 0.5, 0.5, 0.5, 0.5, RSTORDER::TRS);
 
 	// Sets the base xform of the fractal from the interface that will be calculated by
 	// The pixels.
