@@ -46,31 +46,32 @@ CC::FractalSpace::FractalSpace()
 
 /// Constructs the matrix. from fed parameters
 void CC::FractalSpace::set_xform(
-	const double tx,
-	const double ty,
-	const double r,
-	const double sx,
-	const double sy,
-	const double r_pivx,
-	const double r_pivy,
-	const double s_pivx,
-	const double s_pivy,
-	const RSTORDER xord = RSTORDER::TRS)
+	double tx,
+	double ty,
+	double r,
+	double sx,
+	double sy,
+	double r_pivx,
+	double r_pivy,
+	double s_pivx,
+	double s_pivy,
+	RSTORDER xord = RSTORDER::TRS)
 {
 	// We are treating the parametric Y pivot relative to the size of the X axis.
 	double r_image_pivy_size = r_pivy * image_y / (double)image_x;
 	double s_image_pivy_size = s_pivy * image_y / (double)image_x;
 
-	// First pre-xform only translate and scale with scale pivot.
-	post_matrix.xform(xord, tx, ty, 0, sx, sy,
-		s_pivx, s_pivy * s_image_pivy_size, 0);
+	// Pre-xform only scale and translate.
+	post_matrix.xform(
+		xord, tx, ty, 0, sx, sy,
+		s_pivx,
+		s_pivy * s_image_pivy_size);
 
-	// Second XForm with only rotate and rotate pivot.
+	// XForm with only rotate and rotate pivot.
 	post_matrix.xform(
 		xord, 0, 0, r, 1, 1,
 		post_matrix(2, 0) + (sx * r_pivx),
-		post_matrix(2, 1) + (sy * r_image_pivy_size),
-		0);
+		post_matrix(2, 1) + (sy * r_image_pivy_size));
 
 	// Sets RST Order to be used by node.
 	rstorder = xord;

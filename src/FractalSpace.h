@@ -41,16 +41,16 @@ namespace CC
 		FractalSpace();
 
 		void set_xform(
-			const double tx,
-			const double ty,
-			const double r,
-			const double sx,
-			const double sy,
-			const double r_pivx,
-			const double r_pivy,
-			const double s_pivx,
-			const double s_pivy,
-			const RSTORDER xord);
+			double tx,
+			double ty,
+			double r,
+			double sx,
+			double sy,
+			double r_pivx,
+			double r_pivy,
+			double s_pivx,
+			double s_pivy,
+			RSTORDER xord);
 
 		FCOORDS get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 
