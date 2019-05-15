@@ -7,16 +7,16 @@ find_package( Houdini REQUIRED )
 # Add a library with two source files.
 set( library_name CC_Fractal_Suite )
 add_library( ${library_name} SHARED
-    COP2_Mandelbrot.cpp
-    COP2_Mandelbrot.h
-    Fractal.cpp
-    Fractal.h
-    FractalSpace.cpp
-    FractalSpace.h
-    Mandelbrot.cpp
-    Mandelbrot.h
-    register.cpp
-    register.h
+    src/COP2_Mandelbrot.cpp
+    src/COP2_Mandelbrot.h
+    src/Fractal.cpp
+    src/Fractal.h
+    src/FractalSpace.cpp
+    src/FractalSpace.h
+    src/Mandelbrot.cpp
+    src/Mandelbrot.h
+    src/register.cpp
+    src/register.h
 )
 # Link against the Houdini libraries, and add required include directories and compile definitions.
 target_link_libraries( ${library_name} Houdini )
