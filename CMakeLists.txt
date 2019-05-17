@@ -7,7 +7,9 @@ find_package( Houdini REQUIRED )
 # Add a library with two source files.
 set( library_name CC_Fractal_Suite )
 add_library( ${library_name} SHARED
-    src/COP2_Mandelbrot.cpp
+    src/COP2_FractalMatte.cpp
+	src/COP2_FractalMatte.h
+	src/COP2_Mandelbrot.cpp
     src/COP2_Mandelbrot.h
     src/Fractal.cpp
     src/Fractal.h

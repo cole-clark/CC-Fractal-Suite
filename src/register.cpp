@@ -5,7 +5,11 @@
 	Code that adds nodes from the dso to Houdini.
  */
 
+ // Houdini never finds this dso without this included.
+#include <UT/UT_DSOVersion.h>
+
 #include "COP2_Mandelbrot.h"
+#include "COP2_FractalMatte.h"
 
 #include "register.h"
 
@@ -25,4 +29,14 @@ void newCop2Operator(OP_OperatorTable* table)
 		&CC::COP2_Mandelbrot::myVariablePair,
 		OP_FLAG_GENERATOR
 		));
+
+	table->addOperator(new OP_Operator("hdksamplefilt2",
+		"HDK Sample Filter 2",
+		HDK_Sample::COP2_SampleFilter::myConstructor,
+		&HDK_Sample::COP2_SampleFilter::myTemplatePair,
+		1,
+		2, // optional mask input.
+		&HDK_Sample::COP2_SampleFilter::myVariablePair,
+		0, // not generator
+		HDK_Sample::COP2_SampleFilter::myInputLabels));
 }

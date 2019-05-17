@@ -5,9 +5,6 @@
 	Code for CC Mandelbrot Generator Cop Node.
  */
 
-// Houdini never finds this dso without this included.
-#include <UT/UT_DSOVersion.h>
-
 #include <UT/UT_Matrix3.h>
 
 // For PRMoneDefaults
