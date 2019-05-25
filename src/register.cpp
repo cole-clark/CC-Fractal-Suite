@@ -30,13 +30,14 @@ void newCop2Operator(OP_OperatorTable* table)
 		OP_FLAG_GENERATOR
 		));
 
-	table->addOperator(new OP_Operator("hdksamplefilt2",
-		"HDK Sample Filter 2",
-		HDK_Sample::COP2_SampleFilter::myConstructor,
-		&HDK_Sample::COP2_SampleFilter::myTemplatePair,
+	table->addOperator(new OP_Operator(
+		"cc::fractal_matte",
+		"CC Fractal Matte",
+		CC::COP2_FractalMatte::myConstructor,
+		&CC::COP2_FractalMatte::myTemplatePair,
 		1,
 		2, // optional mask input.
-		&HDK_Sample::COP2_SampleFilter::myVariablePair,
+		&CC::COP2_FractalMatte::myVariablePair,
 		0, // not generator
-		HDK_Sample::COP2_SampleFilter::myInputLabels));
+		CC::COP2_FractalMatte::myInputLabels));
 }
