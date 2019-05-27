@@ -5,39 +5,79 @@
 	Header for CC Fractal Matte Cop filter node.
  */
 
-class RU_PixelFunction;
+#pragma once
+
 #include <COP2/COP2_PixelOp.h>
-namespace CC {
+#include <RU/RU_PixelFunctions.h>
+
+namespace CC
+{
 	class COP2_FractalMatte : public COP2_PixelOp
 	{
 	public:
+		static OP_Node* myConstructor(OP_Network*, const char*, OP_Operator*);
 
-		static OP_Node              *myConstructor(OP_Network*, const char *,
-			OP_Operator *);
-		static OP_TemplatePair       myTemplatePair;
-		static OP_VariablePair       myVariablePair;
-		static PRM_Template          myTemplateList[];
-		static CH_LocalVariable      myVariableList[];
-		static const char *          myInputLabels[];
+		static OP_TemplatePair myTemplatePair;
+		static OP_VariablePair myVariablePair;
+		static PRM_Template myTemplateList[];
+		static CH_LocalVariable myVariableList[];
+		static const char* myInputLabels[];
+
 	protected:
-		/// This is the only function we need to override for a pixel function.
-		/// It returns our pixel function, which must be derived from
-		/// RU_PixelFunction.
-		virtual RU_PixelFunction    *addPixelFunction(const TIL_Plane *, int,
-			float t, int, int,
+		/// We must override this method, which returns a pixel function.
+		virtual RU_PixelFunction* addPixelFunction(
+			const TIL_Plane*,
+			int,
+			float t,
+			int,
+			int,
 			int thread);
 
 	private:
-		COP2_FractalMatte(OP_Network *parent, const char *name,
-			OP_Operator *entry);
-		virtual     ~COP2_FractalMatte();
+		COP2_FractalMatte(
+			OP_Network* parent,
+			const char* name,
+			OP_Operator* entry);
 
-		/// An optional method which returns a short description of what this node
-		/// does in the OP info popup.
-		virtual const char  *getOperationInfo();
-		fpreal      ADD(int comp, fpreal t)
-		{
-			return evalFloat("addend", comp, t);
-		}
+		virtual ~COP2_FractalMatte();
+
+		/// Optional description for OP info popup.
+		virtual const char* getInfoPopup();
 	};
-} // End HDK_Sample namespace
+
+	class cop2_FractalMatteFunc : public RU_PixelFunction
+	{
+	public:
+		cop2_FractalMatteFunc(int modulo);
+
+	protected:
+		virtual bool eachComponentDifferent() const
+		{
+			return false;
+		}
+
+		virtual bool needAllComponents() const
+		{
+			return false;
+		}
+
+		/// This is the core function that does the actual work.
+		static float checkModulus(
+			RU_PixelFunction* pf,  // Pointer to pixel function
+			// Float values are assumed for pixel functions, though we will cast to int.
+			float pixelValue,
+			// Related to which component of the modulus val would apply, if we were using
+			// more than one component.
+			int comp);
+
+		/// This is how we signal to RU_PixelFunction what method must be called
+		/// per-pixel
+		virtual RUPixelFunc getPixelFunction() const
+		{
+			return checkModulus;
+		}
+
+	private:
+		int modulo{ 0 };
+	};
+}
