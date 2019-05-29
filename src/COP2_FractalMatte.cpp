@@ -15,10 +15,17 @@ using namespace CC;
 COP_PIXEL_OP_SWITCHER(1, "Mattes");
 
 static PRM_Name nameModulo{ "modulo", "Modulo" };
+static PRM_Name nameOffset{ "offset", "Offset" };
 
 static PRM_Range rangeModulo
 {
 	PRM_RangeFlag::PRM_RANGE_UI, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 10
+};
+
+static PRM_Range rangeOffset
+{
+	PRM_RangeFlag::PRM_RANGE_UI, -10,
 	PRM_RangeFlag::PRM_RANGE_UI, 10
 };
 
@@ -27,6 +34,7 @@ COP2_FractalMatte::myTemplateList[] =
 {
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameModulo, PRMoneDefaults, 0, &rangeModulo),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
 	PRM_Template()
 };
 
@@ -64,7 +72,8 @@ COP2_FractalMatte::addPixelFunction(
 	int thread)
 {
 	int modulo = evalInt(nameModulo.getToken(), 0, t);
-	return new cop2_FractalMatteFunc(modulo);
+	int offset = evalInt(nameOffset.getToken(), 0, t);
+	return new cop2_FractalMatteFunc(modulo, offset);
 }
 
 COP2_FractalMatte::COP2_FractalMatte(
@@ -85,9 +94,10 @@ COP2_FractalMatte::getInfoPopup()
 	return nullptr;
 }
 
-cop2_FractalMatteFunc::cop2_FractalMatteFunc(int modulo)
+cop2_FractalMatteFunc::cop2_FractalMatteFunc(int modulo, int offset)
 {
 	this->modulo = modulo;
+	this->offset = offset;
 }
 
 float cop2_FractalMatteFunc::checkModulus(
@@ -95,7 +105,8 @@ float cop2_FractalMatteFunc::checkModulus(
 	float pixelValue,
 	int comp)
 {
-	return SYSfmod(pixelValue, ((cop2_FractalMatteFunc*)pf)->modulo);
+	auto pfCasted = (cop2_FractalMatteFunc*)pf;
+	return SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
 }
 
 
