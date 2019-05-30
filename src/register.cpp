@@ -6,6 +6,8 @@
  */
 
  // Houdini never finds this dso without this included.
+#include <UT/UT_String.h>
+
 #include <UT/UT_DSOVersion.h>
 
 #include "COP2_Mandelbrot.h"
@@ -18,8 +20,8 @@
 /// Houdini enforces this name for adding Cop2 Nodes.
 void newCop2Operator(OP_OperatorTable* table)
 {
-	// Creates the mandelbrot Definition
-	table->addOperator( new OP_Operator(
+	// Creates the Mandelbrot Definition
+	OP_Operator* mandelbrot = new OP_Operator(
 		"cc::fractal_mandelbrot", // Node Name
 		"CC Fractal Mandelbrot", // Pretty Name
 		CC::COP2_Mandelbrot::myConstructor,
@@ -27,10 +29,10 @@ void newCop2Operator(OP_OperatorTable* table)
 		0,  // min inputs
 		2,  // max inputs. Second is for mask.
 		&CC::COP2_Mandelbrot::myVariablePair,
-		OP_FLAG_GENERATOR
-		));
+		OP_FLAG_GENERATOR);
 
-	table->addOperator(new OP_Operator(
+	// Creates the Fractal Matte Definition
+	OP_Operator* fractalMatte = new OP_Operator(
 		"cc::fractal_matte",
 		"CC Fractal Matte",
 		CC::COP2_FractalMatte::myConstructor,
@@ -39,5 +41,15 @@ void newCop2Operator(OP_OperatorTable* table)
 		2, // optional mask input.
 		&CC::COP2_FractalMatte::myVariablePair,
 		0, // not generator
-		CC::COP2_FractalMatte::myInputLabels));
+		CC::COP2_FractalMatte::myInputLabels);
+
+
+	// Add to tab path.
+	UT_String menuPath{ "Fractal" };
+	mandelbrot->setOpTabSubMenuPath(menuPath);
+	fractalMatte->setOpTabSubMenuPath(menuPath);
+
+	// Register the nodes
+	table->addOperator(mandelbrot);
+	table->addOperator(fractalMatte);
 }
