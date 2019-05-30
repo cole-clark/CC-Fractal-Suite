@@ -14,12 +14,17 @@ using namespace CC;
 
 COP_PIXEL_OP_SWITCHER(1, "Mattes");
 
+/// Declare Parm Names
 static PRM_Name nameModulo{ "modulo", "Modulo" };
 static PRM_Name nameOffset{ "offset", "Offset" };
 
+/// Declare Parm Defaults
+static PRM_Default defaultModulo{ 2 };
+
+/// Declare Parm Ranges
 static PRM_Range rangeModulo
 {
-	PRM_RangeFlag::PRM_RANGE_UI, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 1,
 	PRM_RangeFlag::PRM_RANGE_UI, 10
 };
 
@@ -33,7 +38,7 @@ PRM_Template
 COP2_FractalMatte::myTemplateList[] =
 {
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameModulo, PRMoneDefaults, 0, &rangeModulo),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
 	PRM_Template()
 };

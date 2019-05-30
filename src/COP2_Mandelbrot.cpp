@@ -139,7 +139,7 @@ COP2_Mandelbrot::myTemplateList[]
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMoneDefaults),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
