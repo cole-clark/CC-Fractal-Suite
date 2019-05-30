@@ -19,10 +19,18 @@ namespace CC
 		double bailout{ 2 };
 		int jdepth{ 0 };  // Julia off by default.
 		COMPLEX joffset;
+		bool blackhole{ false };
 
 	public:
 		Mandelbrot();
-		Mandelbrot(int maxiter, double pow, double bailout, int jdepth, double joffset_x, double joffset_y);
+		Mandelbrot(
+			int maxiter,
+			double pow,
+			double bailout,
+			int jdepth,
+			double joffset_x,
+			double joffset_y,
+			int blackhole);
 
 		virtual ~Mandelbrot();
 		virtual int calculate(FCOORDS coords) override;

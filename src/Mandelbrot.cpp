@@ -10,15 +10,15 @@
 #include "Mandelbrot.h"
 
 
-
 CC::Mandelbrot::Mandelbrot()
 {
 	joffset = 0;
 }
 
 CC::Mandelbrot::Mandelbrot(
-	int maxiter, double fpow, double bailout, int jdepth, double joffset_x, double joffset_y) :
-	maxiter(maxiter), fpow(fpow), bailout(bailout), jdepth(jdepth)
+	int maxiter, double fpow, double bailout, int jdepth,
+	double joffset_x, double joffset_y, int blackhole) :
+	maxiter(maxiter), fpow(fpow), bailout(bailout), jdepth(jdepth), blackhole(blackhole)
 {
 	// Create joffset as a complex number.
 	joffset = COMPLEX(joffset_x, joffset_y);
@@ -28,6 +28,8 @@ CC::Mandelbrot::~Mandelbrot() {}
 
 int CC::Mandelbrot::calculate(FCOORDS coords)
 {
+	// Declares z and c where:Calculates the basic mandelbrot formula
+	// z = z^pow + c;
 	COMPLEX z{ 0 };
 	COMPLEX c{ coords.first, coords.second };
 
@@ -51,6 +53,11 @@ int CC::Mandelbrot::calculate(FCOORDS coords)
 
 		iterations++;
 	}
+
+	// Blackhole if maximum iterations reached
+	// Returns -1 for bailed out values, making it a unique value for mattes.
+	if (blackhole && iterations == maxiter)
+		iterations = -1; 
 
 	return iterations;
 }

@@ -20,7 +20,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(14, "Fractal");
+COP_GENERATOR_SWITCHER(15, "Fractal");
 
 /// Private Constructor
 COP2_Mandelbrot::COP2_Mandelbrot(
@@ -48,6 +48,7 @@ static PRM_Name namePow("pow", "Exponent");
 static PRM_Name nameBailout("bailout", "Bailout");
 static PRM_Name nameJDepth("jdepth", "Julia Depth");
 static PRM_Name nameJOffset("joffset", "Julia Offset");
+static PRM_Name nameBlackhole("blackhole", "Blackhole");
 static PRM_Name nameSep1("sep1", "sep1");
 static PRM_Name nameSep2("sep2", "sep2");
 static PRM_Name nameSep3("sep3", "sep3");
@@ -125,7 +126,7 @@ static PRM_Range rangeJDepth
 PRM_Template
 COP2_Mandelbrot::myTemplateList[]
 {
-    // The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
+	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
 	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
@@ -138,6 +139,7 @@ COP2_Mandelbrot::myTemplateList[]
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMoneDefaults),
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
@@ -228,8 +230,10 @@ COP2_Mandelbrot::newContextData
 	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
 	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
 	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
+	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
 
-	data->fractal = Mandelbrot(iter, pow, bailout, jdepth, joffset_x, joffset_y);
+	data->fractal = Mandelbrot(
+		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
 
 	return data;
 }
