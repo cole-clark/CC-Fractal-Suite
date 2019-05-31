@@ -111,7 +111,8 @@ float cop2_FractalMatteFunc::checkModulus(
 	int comp)
 {
 	auto pfCasted = (cop2_FractalMatteFunc*)pf;
-	return SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
+	float pixelMod = SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
+	return SYSclamp(pixelMod, 0.0f, 1.0f);
 }
 
 
