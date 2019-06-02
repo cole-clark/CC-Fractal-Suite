@@ -48,7 +48,7 @@ namespace CC
 	class cop2_FractalMatteFunc : public RU_PixelFunction
 	{
 	public:
-		cop2_FractalMatteFunc(int modulo, int offset);
+		cop2_FractalMatteFunc(int modulo, int offset, bool invert=false);
 
 	protected:
 		virtual bool eachComponentDifferent() const
@@ -80,5 +80,6 @@ namespace CC
 	private:
 		int modulo{ 0 };
 		int offset{ 0 };
+		bool invert{ false };
 	};
 }

@@ -17,6 +17,7 @@ COP_PIXEL_OP_SWITCHER(1, "Mattes");
 /// Declare Parm Names
 static PRM_Name nameModulo{ "modulo", "Modulo" };
 static PRM_Name nameOffset{ "offset", "Offset" };
+static PRM_Name nameInvert{ "invert", "Invert" };
 
 /// Declare Parm Defaults
 static PRM_Default defaultModulo{ 2 };
@@ -40,6 +41,7 @@ COP2_FractalMatte::myTemplateList[] =
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameInvert, PRMzeroDefaults),
 	PRM_Template()
 };
 
@@ -78,7 +80,8 @@ COP2_FractalMatte::addPixelFunction(
 {
 	int modulo = evalInt(nameModulo.getToken(), 0, t);
 	int offset = evalInt(nameOffset.getToken(), 0, t);
-	return new cop2_FractalMatteFunc(modulo, offset);
+	int invert = evalInt(nameInvert.getToken(), 0, t);
+	return new cop2_FractalMatteFunc(modulo, offset, invert);
 }
 
 COP2_FractalMatte::COP2_FractalMatte(
@@ -99,10 +102,11 @@ COP2_FractalMatte::getInfoPopup()
 	return nullptr;
 }
 
-cop2_FractalMatteFunc::cop2_FractalMatteFunc(int modulo, int offset)
+cop2_FractalMatteFunc::cop2_FractalMatteFunc(int modulo, int offset, bool invert)
 {
 	this->modulo = modulo;
 	this->offset = offset;
+	this->invert = invert;
 }
 
 float cop2_FractalMatteFunc::checkModulus(
@@ -111,8 +115,15 @@ float cop2_FractalMatteFunc::checkModulus(
 	int comp)
 {
 	auto pfCasted = (cop2_FractalMatteFunc*)pf;
+
 	float pixelMod = SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
-	return SYSclamp(pixelMod, 0.0f, 1.0f);
+	pixelMod = SYSclamp(pixelMod, 0.0f, 1.0f);
+
+	// Get the complement of the pixel value if invert is on.
+	if (pfCasted->invert)
+		pixelMod = 1 - pixelMod;
+
+	return pixelMod;
 }
 
 
