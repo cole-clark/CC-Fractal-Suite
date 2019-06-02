@@ -33,6 +33,9 @@ namespace CC
 			int,
 			int thread);
 
+		/// Use to hide/unhide parameters.
+		virtual bool updateParmsFlags() override;
+
 	private:
 		COP2_FractalMatte(
 			OP_Network* parent,
@@ -48,7 +51,27 @@ namespace CC
 	class cop2_FractalMatteFunc : public RU_PixelFunction
 	{
 	public:
-		cop2_FractalMatteFunc(int modulo, int offset, bool invert=false);
+
+		enum class ModeType
+		{
+			MODULUS,
+			COMPARISON
+		};
+
+		enum class ComparisonType
+		{
+			LESS_THAN,
+			LESS_THAN_EQUALS,
+			EQUALS,
+			GREATER_THAN_EQUALS,
+			GREATER_THAN
+		};
+
+		cop2_FractalMatteFunc(
+			int modulo, int offset, bool invert=false);
+
+		cop2_FractalMatteFunc(
+			int compValue, ComparisonType compType, bool invert = false);
 
 	protected:
 		virtual bool eachComponentDifferent() const
@@ -61,7 +84,7 @@ namespace CC
 			return false;
 		}
 
-		/// This is the core function that does the actual work.
+		/// Calculate Pixel Matte from a modulus
 		static float checkModulus(
 			RU_PixelFunction* pf,  // Pointer to pixel function
 			// Float values are assumed for pixel functions, though we will cast to int.
@@ -70,16 +93,29 @@ namespace CC
 			// more than one component.
 			int comp);
 
+		/// Calculate Pixel Matte from a simple operator comparison/
+		static float checkComparison(
+			RU_PixelFunction* pf,
+			float pixelValue,
+			int comp);
+
 		/// This is how we signal to RU_PixelFunction what method must be called
-		/// per-pixel
+		/// per-pixel.
+		/// Returns a different function depending on what mode type is used.
 		virtual RUPixelFunc getPixelFunction() const
 		{
-			return checkModulus;
+			if (mode == ModeType::MODULUS)
+				return checkModulus;
+			else if (mode == ModeType::COMPARISON)
+				return checkComparison;
 		}
 
 	private:
 		int modulo{ 0 };
 		int offset{ 0 };
 		bool invert{ false };
+		int compValue{ 0 };
+		ComparisonType compType{ ComparisonType::LESS_THAN };
+		ModeType mode{ ModeType::MODULUS };
 	};
 }

@@ -12,12 +12,49 @@
 
 using namespace CC;
 
-COP_PIXEL_OP_SWITCHER(1, "Mattes");
+typedef cop2_FractalMatteFunc::ModeType ModeType;
+typedef cop2_FractalMatteFunc::ComparisonType ComparisonType;
+
+COP_PIXEL_OP_SWITCHER(6, "Mattes");
 
 /// Declare Parm Names
 static PRM_Name nameModulo{ "modulo", "Modulo" };
 static PRM_Name nameOffset{ "offset", "Offset" };
 static PRM_Name nameInvert{ "invert", "Invert" };
+static PRM_Name nameMode{ "mode", "Mode" };
+static PRM_Name nameCompType{ "comptype", "Comparison" };
+static PRM_Name nameCompValue{ "compvalue", "Value" };
+
+/// Declare Mode Menu
+static PRM_Name menuNameModes[]
+{
+	PRM_Name("modulus", "Modulus"),
+	PRM_Name("comparison", "Comparison"),
+	PRM_Name(0)
+};
+
+static PRM_ChoiceList menuMode
+(
+	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+	menuNameModes
+);
+
+/// Declare Comparison Menu
+static PRM_Name menuNameComparison[]
+{
+	PRM_Name("less_than", "<"),
+	PRM_Name("less_than_equals", "<="),
+	PRM_Name("equals", "="),
+	PRM_Name("greater_than_equals", ">="),
+	PRM_Name("greater_than", ">"),
+	PRM_Name(0)
+};
+
+static PRM_ChoiceList menuComparison
+(
+	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+	menuNameComparison
+);
 
 /// Declare Parm Defaults
 static PRM_Default defaultModulo{ 2 };
@@ -39,10 +76,13 @@ PRM_Template
 COP2_FractalMatte::myTemplateList[] =
 {
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMode, PRMzeroDefaults, &menuMode),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameCompType, PRMzeroDefaults, &menuComparison),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameCompValue, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameInvert, PRMzeroDefaults),
-	PRM_Template()
+	PRM_Template(),
 };
 
 OP_TemplatePair
@@ -78,10 +118,52 @@ COP2_FractalMatte::addPixelFunction(
 	int,
 	int thread)
 {
-	int modulo = evalInt(nameModulo.getToken(), 0, t);
-	int offset = evalInt(nameOffset.getToken(), 0, t);
+	/// Cast the interface mode option to a ModeType object.
+	ModeType mode = 
+		(ModeType)evalInt(nameMode.getToken(), 0, t);
+
 	int invert = evalInt(nameInvert.getToken(), 0, t);
-	return new cop2_FractalMatteFunc(modulo, offset, invert);
+
+	if (mode == ModeType::MODULUS)  // Use the modulus type constructor
+	{
+		int modulo = evalInt(nameModulo.getToken(), 0, t);
+		int offset = evalInt(nameOffset.getToken(), 0, t);
+		return new cop2_FractalMatteFunc(modulo, offset, invert);
+	}
+	else  // Use the comparison type constructor
+	{
+		int compValue = evalInt(nameCompValue.getToken(), 0, t);
+		ComparisonType compType = (ComparisonType)evalInt(nameCompType.getToken(), 0, t);
+		return new cop2_FractalMatteFunc(compValue, compType, invert);
+	}
+}
+
+bool COP2_FractalMatte::updateParmsFlags()
+{
+	// Determine Mode State
+	fpreal t = CHgetEvalTime();
+	ModeType type = 
+		(ModeType)evalInt(nameMode.getToken(), 0, t);
+
+	// Set variables for hiding
+	bool displayModulus{ true };
+	bool displayComparison{ false };
+
+	if (type == ModeType::COMPARISON)
+	{
+		displayModulus = false;
+		displayComparison = true;
+	}
+
+	// Set the visibility state for hidable parms.
+	bool changed = COP2_PixelOp::updateParmsFlags();
+
+	changed |= setVisibleState(nameCompType.getToken(), displayComparison);
+	changed |= setVisibleState(nameCompValue.getToken(), displayComparison);
+	changed |= setVisibleState(nameModulo.getToken(), displayModulus);
+	changed |= setVisibleState(nameOffset.getToken(), displayModulus);
+
+	return changed;
 }
 
 COP2_FractalMatte::COP2_FractalMatte(
@@ -102,11 +184,23 @@ COP2_FractalMatte::getInfoPopup()
 	return nullptr;
 }
 
-cop2_FractalMatteFunc::cop2_FractalMatteFunc(int modulo, int offset, bool invert)
+cop2_FractalMatteFunc::cop2_FractalMatteFunc(
+	int modulo, int offset, bool invert)
 {
 	this->modulo = modulo;
 	this->offset = offset;
 	this->invert = invert;
+	// Sets the mode type to modulus when this constructor is called.
+	this->mode = ModeType::MODULUS;
+}
+
+cop2_FractalMatteFunc::cop2_FractalMatteFunc(
+	int compValue, ComparisonType compType, bool invert)
+{
+	this->compValue = compValue;
+	this->compType = compType;
+	this->invert = invert;
+	this->mode = ModeType::COMPARISON;
 }
 
 float cop2_FractalMatteFunc::checkModulus(
@@ -116,14 +210,48 @@ float cop2_FractalMatteFunc::checkModulus(
 {
 	auto pfCasted = (cop2_FractalMatteFunc*)pf;
 
-	float pixelMod = SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
-	pixelMod = SYSclamp(pixelMod, 0.0f, 1.0f);
+	float output = SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
+	output = SYSclamp(output, 0.0f, 1.0f);
 
 	// Get the complement of the pixel value if invert is on.
 	if (pfCasted->invert)
-		pixelMod = 1 - pixelMod;
+		output = 1 - output;
 
-	return pixelMod;
+	return output;
+}
+
+float cop2_FractalMatteFunc::checkComparison(
+	RU_PixelFunction * pf, float pixelValue, int comp)
+{
+	auto pfCasted = (cop2_FractalMatteFunc*)pf;
+
+	float output = 0;
+
+	switch (pfCasted->compType)
+	{
+	case ComparisonType::LESS_THAN:
+		output = pixelValue < pfCasted->compValue;
+		break;
+	case ComparisonType::LESS_THAN_EQUALS:
+		output = pixelValue <= pfCasted->compValue;
+		break;
+	case ComparisonType::EQUALS:
+		output = pixelValue == pfCasted->compValue;
+		break;
+	case ComparisonType::GREATER_THAN_EQUALS:
+		output = pixelValue >= pfCasted->compValue;
+		break;
+	case ComparisonType::GREATER_THAN:
+		output = pixelValue > pfCasted->compValue;
+	default:
+		break;
+	}
+
+	// Get the complement of the pixel value if invert is on.
+	if (pfCasted->invert)
+		output = 1 - output;
+
+	return output;
 }
 
 
