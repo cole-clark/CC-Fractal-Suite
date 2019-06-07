@@ -6,6 +6,7 @@
  */
 
 #include <complex>
+#include <cmath>
 
 #include "Mandelbrot.h"
 
@@ -60,4 +61,35 @@ int CC::Mandelbrot::calculate(FCOORDS coords)
 		iterations = -1; 
 
 	return iterations;
+}
+
+double CC::Mandelbrot::calculate_orbit_trap(FCOORDS coords)
+{
+	COMPLEX z{ 0 };
+	COMPLEX c{ coords.first, coords.second };
+
+	double distance{ 1e10 };
+
+	for (int i = 0; i < maxiter; i++)
+	{
+		// Calculate Mandelbrot
+		z = pow(z, fpow) + c;
+
+		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
+		for (int julia = 0; julia < jdepth; julia++)
+			z = pow(z, fpow) + joffset;
+
+
+		COMPLEX zMinusPoint{ 0 };
+		zMinusPoint -= z;
+
+		double zMinusPointModulus = std::sqrt(
+			std::pow(z.imag() - z.real(), 2) + 
+			std::pow(zMinusPoint.imag() - zMinusPoint.real(), 2));
+
+		if (zMinusPointModulus < distance)
+			distance = zMinusPointModulus;
+	}
+
+	return distance;
 }
