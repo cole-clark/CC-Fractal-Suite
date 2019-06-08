@@ -243,6 +243,7 @@ float cop2_FractalMatteFunc::checkComparison(
 		break;
 	case ComparisonType::GREATER_THAN:
 		output = pixelValue > pfCasted->compValue;
+		break;
 	default:
 		break;
 	}
