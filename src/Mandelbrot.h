@@ -35,6 +35,7 @@ namespace CC
 		virtual ~Mandelbrot();
 		virtual int calculate(FCOORDS coords) override;
 		double calculate_orbit_trap(FCOORDS coords);
+		double calculate_smooth(FCOORDS coords);
 	};
 
 }

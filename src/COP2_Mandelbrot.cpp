@@ -277,9 +277,13 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 				fractalCoords = data->space.get_fractal_coords(worldPixel);
 
 				// Calculate the fractal based on the fractal coords.
-				dest[i] = data->fractal.calculate(fractalCoords);
+				//dest[i] = data->fractal.calculate(fractalCoords);
+
 				// Orbit Trap:
 				//dest[i] = (float)data->fractal.calculate_orbit_trap(fractalCoords);
+
+				// Smooth Test:
+				dest[i] = (float)data->fractal.calculate_smooth(fractalCoords);
 			}
 			else
 				dest[i] = 0.0f;
