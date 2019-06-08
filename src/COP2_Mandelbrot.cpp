@@ -78,7 +78,7 @@ static PRM_ChoiceList xOrdMenu
 static PRM_Default defaultScale{ 500000 };
 static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
-static PRM_Default defaultBailout{ 4 };
+static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
 static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
 static PRM_Default defaultOffset[] = { -1000, -750 };
 static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
