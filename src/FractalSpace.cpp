@@ -94,6 +94,16 @@ CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 	return fc;
 }
 
+FCOORDS CC::FractalSpace::get_minimum()
+{
+	return get_fractal_coords(WORLDPIXELCOORDS(0, 0));
+}
+
+FCOORDS CC::FractalSpace::get_maximum()
+{
+	return get_fractal_coords(get_image_size());
+}
+
 /// A fractal space must be populated with a default image size to be used by the context
 /// Correctly.
 /// The image size is used as a rest size for the fractal, which is normalized by

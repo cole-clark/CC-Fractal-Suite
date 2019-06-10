@@ -54,6 +54,10 @@ namespace CC
 
 		FCOORDS get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 
+		///Returns in fractal coords the min/max of the image.
+		FCOORDS get_minimum();
+		FCOORDS get_maximum();
+
 		void set_image_size(int x, int y);
 		WORLDPIXELCOORDS get_image_size();
 
