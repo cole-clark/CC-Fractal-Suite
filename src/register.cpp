@@ -28,7 +28,7 @@ void newCop2Operator(OP_OperatorTable* table)
 		CC::COP2_Mandelbrot::myConstructor,
 		&CC::COP2_Mandelbrot::myTemplatePair,
 		0,  // min inputs
-		2,  // max inputs. Second is for mask.
+		1,  // max inputs. Second is for mask.
 		&CC::COP2_Mandelbrot::myVariablePair,
 		OP_FLAG_GENERATOR);
 
@@ -44,12 +44,25 @@ void newCop2Operator(OP_OperatorTable* table)
 		0, // not generator
 		CC::COP2_FractalMatte::myInputLabels);
 
+
+	OP_Operator* buddhabrot = new OP_Operator("cc::fractal_buddhabrot",
+		"CC Fractal Buddhabrot",
+		CC::COP2_FullImageFilter::myConstructor,
+		&CC::COP2_FullImageFilter::myTemplatePair,
+		1,
+		2, // optional mask input.
+		&CC::COP2_FullImageFilter::myVariablePair,
+		0, // not generator
+		CC::COP2_FullImageFilter::myInputLabels);
+
 	// Add to tab path.
 	UT_String menuPath{ "Fractal" };
 	mandelbrot->setOpTabSubMenuPath(menuPath);
 	fractalMatte->setOpTabSubMenuPath(menuPath);
+	buddhabrot->setOpTabSubMenuPath(menuPath);
 
 	// Register the nodes
 	table->addOperator(mandelbrot);
 	table->addOperator(fractalMatte);
+	table->addOperator(buddhabrot);
 }
