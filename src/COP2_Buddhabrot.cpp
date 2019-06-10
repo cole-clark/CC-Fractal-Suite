@@ -5,7 +5,9 @@
 	Code for CC Buddhabrot Generator Cop node.
  */
 
-#include <UT/UT_Matrix3.h>
+// TODO: Move to Buddhabrot
+#include <random>
+
 
   // For PRMoneDefaults
 #include <PRM/PRM_Include.h>
@@ -14,7 +16,6 @@
 // For FOR_EACH_UNCOOKED_TILE
 #include <TIL/TIL_Tile.h>
 
-#include "FractalSpace.h"
 #include "COP2_Buddhabrot.h"
 
 using namespace CC;
@@ -232,8 +233,7 @@ COP2_Buddhabrot::newContextData
 	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
 
-	data->fractal = Buddhabrot(data->space, 1,
-		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
+	data->fractal = Mandelbrot(iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
 
 	return data;
 }
@@ -244,7 +244,6 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
 	COP2_BuddhabrotData* data{ static_cast<COP2_BuddhabrotData*>(context.data()) };
 
-
 	// Initialize float array the size of current tile list for values to write to.
 	float *dest = new float[tileList->mySize]{ 0 };
 
@@ -253,33 +252,18 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 	// Forward declaring values
 	int size_x, size_y;
-	exint i;  // Huge because number of pixels may be crazy
-	WORLDPIXELCOORDS worldPixel;
-	FCOORDS fractalCoords;
-	// Comes from TIL/TIL_Tile.h
+
 	FOR_EACH_UNCOOKED_TILE(tileList, tile, tileIndex)
 	{
 		tile->getSize(size_x, size_y);
 
-		for (i = 0; i < size_x * size_y; i++)
+		for (exint i = 0; i < size_x * size_y; i++)
 		{
-			// Check the tile index, and black out if not first.
-			// This is done to keep user from cooking redundant fractals, but
-			// They can choose which image plane the fractal goes onto by making it
-			// The first.
 			if (tileIndex == 0)
 			{
-				// Calculate the 'world pixel', or literally where the pixel is in
-				// Terms of screen space, and not tile space.
-				worldPixel = CC::calculate_world_pixel(tileList, tile, i);
-
-				// Cast this to the 'fractal coords'. This is initialized from the size
-				// of the picture plane, with an xform applied from the interface.
-				fractalCoords = data->space.get_fractal_coords(worldPixel);
-
-				// Calculate the fractal based on the fractal coords.
+				WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
+				FCOORDS fractalCoords = data->space.get_fractal_coords(worldPixel);
 				dest[i] = data->fractal.calculate(fractalCoords);
-
 			}
 			else
 				dest[i] = 0.0f;

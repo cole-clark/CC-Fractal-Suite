@@ -10,7 +10,7 @@
 #include <COP2/COP2_Generator.h>
 
 #include "FractalSpace.h"
-#include "Buddhabrot.h"
+#include "Mandelbrot.h"
 
 namespace CC
 {
@@ -49,7 +49,7 @@ namespace CC
 	struct COP2_BuddhabrotData : public COP2_ContextData
 	{
 		FractalSpace space;
-		Buddhabrot fractal;
+		Mandelbrot fractal;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData();

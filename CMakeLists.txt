@@ -11,6 +11,8 @@ add_library( ${library_name} SHARED
 	src/COP2_FractalMatte.h
 	src/COP2_Mandelbrot.cpp
     src/COP2_Mandelbrot.h
+	src/COP2_Buddhabrot.cpp
+    src/COP2_Buddhabrot.h
     src/Fractal.cpp
     src/Fractal.h
     src/FractalSpace.cpp
