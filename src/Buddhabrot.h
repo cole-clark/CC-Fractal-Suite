@@ -9,8 +9,6 @@
 
 #include <complex>
 
-#include <UT/UT_Vector2.h>
-
 #include "Fractal.h"
 #include "FractalSpace.h"
 
@@ -21,6 +19,11 @@ namespace CC
 	/// Declare the mandelbrot to be used
 	class Buddhabrot : public Fractal
 	{
+		// From Buddhabrot
+		FractalSpace space;
+		int samples{ 1 };
+
+		// From Mandelbrot
 		int maxiter{ 0 };
 		double fpow{ 2 };  // Fractal Pow
 		double bailout{ 2 };
@@ -31,6 +34,8 @@ namespace CC
 	public:
 		Buddhabrot();
 		Buddhabrot(
+			FractalSpace& space,
+			int samples,
 			int maxiter,
 			double pow,
 			double bailout,
@@ -41,7 +46,5 @@ namespace CC
 
 		virtual ~Buddhabrot();
 		virtual int calculate(FCOORDS coords) override;
-		double calculate_orbit_trap(FCOORDS coords);
-		double calculate_smooth(FCOORDS coords);
 	};
 }

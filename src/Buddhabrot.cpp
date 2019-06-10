@@ -17,6 +17,7 @@ CC::Buddhabrot::Buddhabrot()
 }
 
 CC::Buddhabrot::Buddhabrot(
+	FractalSpace& space, int samples,
 	int maxiter, double fpow, double bailout, int jdepth,
 	double joffset_x, double joffset_y, int blackhole) :
 	maxiter(maxiter), fpow(fpow), bailout(bailout), jdepth(jdepth), blackhole(blackhole)

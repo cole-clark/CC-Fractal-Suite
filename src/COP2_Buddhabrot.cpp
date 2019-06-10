@@ -232,7 +232,7 @@ COP2_Buddhabrot::newContextData
 	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
 
-	data->fractal = Buddhabrot(
+	data->fractal = Buddhabrot(data->space, 1,
 		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
 
 	return data;
