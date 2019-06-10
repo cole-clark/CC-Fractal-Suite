@@ -108,6 +108,8 @@ namespace CC
 				return checkModulus;
 			else if (mode == ModeType::COMPARISON)
 				return checkComparison;
+			else  // Default
+				return checkModulus;
 		}
 
 	private:

@@ -254,36 +254,29 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	int size_x, size_y;
 	exint i;  // Huge because number of pixels may be crazy
 	WORLDPIXELCOORDS worldPixel;
-	FCOORDS fractalCoords;
+	COMPLEX fractalCoords;
 	// Comes from TIL/TIL_Tile.h
 	FOR_EACH_UNCOOKED_TILE(tileList, tile, tileIndex)
 	{
 		tile->getSize(size_x, size_y);
 
-		for (i = 0; i < size_x * size_y; i++)
+		for (exint i = 0; i < size_x * size_y; i++)
 		{
-			// Check the tile index, and black out if not first.
-			// This is done to keep user from cooking redundant fractals, but
-			// They can choose which image plane the fractal goes onto by making it
-			// The first.
+			WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
+			COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
+			FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
+
 			if (tileIndex == 0)
 			{
-				// Calculate the 'world pixel', or literally where the pixel is in
-				// Terms of screen space, and not tile space.
-				worldPixel = CC::calculate_world_pixel(tileList, tile, i);
-
-				// Cast this to the 'fractal coords'. This is initialized from the size
-				// of the picture plane, with an xform applied from the interface.
-				fractalCoords = data->space.get_fractal_coords(worldPixel);
-
-				// Calculate the fractal based on the fractal coords.
-				dest[i] = data->fractal.calculate(fractalCoords);
-
-				// Orbit Trap:
-				//dest[i] = (float)data->fractal.calculate_orbit_trap(fractalCoords);
-
-				// Smooth Test:
-				//dest[i] = (float)data->fractal.calculate_smooth(fractalCoords);
+				dest[i] = pixelInfo.num_iter;
+			}
+			else if (tileIndex == 1)
+			{
+				dest[i] = pixelInfo.z.real();
+			}
+			else if (tileIndex = 2)
+			{
+				dest[i] = pixelInfo.z.imag();
 			}
 			else
 				dest[i] = 0.0f;

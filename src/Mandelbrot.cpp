@@ -27,27 +27,19 @@ CC::Mandelbrot::Mandelbrot(
 
 CC::Mandelbrot::~Mandelbrot() {}
 
-int CC::Mandelbrot::calculate(FCOORDS coords)
+CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 {
 	// Declares z and c where:Calculates the basic mandelbrot formula
 	// z = z^pow + c;
 	COMPLEX z{ 0 };
-	COMPLEX c{ coords.first, coords.second };
+	COMPLEX c{ coords.real(), coords.imag()};
 
 	int iterations{ 0 };
-
-	// Forward declare
-	int julia;
 
 	// Iter here means Max Iterations.
 	while (iterations < maxiter)
 	{
-		// Calculate Mandelbrot
-		z = pow(z, fpow) + c;
-
-		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
-		for (julia = 0; julia < jdepth; julia++)
-			z = pow(z, fpow) + joffset;
+		z = calculate_z(z, c);
 
 		if (abs(z) > bailout)
 			break;
@@ -56,17 +48,29 @@ int CC::Mandelbrot::calculate(FCOORDS coords)
 	}
 
 	// Blackhole if maximum iterations reached
-	// Returns -1 for bailed out values, making it a unique value for mattes.
+	// Itersations set to -1 for bailed out values, making it a unique value for mattes.
 	if (blackhole && iterations == maxiter)
 		iterations = -1; 
 
-	return iterations;
+	return FractalCoordsInfo(iterations, z);
 }
 
-double CC::Mandelbrot::calculate_orbit_trap(FCOORDS coords)
+COMPLEX CC::Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
+{
+	// Calculate Mandelbrot
+	z = pow(z, fpow) + c;
+
+	// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
+	for (int julia = 0; julia < jdepth; julia++)
+		z = pow(z, fpow) + joffset;
+
+	return z;
+}
+
+double CC::Mandelbrot::calculate_orbit_trap(COMPLEX coords)
 {
 	COMPLEX z{ 0 };
-	COMPLEX c{ coords.first, coords.second };
+	COMPLEX c{ coords.real(), coords.imag() };
 
 	double distance{ 1e10 };
 
@@ -94,12 +98,12 @@ double CC::Mandelbrot::calculate_orbit_trap(FCOORDS coords)
 	return distance;
 }
 
-double CC::Mandelbrot::calculate_smooth(FCOORDS coords)
+double CC::Mandelbrot::calculate_smooth(COMPLEX coords)
 {
 	// Declares z and c where:Calculates the basic mandelbrot formula
 	// z = z^pow + c;
 	COMPLEX z{ 0 };
-	COMPLEX c{ coords.first, coords.second };
+	COMPLEX c{ coords.real(), coords.imag() };
 
 	int iterations{ 0 };
 

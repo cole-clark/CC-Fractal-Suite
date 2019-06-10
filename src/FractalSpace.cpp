@@ -9,6 +9,7 @@
 
 #include "FractalSpace.h"
 
+
 RSTORDER CC::get_rst_order(const int val)
 {
 	auto order = RSTORDER();
@@ -79,13 +80,13 @@ void CC::FractalSpace::set_xform(
 
 /// Return the fractal coordinates, which use the size of the image as a relative
 /// Size. The scale is 0-1 in the x axis of the image.
-FCOORDS
+COMPLEX
 CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 {
-	FCOORDS fc{ pixel_coords.first / (double)image_x, pixel_coords.second / (double)image_x };
+	COMPLEX fc{ pixel_coords.first / (double)image_x, pixel_coords.second / (double)image_x };
 	UT_Matrix3 m;
 	m.identity();
-	m.xform(rstorder, fc.first, fc.second);
+	m.xform(rstorder, fc.real(), fc.imag());
 
 	m *= post_matrix;
 
@@ -94,12 +95,12 @@ CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 	return fc;
 }
 
-FCOORDS CC::FractalSpace::get_minimum()
+COMPLEX CC::FractalSpace::get_minimum()
 {
 	return get_fractal_coords(WORLDPIXELCOORDS(0, 0));
 }
 
-FCOORDS CC::FractalSpace::get_maximum()
+COMPLEX CC::FractalSpace::get_maximum()
 {
 	return get_fractal_coords(get_image_size());
 }

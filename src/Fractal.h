@@ -7,16 +7,28 @@
 
 #pragma once
 
+#include "typedefs.h"
 #include "FractalSpace.h"
 
 namespace CC
 {
+	struct FractalCoordsInfo
+	{
+		int num_iter{ 0 };
+		COMPLEX z;
+
+		FractalCoordsInfo() = default;
+		FractalCoordsInfo(int num_iter, COMPLEX z);
+	};
+
+
 	class Fractal
 	{
 	public:
 		Fractal();
 		virtual ~Fractal();
 
-		virtual int calculate(FCOORDS coords) = 0;
+		/// Returns Fractal Info for a particular set of coords
+		virtual FractalCoordsInfo calculate(COMPLEX coords) = 0;
 	};
 }

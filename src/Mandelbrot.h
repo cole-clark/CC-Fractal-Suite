@@ -14,8 +14,6 @@
 #include "Fractal.h"
 #include "FractalSpace.h"
 
-typedef std::complex<double> COMPLEX;
-
 namespace CC
 {
 	/// Declare the mandelbrot to be used
@@ -27,6 +25,8 @@ namespace CC
 		int jdepth{ 0 };  // Julia off by default.
 		COMPLEX joffset;
 		bool blackhole{ false };
+
+		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
 
 	public:
 		Mandelbrot();
@@ -40,8 +40,10 @@ namespace CC
 			int blackhole);
 
 		virtual ~Mandelbrot();
-		virtual int calculate(FCOORDS coords) override;
-		double calculate_orbit_trap(FCOORDS coords);
-		double calculate_smooth(FCOORDS coords);
+		virtual FractalCoordsInfo calculate(COMPLEX coords) override;
+
+		// Temp Placement
+		double calculate_orbit_trap(COMPLEX coords);
+		double calculate_smooth(COMPLEX coords);
 	};
 }

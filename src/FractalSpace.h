@@ -10,13 +10,10 @@
 #include <TIL/TIL_Tile.h>
 #include <TIL/TIL_TileList.h>
 #include <UT/UT_Matrix3.h>
-#include <UT/UT_XformOrder.h>
 
 #include <utility>
 
-typedef std::pair<double, double> FCOORDS;
-typedef std::pair<int, int> WORLDPIXELCOORDS;
-typedef UT_XformOrder::rstOrder RSTORDER;
+#include "typedefs.h"
 
 namespace CC
 {
@@ -52,11 +49,11 @@ namespace CC
 			double s_pivy,
 			RSTORDER xord);
 
-		FCOORDS get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
+		COMPLEX get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 
 		///Returns in fractal coords the min/max of the image.
-		FCOORDS get_minimum();
-		FCOORDS get_maximum();
+		COMPLEX get_minimum();
+		COMPLEX get_maximum();
 
 		void set_image_size(int x, int y);
 		WORLDPIXELCOORDS get_image_size();
