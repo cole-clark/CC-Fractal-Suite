@@ -12,6 +12,7 @@
 
 #include "COP2_Mandelbrot.h"
 #include "COP2_FractalMatte.h"
+#include "COP2_Buddhabrot.h"
 
 #include "register.h"
 
@@ -44,12 +45,25 @@ void newCop2Operator(OP_OperatorTable* table)
 		CC::COP2_FractalMatte::myInputLabels);
 
 
+	// Creates the Buddhabrot Definition
+	OP_Operator* buddhabrot = new OP_Operator(
+		"cc::fractal_buddhabrot", // Node Name
+		"CC Fractal Buddhabrot", // Pretty Name
+		CC::COP2_Buddhabrot::myConstructor,
+		&CC::COP2_Buddhabrot::myTemplatePair,
+		0,  // min inputs
+		2,  // max inputs. Second is for mask.
+		&CC::COP2_Buddhabrot::myVariablePair,
+		OP_FLAG_GENERATOR);
+
 	// Add to tab path.
 	UT_String menuPath{ "Fractal" };
 	mandelbrot->setOpTabSubMenuPath(menuPath);
 	fractalMatte->setOpTabSubMenuPath(menuPath);
+	buddhabrot->setOpTabSubMenuPath(menuPath);
 
 	// Register the nodes
 	table->addOperator(mandelbrot);
 	table->addOperator(fractalMatte);
+	table->addOperator(buddhabrot);
 }

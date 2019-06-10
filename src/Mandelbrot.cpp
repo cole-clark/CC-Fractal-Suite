@@ -150,14 +150,23 @@ double CC::Mandelbrot::calculate_smooth(FCOORDS coords)
 	*/
 
 	double color = (double)iterations;
-
+	/*
+	// Kind of Functional
 	if (iterations < maxiter)
 	{
 		double log_zn = std::log(
-			std::pow(z.real(), 2.0) +
-			std::pow(z.imag(), 2.0)) / 2.0;
-		double nu = std::log(log_zn / std::log(2)) / std::log(2);
+			std::pow(z.real(), 2) +
+			std::pow(z.imag(), 2)) / 2;
+		//double nu = std::log(log_zn / std::log(2)) / std::log(2);
+		double nu = std::log(log_zn / std::log(fpow)) / std::log(fpow);
+		// Adding one here ensures blending into '0' bands of the fractal.
 		color = iterations + 1 - nu;
+	}
+	*/
+	if (iterations < maxiter)
+	{
+		double log_zn = std::log(z.real() + z.imag());
+		color = log_zn;
 	}
 
 	return color;

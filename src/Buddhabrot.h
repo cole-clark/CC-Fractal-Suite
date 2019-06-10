@@ -1,8 +1,8 @@
 /*
 	Cole Clark's Fractal Suite
 
-	Mandelbrot.h
-	Header for Mandelbrot fractal class.
+	Buddhabrot.h
+	Header for Buddhabrot fractal class.
  */
 
 #pragma once
@@ -19,7 +19,7 @@ typedef std::complex<double> COMPLEX;
 namespace CC
 {
 	/// Declare the mandelbrot to be used
-	class Mandelbrot : public Fractal
+	class Buddhabrot : public Fractal
 	{
 		int maxiter{ 0 };
 		double fpow{ 2 };  // Fractal Pow
@@ -29,8 +29,8 @@ namespace CC
 		bool blackhole{ false };
 
 	public:
-		Mandelbrot();
-		Mandelbrot(
+		Buddhabrot();
+		Buddhabrot(
 			int maxiter,
 			double pow,
 			double bailout,
@@ -39,7 +39,7 @@ namespace CC
 			double joffset_y,
 			int blackhole);
 
-		virtual ~Mandelbrot();
+		virtual ~Buddhabrot();
 		virtual int calculate(FCOORDS coords) override;
 		double calculate_orbit_trap(FCOORDS coords);
 		double calculate_smooth(FCOORDS coords);

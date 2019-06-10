@@ -1,13 +1,13 @@
 /*
 	Cole Clark's Fractal Suite
 
-	COP2_Mandelbrot.cpp
-	Code for CC Mandelbrot Generator Cop Node.
+	COP2_Buddhabrot.cpp
+	Code for CC Buddhabrot Generator Cop node.
  */
 
 #include <UT/UT_Matrix3.h>
 
-// For PRMoneDefaults
+  // For PRMoneDefaults
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_ChoiceList.h>
 
@@ -15,7 +15,7 @@
 #include <TIL/TIL_Tile.h>
 
 #include "FractalSpace.h"
-#include "COP2_Mandelbrot.h"
+#include "COP2_Buddhabrot.h"
 
 using namespace CC;
 
@@ -23,19 +23,19 @@ using namespace CC;
 COP_GENERATOR_SWITCHER(15, "Fractal");
 
 /// Private Constructor
-COP2_Mandelbrot::COP2_Mandelbrot(
+COP2_Buddhabrot::COP2_Buddhabrot(
 	OP_Network* parent,
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
 /// Public Constructor
 OP_Node *
-COP2_Mandelbrot::myConstructor(
+COP2_Buddhabrot::myConstructor(
 	OP_Network* net,
 	const char* name,
 	OP_Operator* op)
 {
-	return new COP2_Mandelbrot(net, name, op);
+	return new COP2_Buddhabrot(net, name, op);
 }
 
 /// Declare Parm Names
@@ -70,8 +70,8 @@ static PRM_Name xordMenuNames[] =
 
 static PRM_ChoiceList xOrdMenu
 (
-	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
-	::xordMenuNames
+(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+::xordMenuNames
 );
 
 /// Declare Parm Defaults
@@ -124,7 +124,7 @@ static PRM_Range rangeJDepth
 
 /// Create Template List
 PRM_Template
-COP2_Mandelbrot::myTemplateList[]
+COP2_Buddhabrot::myTemplateList[]
 {
 	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
 	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
@@ -147,14 +147,14 @@ COP2_Mandelbrot::myTemplateList[]
 };
 
 /// Assign Template Pair of node to generator
-OP_TemplatePair COP2_Mandelbrot::myTemplatePair
+OP_TemplatePair COP2_Buddhabrot::myTemplatePair
 (
-	COP2_Mandelbrot::myTemplateList,
+	COP2_Buddhabrot::myTemplateList,
 	&COP2_Generator::myTemplatePair
 );
 
 /// Assign empty variable pairing
-OP_VariablePair COP2_Mandelbrot::myVariablePair
+OP_VariablePair COP2_Buddhabrot::myVariablePair
 (
 	0,
 	&COP2_Node::myVariablePair
@@ -162,7 +162,7 @@ OP_VariablePair COP2_Mandelbrot::myVariablePair
 
 /// Gets Sequence information.
 TIL_Sequence*
-COP2_Mandelbrot::cookSequenceInfo(OP_ERROR& error)
+COP2_Buddhabrot::cookSequenceInfo(OP_ERROR& error)
 {
 	COP2_Generator::cookSequenceInfo(error);
 
@@ -171,7 +171,7 @@ COP2_Mandelbrot::cookSequenceInfo(OP_ERROR& error)
 
 /// Stashes data for cooking image
 COP2_ContextData*
-COP2_Mandelbrot::newContextData
+COP2_Buddhabrot::newContextData
 
 (
 	const TIL_Plane*,  // planename
@@ -184,7 +184,7 @@ COP2_Mandelbrot::newContextData
 )
 {
 	// Create new empty data object.
-	COP2_MandelbrotData* data{ new COP2_MandelbrotData };
+	COP2_BuddhabrotData* data{ new COP2_BuddhabrotData };
 
 	// Space Xform Attributes
 	double scale = evalFloat(nameScale.getToken(), 0, t);
@@ -232,7 +232,7 @@ COP2_Mandelbrot::newContextData
 	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
 
-	data->fractal = Mandelbrot(
+	data->fractal = Buddhabrot(
 		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
 
 	return data;
@@ -240,9 +240,10 @@ COP2_Mandelbrot::newContextData
 
 /// Creates the image. This is called by multiple worker threads by Houdini.
 OP_ERROR
-COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
+COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
-	COP2_MandelbrotData* data{static_cast<COP2_MandelbrotData*>(context.data()) };
+	COP2_BuddhabrotData* data{ static_cast<COP2_BuddhabrotData*>(context.data()) };
+
 
 	// Initialize float array the size of current tile list for values to write to.
 	float *dest = new float[tileList->mySize]{ 0 };
@@ -279,11 +280,6 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 				// Calculate the fractal based on the fractal coords.
 				dest[i] = data->fractal.calculate(fractalCoords);
 
-				// Orbit Trap:
-				//dest[i] = (float)data->fractal.calculate_orbit_trap(fractalCoords);
-
-				// Smooth Test:
-				//dest[i] = (float)data->fractal.calculate_smooth(fractalCoords);
 			}
 			else
 				dest[i] = 0.0f;
@@ -298,7 +294,7 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 }
 
 /// Destructor
-COP2_Mandelbrot::~COP2_Mandelbrot() {}
+COP2_Buddhabrot::~COP2_Buddhabrot() {}
 
 /// Destructor
-COP2_MandelbrotData::~COP2_MandelbrotData() {}
+COP2_BuddhabrotData::~COP2_BuddhabrotData() {}
