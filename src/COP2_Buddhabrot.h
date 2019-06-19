@@ -54,6 +54,7 @@ namespace CC
 		FractalSpace space;
 		Mandelbrot fractal;
 		UT_Lock myLock;
+		int samples;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData();

@@ -20,7 +20,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(15, "Fractal");
+COP_GENERATOR_SWITCHER(18, "Fractal");
 
 /// Private Constructor
 COP2_Buddhabrot::COP2_Buddhabrot(
@@ -52,8 +52,12 @@ static PRM_Name nameBlackhole("blackhole", "Blackhole");
 static PRM_Name nameSep1("sep1", "sep1");
 static PRM_Name nameSep2("sep2", "sep2");
 static PRM_Name nameSep3("sep3", "sep3");
+static PRM_Name nameSep4("sep4", "sep4");
 static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
 static PRM_Name nameScalePivot("spivot", "Scale Pivot");
+
+static PRM_Name nameSamples("samples", "Samples");
+static PRM_Name nameSeed("seed", "Seed");
 
 
 /// ChoiceList Lists
@@ -83,6 +87,7 @@ static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
 static PRM_Default defaultOffset[] = { -1000, -750 };
 static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
 static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
+static PRM_Default defaultSamples{ 100 };
 
 /// Deflare Parm Ranges
 static PRM_Range rangeScale
@@ -122,6 +127,12 @@ static PRM_Range rangeJDepth
 	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
 
+static PRM_Range rangeSamples
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_UI, 1000
+};
+
 /// Create Template List
 PRM_Template
 COP2_Buddhabrot::myTemplateList[]
@@ -143,6 +154,9 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep4, PRMzeroDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template()
 };
 
@@ -180,14 +194,22 @@ std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, 
 
 	while (n < bound_iters)
 	{
+		++n;
 		z = fractal->calculate_z(z, c);
 
 		if (abs(z) > fractal->bailout)
 			break;
 
-		points.emplace_back(z);
-		n++;
+		points.push_back(z);
+
 	};
+
+	// Return nothing if the point is bounded within the mandelbrot set
+	if (fractal->blackhole)
+	{
+		if (n == bound_iters)
+			return std::vector<COMPLEX>();
+	}
 
 	return points;
 }
@@ -258,6 +280,10 @@ COP2_Buddhabrot::newContextData
 	data->fractal = Mandelbrot(
 		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
 
+
+	int samples = evalInt(nameSamples.getToken(), 0, t);
+	data->samples = samples;
+
 	return data;
 }
 
@@ -280,7 +306,6 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	std::mt19937 rng;
 
 	float seed = 666; // TODO: Move to interface
-	int num_samples = 10000;  // TODO: Move to interface
 
 	FOR_EACH_UNCOOKED_TILE(tileList, tile, planeIndex)
 	{
@@ -294,7 +319,7 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 			std::uniform_int_distribution<int> realDistribution(tile_min.first, tile_max.first);
 			std::uniform_int_distribution<int> imagDistribution(tile_min.second, tile_max.second);
 
-			for (exint i_sample = 0; i_sample < num_samples; ++i_sample)
+			for (exint i_sample = 0; i_sample < data->samples; ++i_sample)
 			{
 				rng.seed(i_sample + seed);
 				WORLDPIXELCOORDS samplePixel(realDistribution(rng), imagDistribution(rng));
@@ -303,16 +328,14 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 				for (COMPLEX &point : points)
 				{
-					/*if (point.real() >= tile_min.first &&
-						point.real() <= tile_max.first &&
-						point.imag() >= tile_min.second &&
-						point.imag() <= tile_max.second)*/
-					{
-						tilePixelIndex = static_cast<int>(
-							(samplePixel.first - offset_x) +
-							((samplePixel.second - offset_y) * size_x));
-						++dest[tilePixelIndex];
-					}
+					/* TODO: Write a method that takes a set of complex coods,
+					and converts them BACK to WORLDPIXELCOORDS.
+					*/
+					tilePixelIndex = static_cast<int>(
+						(samplePixel.first - offset_x) +
+						((samplePixel.second - offset_y) * size_x));
+					++dest[tilePixelIndex];
+
 				}
 			}
 		}
