@@ -19,6 +19,7 @@ namespace CC
 	/// Declare the mandelbrot to be used
 	class Mandelbrot : public Fractal
 	{
+	public:
 		int maxiter{ 0 };
 		double fpow{ 2 };  // Fractal Pow
 		double bailout{ 2 };
@@ -26,9 +27,6 @@ namespace CC
 		COMPLEX joffset;
 		bool blackhole{ false };
 
-		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
-
-	public:
 		Mandelbrot();
 		Mandelbrot(
 			int maxiter,
@@ -41,6 +39,7 @@ namespace CC
 
 		virtual ~Mandelbrot();
 		virtual FractalCoordsInfo calculate(COMPLEX coords) override;
+		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
 
 		// Temp Placement
 		double calculate_orbit_trap(COMPLEX coords);

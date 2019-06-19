@@ -2,261 +2,335 @@
 	Cole Clark's Fractal Suite
 
 	COP2_Buddhabrot.cpp
-	Code for CC Buddhabrot Generator Cop node.
+	Code for CC Buddhabrot Generator Cop Node.
  */
 
+#include <random>
+
+ // For PRMoneDefaults
+#include <PRM/PRM_Include.h>
+#include <PRM/PRM_ChoiceList.h>
+
+// For FOR_EACH_UNCOOKED_TILE
+#include <TIL/TIL_Tile.h>
+
+#include "FractalSpace.h"
 #include "COP2_Buddhabrot.h"
 
-#include <OP/OP_Context.h>
-#include <OP/OP_OperatorTable.h>
-#include <SYS/SYS_Math.h>
-#include <SYS/SYS_Floor.h>
-#include <PRM/PRM_Include.h>
-#include <PRM/PRM_Parm.h>
-#include <TIL/TIL_Region.h>
-#include <TIL/TIL_Plane.h>
-#include <TIL/TIL_Sequence.h>
-#include <TIL/TIL_Tile.h>
-#include <COP2/COP2_CookAreaInfo.h>
-
 using namespace CC;
-COP_MASK_SWITCHER(1, "Sample Full Image Filter");
-static PRM_Name names[] =
-{
-	PRM_Name("size",    "Size"),
-};
-static PRM_Default sizeDef(10);
-static PRM_Range sizeRange(PRM_RANGE_UI, 0, PRM_RANGE_UI, 100);
-PRM_Template
-COP2_FullImageFilter::myTemplateList[] =
-{
-	PRM_Template(PRM_SWITCHER,  3, &PRMswitcherName, switcher),
-	PRM_Template(PRM_FLT_J,     TOOL_PARM, 1, &names[0], &sizeDef, 0,
-				 &sizeRange),
-	PRM_Template(),
-};
-OP_TemplatePair COP2_FullImageFilter::myTemplatePair(
-	COP2_FullImageFilter::myTemplateList,
-	&COP2_MaskOp::myTemplatePair);
-OP_VariablePair COP2_FullImageFilter::myVariablePair(0,
-	&COP2_MaskOp::myVariablePair);
-const char *    COP2_FullImageFilter::myInputLabels[] =
-{
-	"Image to Filter",
-	"Mask Input",
-	0
-};
+
+/// Parm Switcher used by this interface
+COP_GENERATOR_SWITCHER(15, "Fractal");
+
+/// Private Constructor
+COP2_Buddhabrot::COP2_Buddhabrot(
+	OP_Network* parent,
+	const char* name,
+	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
+
+/// Public Constructor
 OP_Node *
-COP2_FullImageFilter::myConstructor(OP_Network      *net,
-	const char      *name,
-	OP_Operator     *op)
+COP2_Buddhabrot::myConstructor(
+	OP_Network* net,
+	const char* name,
+	OP_Operator* op)
 {
-	return new COP2_FullImageFilter(net, name, op);
+	return new COP2_Buddhabrot(net, name, op);
 }
-COP2_FullImageFilter::COP2_FullImageFilter(OP_Network *parent,
-	const char *name,
-	OP_Operator *entry)
-	: COP2_MaskOp(parent, name, entry)
+
+/// Declare Parm Names
+static PRM_Name nameScale("scale", "Scale");
+static PRM_Name nameOffset("offset", "Offset");
+static PRM_Name nameRotate("rotate", "Rotate");
+static PRM_Name nameXOrd("xOrd", "Xform Order");
+static PRM_Name nameIter("iter", "Iterations");
+static PRM_Name namePow("pow", "Exponent");
+static PRM_Name nameBailout("bailout", "Bailout");
+static PRM_Name nameJDepth("jdepth", "Julia Depth");
+static PRM_Name nameJOffset("joffset", "Julia Offset");
+static PRM_Name nameBlackhole("blackhole", "Blackhole");
+static PRM_Name nameSep1("sep1", "sep1");
+static PRM_Name nameSep2("sep2", "sep2");
+static PRM_Name nameSep3("sep3", "sep3");
+static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
+static PRM_Name nameScalePivot("spivot", "Scale Pivot");
+
+
+/// ChoiceList Lists
+static PRM_Name xordMenuNames[] =
 {
-	// sets the default scope to only affect color and alpha. The global
-	// default is 'true, true, "*"', which affects color, alpha and all
-	// extra planes.
-	setDefaultScope(true, true, 0);
+	PRM_Name("TRS", "Translate Rotate Scale"),
+	PRM_Name("TSR", "Translate Scale Rotate"),
+	PRM_Name("RTS", "Rotate Translate Scale"),
+	PRM_Name("RST", "Rotate Scale Translate"),
+	PRM_Name("STR", "Scale Translate Rotate"),
+	PRM_Name("SRT", "Scale Rotate Translate"),
+	PRM_Name(0)
+};
+
+static PRM_ChoiceList xOrdMenu
+(
+(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+::xordMenuNames
+);
+
+/// Declare Parm Defaults
+static PRM_Default defaultScale{ 500000 };
+static PRM_Default defaultIter{ 50 };
+static PRM_Default defaultPow{ 2 };
+static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
+static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
+static PRM_Default defaultOffset[] = { -1000, -750 };
+static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
+static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
+
+/// Deflare Parm Ranges
+static PRM_Range rangeScale
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
+};
+
+static PRM_Range rangeRotate
+{
+	PRM_RangeFlag::PRM_RANGE_UI, -180,
+	PRM_RangeFlag::PRM_RANGE_UI, 180
+};
+
+static PRM_Range rangeIter
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_UI, 200
+};
+
+
+static PRM_Range rangePow
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 10
+};
+
+static PRM_Range rangeBailout
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 4
+};
+
+static PRM_Range rangeJDepth
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 5
+};
+
+/// Create Template List
+PRM_Template
+COP2_Buddhabrot::myTemplateList[]
+{
+	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
+	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
+	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
+	PRM_Template()
+};
+
+/// Assign Template Pair of node to generator
+OP_TemplatePair COP2_Buddhabrot::myTemplatePair
+(
+	COP2_Buddhabrot::myTemplateList,
+	&COP2_Generator::myTemplatePair
+);
+
+/// Assign empty variable pairing
+OP_VariablePair COP2_Buddhabrot::myVariablePair
+(
+	0,
+&COP2_Node::myVariablePair
+);
+
+/// Gets Sequence information.
+TIL_Sequence*
+COP2_Buddhabrot::cookSequenceInfo(OP_ERROR& error)
+{
+	COP2_Generator::cookSequenceInfo(error);
+
+	return &mySequence;
 }
-COP2_FullImageFilter::~COP2_FullImageFilter()
+
+// TODO: Move much of this code into the Mandelbrot class, maybe overload the calculate method.
+std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, const COMPLEX& c, int bound_iters)
 {
-	;
-}
-// -----------------------------------------------------------------------
-COP2_ContextData *
-COP2_FullImageFilter::newContextData(const TIL_Plane * /*plane*/,
-	int /*arrayindex*/,
-	float t, int xres, int /*yres*/,
-	int /*thread*/, int /*maxthreads*/)
-{
-	// This method evaluates and stashes parms and any other data that
-	// needs to be setup. Parms cannot be evaluated concurently in separate
-	// threads. This function is guaranteed to be single threaded.
-	cop2_FullImageFilterData *sdata = new cop2_FullImageFilterData();
-	int index = mySequence.getImageIndex(t);
-	// xres may not be the full image res (if cooked at 1/2 or 1/4). Because
-	// we're dealing with a size, scale down the size based on our res.
-	// getXScaleFactor will return (xres / full_xres). 
-	sdata->mySize = SIZE(t) * getXScaleFactor(xres)*getFrameScopeEffect(index);
+	std::vector<COMPLEX> points;
+	points.reserve(bound_iters);
 
-	return sdata;
-}
-void
-COP2_FullImageFilter::computeImageBounds(COP2_Context &context)
-{
-	// if your algorthim increases the image bounds (like blurring or
-	// transforming) you can set the bounds here.
-	// if you need to access your context data for some information to
-	// compute the bounds (like blur size), you can do it like:
-	//   cop2_FullImageFilterData *sdata =
-	//                (cop2_FullImageFilterData *) context.data();
-	// SAMPLES:
+	COMPLEX z{ 0 };
+	int n{ 0 };
 
-	// expands or contracts the bounds to the visible image resolution
-	context.setImageBounds(0, 0, context.myXres - 1, context.myYres - 1);
-	// just copies the input bounds (ie this node don't modify it)
-	//copyInputBounds(0, context);
-	// expands the input bounds by 5 pixels in each direction.
-	//   copyInputBounds(0, context);
-	//   int x1,y1,x2,y2;
-	//   context.getImageBounds(x1,y1,x2,y2);
-	//   context.setImageBounds(x1-5, y1-5, x2+5, y2+5);
-
-}
-void
-COP2_FullImageFilter::getInputDependenciesForOutputArea(
-	COP2_CookAreaInfo           &output_area,
-	const COP2_CookAreaList     &input_areas,
-	COP2_CookAreaList           &needed_areas)
-{
-	COP2_CookAreaInfo   *area;
-	// for a given output area and plane, set up which input planes and areas
-	// it is dependent on. Basically, if you call inputTile or inputRegion in
-	// the cook, for each call you need to make a dependency here.
-	// this makes a dependency on the input plane corresponding to the output
-	// area's plane. 
-	area = makeOutputAreaDependOnInputPlane(0,
-		output_area.getPlane().getName(),
-		output_area.getArrayIndex(),
-		output_area.getTime(),
-		input_areas, needed_areas);
-
-	// Always check for null before setting the bounds of the input area.
-	// in this case, all of the input area is required.
-	if (area)
-		area->enlargeNeededAreaToBounds();
-	// If the node depends on its input counterpart PLUS another plane,
-	// we need to add a dependency on that plane as well. In this case, we
-	// add an extra dependency on alpha (same input, same time).
-	area = makeOutputAreaDependOnInputPlane(0,
-		getAlphaPlaneName(), 0,
-		output_area.getTime(),
-		input_areas, needed_areas);
-	// again, we'll use all of the area.
-	if (area)
-		area->enlargeNeededAreaToBounds();
-	getMaskDependency(output_area, input_areas, needed_areas);
-
-}
-OP_ERROR
-COP2_FullImageFilter::doCookMyTile(COP2_Context &context, TIL_TileList *tiles)
-{
-	// normally, this is where you would process your tile. However,
-	// cookFullImage() is a convenience function which assembles a full image
-	// and does all the proper locking for you, then calls your filter
-	// function.
-
-	cop2_FullImageFilterData *sdata =
-		static_cast<cop2_FullImageFilterData *>(context.data());
-	return cookFullImage(context, tiles, &COP2_FullImageFilter::filter,
-		sdata->myLock, true);
-}
-OP_ERROR
-COP2_FullImageFilter::filter(COP2_Context &context,
-	const TIL_Region *input,
-	TIL_Region *output,
-	COP2_Node  *me)
-{
-	// since I don't like typing me-> constantly, just call a member function
-	// from this static function. 
-	return ((COP2_FullImageFilter*)me)->filterImage(context, input, output);
-}
-OP_ERROR
-COP2_FullImageFilter::filterImage(COP2_Context &context,
-	const TIL_Region *input,
-	TIL_Region *output)
-{
-	// retrieve my context data information (built in newContextData).
-	cop2_FullImageFilterData *sdata =
-		(cop2_FullImageFilterData *)context.data();
-	// currently we have a blank output region, and an input region filled with
-	// whatever plane we've been told to cook. Both are in the same format, as
-	// this node didn't alter the data formats of any planes.
-
-	// we need the alpha plane, so grab it (generally, you'd want to check if
-	// context.myPlane->isAlphaPlane() first, and then just use the 'input'
-	// region if we were cooking alpha, but for simplicity's sake we won't
-	// bother). Oh, and we'll grab it as floating point.
-	// make a copy of the alpha plane & set it to FP format.
-	TIL_Plane alphaplane(*mySequence.getPlane(getAlphaPlaneName()));
-	alphaplane.setFormat(TILE_FLOAT32);
-	alphaplane.setScoped(1);
-
-	TIL_Region *alpha = inputRegion(0, context,    // input 0
-		&alphaplane, 0, // FP alpha plane.
-		context.getTime(), // at current cook time
-		0, 0, // lower left corner
-		context.myXsize - 1, context.myYsize - 1); //UR
-	if (!alpha)
+	while (n < bound_iters)
 	{
-		// something bad happened, possibly error, possibly user interruption.
-		return UT_ERROR_ABORT;
-	}
-	int comp;
-	int x, y;
-	char *idata, *odata;
-	float *adata;
-	// my silly algorithm is as follows: it will take the value of the alpha
-	// plane multiplied by the user defined size and move the source point
-	// up to that distance away from its original location. It just adds the
-	// pixel over any pixel at that location, for simplicities sake.
-	adata = (float *)alpha->getImageData(0);
+		z = fractal->calculate_z(z, c);
 
-	// go component by component. PLANE_MAX_VECTOR_SIZE = 4.
-	for (comp = 0; comp < PLANE_MAX_VECTOR_SIZE; comp++)
+		if (abs(z) > fractal->bailout)
+			break;
+
+		points.emplace_back(z);
+		n++;
+	};
+
+	return points;
+}
+
+/// Stashes data for cooking image
+COP2_ContextData*
+COP2_Buddhabrot::newContextData
+
+(
+	const TIL_Plane*,  // planename
+	int,               // array index
+	float t,           // Not actually sure, maybe tile?
+	int image_sizex,         // xsize
+	int image_sizey,         // ysize
+	int,               // thread
+	int                // max_num_threads
+)
+{
+	// Create new empty data object.
+	COP2_BuddhabrotData* data{ new COP2_BuddhabrotData };
+
+	// Space Xform Attributes
+	double scale = evalFloat(nameScale.getToken(), 0, t);
+	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
+	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
+	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
+	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
+	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
+	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
+	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
+
+	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
+
+	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
+	// The UI artificially inflates the numbers to make them more user friendly at
+	// shallow depths.
+	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
+	offset_x = offset_x / 1000;
+	offset_y = offset_y / 1000;
+
+	// Set the size of the fractal space relative to this context's size.
+	data->space.set_image_size(image_sizex, image_sizey);
+
+
+	// Sets the base xform of the fractal from the interface that will be calculated by
+	// The pixels.
+	data->space.set_xform(
+		offset_x,
+		offset_y,
+		rotate,
+		scale,
+		scale,
+		rotatePivot_x,
+		rotatePivot_y,
+		scalePivot_x,
+		scalePivot_y,
+		xOrd);
+
+	// Fractal Attributes
+	int iter = evalInt(nameIter.getToken(), 0, t);
+	double pow = evalFloat(namePow.getToken(), 0, t);
+	double bailout = evalFloat(nameBailout.getToken(), 0, t);
+	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
+	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
+	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
+	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
+
+	data->fractal = Mandelbrot(
+		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
+
+	return data;
+}
+
+/// Creates the image, but we are going to hijack with 'cookFullImage'
+OP_ERROR
+COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
+{
+	COP2_BuddhabrotData *data =
+		static_cast<COP2_BuddhabrotData *>(context.data());
+
+	TIL_Tile* tile;
+	int planeIndex;
+
+	int size_x, size_y, offset_x, offset_y;
+	int tilePixelIndex;
+	WORLDPIXELCOORDS tile_min, tile_max;
+
+	float *dest = new float[tileList->mySize]{ 0 };
+	
+	std::mt19937 rng;
+
+	float seed = 666; // TODO: Move to interface
+	int num_samples = 10000;  // TODO: Move to interface
+
+	FOR_EACH_UNCOOKED_TILE(tileList, tile, planeIndex)
 	{
-		idata = (char *)input->getImageData(comp);
-		odata = (char *)output->getImageData(comp);
+		if (planeIndex == 0)  // First Plane only
+		{
+			tile->getSize(size_x, size_y);
+			tile->getOffset(offset_x, offset_y);
 
-		if (odata)
-		{
-			// since we aren't guarenteed to write to every pixel with this
-			// 'algorithm', the output data array needs to be zeroed. 
-			memset(odata, 0, context.myXsize*context.myYsize * sizeof(float));
-		}
-		if (idata && odata)
-		{
-			// myXsize & myYsize are the actual sizes of the large canvas,
-			// which may be different from the resolution (myXres, myYres).
-			for (y = 0; y < context.myYsize; y++)
-				for (x = 0; x < context.myXsize; x++)
+			CC::calculate_tile_minmax(tile, tile_min, tile_max);
+
+			std::uniform_int_distribution<int> realDistribution(tile_min.first, tile_max.first);
+			std::uniform_int_distribution<int> imagDistribution(tile_min.second, tile_max.second);
+
+			for (exint i_sample = 0; i_sample < num_samples; ++i_sample)
+			{
+				rng.seed(i_sample + seed);
+				WORLDPIXELCOORDS samplePixel(realDistribution(rng), imagDistribution(rng));
+				COMPLEX sampleCoords = data->space.get_fractal_coords(samplePixel);
+				std::vector<COMPLEX> points = buddhabrotPoints(&data->fractal, sampleCoords, data->fractal.maxiter);
+
+				for (COMPLEX &point : points)
 				{
-					float *pix = (float *)idata;
-					float *out = (float *)odata;
-					unsigned seed = x * context.myYsize + y;
-					float dx = SYSrandomZero(seed);
-					float dy = SYSrandomZero(seed);
-					int idx, idy;
-					int nx, ny;
-					dx *= adata[x + y * context.myXsize] * sdata->mySize;
-					dy *= adata[x + y * context.myXsize] * sdata->mySize;
-					idx = (int)SYSrint(dx);
-					idy = (int)SYSrint(dy);
-					nx = x + idx;
-					ny = y + idy;
-					if (nx < 0 || nx >= context.myXsize ||
-						ny < 0 || ny >= context.myYsize)
-						continue;
-					pix += (x + y * context.myXsize);
-					out += (nx + ny * context.myXsize);
-
-					*out = *out + *pix;
+					/*if (point.real() >= tile_min.first &&
+						point.real() <= tile_max.first &&
+						point.imag() >= tile_min.second &&
+						point.imag() <= tile_max.second)*/
+					{
+						tilePixelIndex = static_cast<int>(
+							(samplePixel.first - offset_x) +
+							((samplePixel.second - offset_y) * size_x));
+						++dest[tilePixelIndex];
+					}
 				}
+			}
 		}
-	}
-
-	// It is important to release regions and tiles you request with
-	// inputRegion & inputTile, otherwise they will just sit around until the
-	// end of the cook taking up memory. If someone puts down many of your
-	// nodes in a network, this could be problematic.
-	releaseRegion(alpha);
-	// input and output are allocated & released by cookFullImage, so don't
-	// release them.
+		else  // If not first plane, set to black
+		{
+			for (exint i = 0; i < size_x * size_y; ++i)
+			{
+				dest[i] = 0;
+			}
+		}
+		writeFPtoTile(tileList, dest, planeIndex);
+	};
 
 	return error();
 }
+
+/// Destructor
+COP2_Buddhabrot::~COP2_Buddhabrot() {}
+
+/// Destructor
+COP2_BuddhabrotData::~COP2_BuddhabrotData() {}

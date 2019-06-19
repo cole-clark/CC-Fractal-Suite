@@ -10,6 +10,7 @@
 #include <TIL/TIL_Tile.h>
 #include <TIL/TIL_TileList.h>
 #include <UT/UT_Matrix3.h>
+#include <TIL/TIL_Tile.h>
 
 #include <utility>
 
@@ -19,6 +20,13 @@ namespace CC
 {
 	///Get the Houdini rstOrder enum value from the interface
 	RSTORDER get_rst_order(const int val);
+
+	/// Calculates the minimum and maximum pixel coords for the
+	/// Tile, and returns as pixel coords
+	void calculate_tile_minmax(
+		TIL_Tile* tile,
+		WORLDPIXELCOORDS& min,
+		WORLDPIXELCOORDS& max);
 
 	WORLDPIXELCOORDS calculate_world_pixel(
 		TIL_TileList* tiles,

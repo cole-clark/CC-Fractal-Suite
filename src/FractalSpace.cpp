@@ -9,7 +9,6 @@
 
 #include "FractalSpace.h"
 
-
 RSTORDER CC::get_rst_order(const int val)
 {
 	auto order = RSTORDER();
@@ -18,6 +17,26 @@ RSTORDER CC::get_rst_order(const int val)
 	if (val <= 5)
 		order = static_cast<RSTORDER>(val);
 	return order;
+}
+
+/// Calculates the minimum and maximum pixel positions for a given tile.
+void CC::calculate_tile_minmax(
+	TIL_Tile* tile,
+	WORLDPIXELCOORDS& min,
+	WORLDPIXELCOORDS& max)
+{
+	int offset_x, offset_y;
+	tile->getOffset(offset_x, offset_y);
+
+	int size_x, size_y;
+	tile->getSize(size_x, size_y);
+
+	min = WORLDPIXELCOORDS(offset_x, offset_y);
+
+	max = WORLDPIXELCOORDS(
+		offset_x + size_x - 1,
+		offset_y + size_y - 1);
+
 }
 
 /// Calculates the 'tile origin', or the pixel number for where the tile 's first pixel is.
