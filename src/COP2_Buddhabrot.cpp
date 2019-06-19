@@ -282,8 +282,10 @@ COP2_Buddhabrot::newContextData
 
 
 	int samples = evalInt(nameSamples.getToken(), 0, t);
-	data->samples = samples;
+	int seed = evalFloat(nameSeed.getToken(), 0, t);
 
+	data->samples = samples;
+	data->seed = seed;
 	return data;
 }
 
@@ -305,8 +307,6 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	
 	std::mt19937 rng;
 
-	float seed = 666; // TODO: Move to interface
-
 	FOR_EACH_UNCOOKED_TILE(tileList, tile, planeIndex)
 	{
 		if (planeIndex == 0)  // First Plane only
@@ -321,7 +321,7 @@ COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 			for (exint i_sample = 0; i_sample < data->samples; ++i_sample)
 			{
-				rng.seed(i_sample + seed);
+				rng.seed(i_sample + data->seed);
 				WORLDPIXELCOORDS samplePixel(realDistribution(rng), imagDistribution(rng));
 				COMPLEX sampleCoords = data->space.get_fractal_coords(samplePixel);
 				std::vector<COMPLEX> points = buddhabrotPoints(&data->fractal, sampleCoords, data->fractal.maxiter);

@@ -55,6 +55,7 @@ namespace CC
 		Mandelbrot fractal;
 		UT_Lock myLock;
 		int samples;
+		fpreal seed;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData();
