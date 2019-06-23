@@ -158,17 +158,20 @@ CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 	double r_image_pivy_size = _r_pivy * image_y / (double)image_x;
 	double s_image_pivy_size = _s_pivy * image_y / (double)image_x;
 
+	m.xform(rstorder, -_tx, -_ty);
+
 	// Pre-xform only scale and translate.
-	m.xform(
+	m.xform(rstorder, 0, 0, 0, 1.0 / _sx, 1.0 / _sy, _s_pivx, _s_pivy * s_image_pivy_size);
+	/*m.xform(
 		rstorder, -_tx, -_ty, 0, 1.0/_sx, 1.0 / _sy,
 		_s_pivx,
-		_s_pivy * s_image_pivy_size);
+		_s_pivy * s_image_pivy_size);*/
 
 	// XForm with only rotate and rotate pivot.
 	m.xform(
 		rstorder, 0, 0, -_r, 1, 1,
-		post_matrix(2, 0) + (_sx * _r_pivx),
-		post_matrix(2, 1) + (_sy * r_image_pivy_size));
+		m(2, 0) + (_sx * _r_pivx),
+		m(2, 1) + (_sy * r_image_pivy_size));
 
 	int x = static_cast<int>(m(2, 0) * image_x);
 	int y = static_cast<int>(m(2, 1) * image_y);
