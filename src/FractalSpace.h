@@ -44,6 +44,7 @@ namespace CC
 	public:
 
 		FractalSpace();
+		FractalSpace(int x, int y);
 
 		void set_xform(
 			double tx,

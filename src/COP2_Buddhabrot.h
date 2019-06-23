@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <UT/UT_Lock.h>
 #include <COP2/COP2_MaskOp.h>
+#include "Mandelbrot.h"
 
 namespace CC 
 {
@@ -47,7 +47,8 @@ namespace CC
 		virtual void getMaxNumThreadsInCook(COP2_Context &,
 			int &maxp, int &maxn, int &op) const
 		{
-			maxp = 1; maxn = op = TIL_MAX_THREADS;
+			maxp = 1;
+			maxn = op = TIL_MAX_THREADS;
 		}
 		// For the output area (an area of a plane belonging to this node)
 		// and a set of input areas, determine which input areas and which
@@ -56,6 +57,10 @@ namespace CC
 			COP2_CookAreaInfo &output_area,
 			const COP2_CookAreaList &input_areas,
 			COP2_CookAreaList &needed_areas);
+
+		std::vector<COMPLEX> buddhabrotPoints(
+			Mandelbrot* fractal, const COMPLEX& c, int nIterations);
+
 	protected:
 		virtual ~COP2_Buddhabrot();
 		virtual COP2_ContextData    *newContextData(const TIL_Plane *p,
@@ -75,12 +80,14 @@ namespace CC
 			OP_Operator *entry);
 		fpreal      SIZE(fpreal t) { return evalFloat("size", 0, t); }
 	};
-	class COP2_BuddhabrotData : public COP2_ContextData
+	struct COP2_BuddhabrotData : public COP2_ContextData
 	{
-	public:
+		Mandelbrot fractal;
+		FractalSpace space;
+
 		COP2_BuddhabrotData() : mySize(0) {}
 		virtual     ~COP2_BuddhabrotData() {}
 		float        mySize;
 		UT_Lock      myLock;
 	};
-} // End HDK_Sample namespace
+}

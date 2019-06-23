@@ -5,6 +5,8 @@
 	Code for CC Buddhabrot Generator Cop Node.
  */
 
+#include <random>
+
 #include <OP/OP_Context.h>
 #include <OP/OP_OperatorTable.h>
 #include <SYS/SYS_Math.h>
@@ -71,14 +73,39 @@ COP2_Buddhabrot::~COP2_Buddhabrot()
 COP2_ContextData *
 COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	int /*arrayindex*/,
-	float t, int xres, int /*yres*/,
+	float t, int xres, int yres,
 	int /*thread*/, int /*maxthreads*/)
 {
 	// This method evaluates and stashes parms and any other data that
 	// needs to be setup. Parms cannot be evaluated concurently in separate
 	// threads. This function is guaranteed to be single threaded.
 	COP2_BuddhabrotData *sdata = new COP2_BuddhabrotData();
+
+
+	// TODO: Move to interface
+	float offset_x = -1000 / 1000;
+	float offset_y = -750 / 1000;
+	float rotate = 0;
+	float scale = 0;
+	float rotatePivot_x, rotatePivot_y = 0.5;
+	float scalePivot_x, scalePivot_y = 0.5;
+	RSTORDER xOrd = RSTORDER::RST;
+
+	sdata->space.set_image_size(xres, yres);
+	sdata->space.set_xform(
+		offset_x,
+		offset_y,
+		rotate,
+		scale,
+		scale,
+		rotatePivot_x,
+		rotatePivot_y,
+		scalePivot_x,
+		scalePivot_y,
+		xOrd);
+
 	int index = mySequence.getImageIndex(t);
+	
 	// xres may not be the full image res (if cooked at 1/2 or 1/4). Because
 	// we're dealing with a size, scale down the size based on our res.
 	// getXScaleFactor will return (xres / full_xres). 
@@ -143,6 +170,38 @@ COP2_Buddhabrot::getInputDependenciesForOutputArea(
 	getMaskDependency(output_area, input_areas, needed_areas);
 
 }
+std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, const COMPLEX & c, int nIterations)
+{
+	std::vector<COMPLEX> points;
+	points.reserve(nIterations);
+
+	COMPLEX z{ 0 };
+	int n{ 0 };
+
+	while (n < nIterations)
+	{
+		++n;
+		z = fractal->calculate_z(z, c);
+
+		if (abs(z) > fractal->bailout)
+			break;
+
+		points.push_back(z);
+
+	};
+
+	// Return nothing if the point is bounded within the mandelbrot set
+	if (fractal->blackhole)
+	{
+		if (n == nIterations)
+			return std::vector<COMPLEX>();
+	}
+
+	return points;
+}
+
+
+
 OP_ERROR
 COP2_Buddhabrot::doCookMyTile(COP2_Context &context, TIL_TileList *tiles)
 {
@@ -179,6 +238,16 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 	int x, y;
 	char *idata, *odata;
 
+
+	// TODO: Promote these attribs
+	int seed = 420;
+	exint samples = 50000;
+	exint iterations = 50;
+
+	std::mt19937 rng;
+
+	rng.seed(seed);  // TODO: stach seed parm to seed data
+
 	// For each image plane.
 	for (comp = 0; comp < PLANE_MAX_VECTOR_SIZE; comp++)
 	{
@@ -192,28 +261,67 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 			// 'algorithm', the output data array needs to be zeroed. 
 			memset(odata, 0, context.myXsize*context.myYsize * sizeof(float));
 		}
+
 		if (idata && odata)
 		{
-			// myXsize & myYsize are the actual sizes of the large canvas,
-			// which may be different from the resolution (myXres, myYres).
-			for (y = 0; y < context.myYsize; y++)
-				for (x = 0; x < context.myXsize; x++)
+			if (comp == 0) // First plane only
+			{
+				// Choose a random x, y coordinate along the image plane.
+				// The '0's refer to lower left corner, the second argument the upper right
+				std::uniform_int_distribution<int> realDistribution(0, context.myXsize-1);
+				std::uniform_int_distribution<int> imagDistribution(0, context.myYsize-1);
+
+				for (exint idxSample=0; idxSample < samples; idxSample++)
 				{
-					// Set the current pixel
-					int currentPixel = x + y * context.myXsize;
-					// Declare output data and set to evaluate every pixel
-					float *outputPixel = (float *)odata;
-					outputPixel += (currentPixel);
-					
-					// Declare the value of the pixel
-					float *inputPixel = (float *)idata;
-					inputPixel += (currentPixel);  // Set pointer to current pixel
-					*inputPixel += 0.5;  // Add to value from input
+					WORLDPIXELCOORDS sample(realDistribution(rng), imagDistribution(rng));
+					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
-					// Add pix value to output position
-					*outputPixel = *outputPixel + *inputPixel;
+					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, iterations);
 
+					for (COMPLEX& point : points)
+					{
+						float *outputPixel = (float *)odata;
+
+						// The 2's here refer to min/max. Leaving default for now.
+						//if (point.real() <= 2, point.real() >= 0 &&
+						//	point.imag() <= 2, point.imag() >= 0)
+						{
+							int sample_x = static_cast<int>(point.real() * context.myXsize);
+							int sample_y = static_cast<int>(point.imag() * context.myYsize);
+
+							int samplePixel = sample_x + (sample_y * context.myXsize);
+							if (samplePixel >= 0 && samplePixel <= context.myXsize * context.myYsize)
+							{
+								outputPixel += samplePixel;
+								++*outputPixel;
+							}
+						}
+					}
 				}
+			}
+			else
+			{
+				// myXsize & myYsize are the actual sizes of the large canvas,
+				// which may be different from the resolution (myXres, myYres).
+				for (y = 0; y < context.myYsize; y++)
+					for (x = 0; x < context.myXsize; x++)
+					{
+						// Set the current pixel
+						int currentPixel = x + y * context.myXsize;
+						// Declare output data and set to evaluate every pixel
+						float *outputPixel = (float *)odata;
+						outputPixel += (currentPixel);
+
+						// Declare the value of the pixel
+						float *inputPixel = (float *)idata;
+						inputPixel += (currentPixel);  // Set pointer to current pixel
+						*inputPixel += 0.5;  // Add to value from input
+
+						// Add pix value to output position
+						*outputPixel = *outputPixel + *inputPixel;
+
+					}
+			}
 		}
 	}
 

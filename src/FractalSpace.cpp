@@ -64,6 +64,11 @@ CC::FractalSpace::FractalSpace()
 	post_matrix.identity();
 }
 
+CC::FractalSpace::FractalSpace(int x, int y)
+{
+	set_image_size(x, y);
+}
+
 /// Constructs the matrix. from fed parameters
 void CC::FractalSpace::set_xform(
 	double tx,
