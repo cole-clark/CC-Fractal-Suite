@@ -16,6 +16,7 @@
 
 #include "register.h"
 
+using namespace CC;
 
 /// Installs the Fractal Generator Cop.
 /// Houdini enforces this name for adding Cop2 Nodes.
@@ -25,35 +26,35 @@ void newCop2Operator(OP_OperatorTable* table)
 	OP_Operator* mandelbrot = new OP_Operator(
 		"cc::fractal_mandelbrot", // Node Name
 		"CC Fractal Mandelbrot", // Pretty Name
-		CC::COP2_Mandelbrot::myConstructor,
-		&CC::COP2_Mandelbrot::myTemplatePair,
+		COP2_Mandelbrot::myConstructor,
+		&COP2_Mandelbrot::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs
-		&CC::COP2_Mandelbrot::myVariablePair,
+		&COP2_Mandelbrot::myVariablePair,
 		OP_FLAG_GENERATOR);
 
 	// Creates the Fractal Matte Definition
 	OP_Operator* fractalMatte = new OP_Operator(
 		"cc::fractal_matte",
 		"CC Fractal Matte",
-		CC::COP2_FractalMatte::myConstructor,
-		&CC::COP2_FractalMatte::myTemplatePair,
+		COP2_FractalMatte::myConstructor,
+		&COP2_FractalMatte::myTemplatePair,
 		1,
 		2, // optional mask input.
-		&CC::COP2_FractalMatte::myVariablePair,
+		&COP2_FractalMatte::myVariablePair,
 		0, // not generator
-		CC::COP2_FractalMatte::myInputLabels);
+		COP2_FractalMatte::myInputLabels);
 
 
 	OP_Operator* buddhabrot = new OP_Operator("cc::fractal_buddhabrot",
 		"CC Fractal Buddhabrot",
-		CC::COP2_Buddhabrot::myConstructor,
-		&CC::COP2_Buddhabrot::myTemplatePair,
+		COP2_Buddhabrot::myConstructor,
+		&COP2_Buddhabrot::myTemplatePair,
 		0,
-		0, // optional mask input.
-		&CC::COP2_Buddhabrot::myVariablePair,
+		2, // optional mask input.
+		&COP2_Buddhabrot::myVariablePair,
 		0, // not generator
-		CC::COP2_Buddhabrot::myInputLabels);
+		COP2_Buddhabrot::myInputLabels);
 
 	// Add to tab path.
 	UT_String menuPath{ "Fractal" };

@@ -99,6 +99,7 @@ void CC::FractalSpace::set_xform(
 
 /// Return the fractal coordinates, which use the size of the image as a relative
 /// Size. The scale is 0-1 in the x axis of the image.
+/// TODO: This method may not work.
 COMPLEX
 CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 {
