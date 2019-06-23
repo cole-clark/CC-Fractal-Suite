@@ -41,7 +41,25 @@ namespace CC
 			float t, int xres, int yres, int thread, int max_threads);
 
 		/// Create the image data for a single tile list -- multithreaded call
+	// static cookFullImage callback.
+		static OP_ERROR     generateStatic(COP2_Context &context,
+			const TIL_Region *input,
+			TIL_Region *output,
+			COP2_Node  *me);
+		// non static version, called by filter.
+		OP_ERROR generate(COP2_Context &context,
+			TIL_Region *output);
+
 		virtual OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tilelist);
+
+		virtual OP_ERROR    doCookMyTile(COP2_Context &context,
+			TIL_TileList *tiles);
+
+		virtual void getMaxNumThreadsInCook(COP2_Context &,
+			int &maxp, int &maxn, int &op) const
+		{
+			maxp = 1; maxn = op = TIL_MAX_THREADS;
+		}
 
 		/// Destructor
 		virtual ~COP2_Buddhabrot();

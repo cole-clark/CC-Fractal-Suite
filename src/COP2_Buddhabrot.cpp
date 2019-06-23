@@ -289,67 +289,75 @@ COP2_Buddhabrot::newContextData
 	return data;
 }
 
-/// Creates the image, but we are going to hijack with 'cookFullImage'
+OP_ERROR
+COP2_Buddhabrot::generateStatic(COP2_Context &context,
+	const TIL_Region *input,
+	TIL_Region *output,
+	COP2_Node  *me)
+{
+	// since I don't like typing me-> constantly, just call a member function
+	// from this static function. 
+	return ((COP2_Buddhabrot*)me)->generate(context, output);
+}
+
+
+OP_ERROR
+COP2_Buddhabrot::generate(COP2_Context &context,
+	TIL_Region *output)
+{
+
+	TIL_TileList* tileList = output->getTilesFromRegion();
+	TIL_Tile* tile;
+	int tileIndex;
+
+	float* dest = new float[tileList->mySize]{ 0.5 };
+
+	FOR_EACH_UNCOOKED_TILE(tileList, tile, tileIndex)
+	{
+		writeFPtoTile(tileList, dest, tileIndex);
+	}
+
+	return error();
+}
+
+
+/// Creates the image, as a test
 OP_ERROR
 COP2_Buddhabrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
-	COP2_BuddhabrotData *data =
-		static_cast<COP2_BuddhabrotData *>(context.data());
+	float* dest = new float[tileList->mySize]{ 0.5 };
+
+	dest[0] = 1;
+	dest[1] = 2;
+	dest[2] = 3;
+	dest[4] = 4;
+	dest[5] = 5;
 
 	TIL_Tile* tile;
-	int planeIndex;
+	int tileIndex;
 
-	int size_x, size_y, offset_x, offset_y;
-	int tilePixelIndex;
-	WORLDPIXELCOORDS tile_min, tile_max;
-
-	float *dest = new float[tileList->mySize]{ 0 };
-	
-	std::mt19937 rng;
-
-	FOR_EACH_UNCOOKED_TILE(tileList, tile, planeIndex)
+	FOR_EACH_UNCOOKED_TILE(tileList, tile, tileIndex)
 	{
-		if (planeIndex == 0)  // First Plane only
-		{
-			tile->getSize(size_x, size_y);
-			tile->getOffset(offset_x, offset_y);
+		writeFPtoTile(tileList, dest, tileIndex);
+	}
 
-			CC::calculate_tile_minmax(tile, tile_min, tile_max);
-
-			std::uniform_int_distribution<int> realDistribution(tile_min.first, tile_max.first);
-			std::uniform_int_distribution<int> imagDistribution(tile_min.second, tile_max.second);
-
-			for (exint i_sample = 0; i_sample < data->samples; ++i_sample)
-			{
-				rng.seed(i_sample + data->seed);
-				WORLDPIXELCOORDS samplePixel(realDistribution(rng), imagDistribution(rng));
-				COMPLEX sampleCoords = data->space.get_fractal_coords(samplePixel);
-				std::vector<COMPLEX> points = buddhabrotPoints(&data->fractal, sampleCoords, data->fractal.maxiter);
-
-				for (COMPLEX &point : points)
-				{
-					/* TODO: Write a method that takes a set of complex coods,
-					and converts them BACK to WORLDPIXELCOORDS.
-					*/
-					tilePixelIndex = static_cast<int>(
-						(samplePixel.first - offset_x) +
-						((samplePixel.second - offset_y) * size_x));
-					++dest[tilePixelIndex];
-
-				}
-			}
-		}
-		else  // If not first plane, set to black
-		{
-			for (exint i = 0; i < size_x * size_y; ++i)
-			{
-				dest[i] = 0;
-			}
-		}
-		writeFPtoTile(tileList, dest, planeIndex);
-	};
+	COP2_Buddhabrot::doCookMyTile(context, tileList);
 
 	return error();
+}
+
+OP_ERROR
+COP2_Buddhabrot::doCookMyTile(COP2_Context &context, TIL_TileList *tiles)
+{
+	// normally, this is where you would process your tile. However,
+	// cookFullImage() is a convenience function which assembles a full image
+	// and does all the proper locking for you, then calls your filter
+	// function.
+	
+	COP2_BuddhabrotData *sdata =
+		static_cast<COP2_BuddhabrotData *>(context.data());
+	return cookFullImage(context, tiles, &COP2_Buddhabrot::generateStatic,
+		sdata->myLock, true);
 }
 
 /// Destructor
