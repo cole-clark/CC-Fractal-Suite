@@ -40,6 +40,15 @@ namespace CC
 		int image_y{ 0 };
 		UT_Matrix3 post_matrix;
 		RSTORDER rstorder{ RSTORDER::TRS };
+		double _tx;
+		double _ty;
+		double _r;
+		double _sx;
+		double _sy;
+		double _r_pivx;
+		double _r_pivy;
+		double _s_pivx;
+		double _s_pivy;
 
 	public:
 
@@ -59,6 +68,9 @@ namespace CC
 			RSTORDER xord);
 
 		COMPLEX get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
+		COMPLEX get_fractal_coords(COMPLEX pixel_coords);
+		WORLDPIXELCOORDS get_pixel_coords(COMPLEX fractal_coords);
+
 
 		///Returns in fractal coords the min/max of the image.
 		COMPLEX get_minimum();

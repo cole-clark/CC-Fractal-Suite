@@ -89,5 +89,7 @@ namespace CC
 		virtual     ~COP2_BuddhabrotData() {}
 		float        mySize;
 		UT_Lock      myLock;
+		int seed;
+		exint samples;
 	};
 }

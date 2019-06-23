@@ -22,21 +22,132 @@
 
 using namespace CC;
 
-COP_MASK_SWITCHER(1, "Sample Full Image Filter");
-static PRM_Name names[] =
+COP_MASK_SWITCHER(18, "Fractal");
+
+
+/// Declare Parm Names
+static PRM_Name nameScale("scale", "Scale");
+static PRM_Name nameOffset("offset", "Offset");
+static PRM_Name nameRotate("rotate", "Rotate");
+static PRM_Name nameXOrd("xOrd", "Xform Order");
+static PRM_Name nameIter("iter", "Iterations");
+static PRM_Name namePow("pow", "Exponent");
+static PRM_Name nameBailout("bailout", "Bailout");
+static PRM_Name nameJDepth("jdepth", "Julia Depth");
+static PRM_Name nameJOffset("joffset", "Julia Offset");
+static PRM_Name nameBlackhole("blackhole", "Blackhole");
+static PRM_Name nameSep1("sep1", "sep1");
+static PRM_Name nameSep2("sep2", "sep2");
+static PRM_Name nameSep3("sep3", "sep3");
+static PRM_Name nameSep4("sep4", "sep4");
+static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
+static PRM_Name nameScalePivot("spivot", "Scale Pivot");
+
+static PRM_Name nameSamples("samples", "Samples");
+static PRM_Name nameSeed("seed", "Seed");
+
+
+/// ChoiceList Lists
+static PRM_Name xordMenuNames[] =
 {
-	PRM_Name("size",    "Size"),
+	PRM_Name("TRS", "Translate Rotate Scale"),
+	PRM_Name("TSR", "Translate Scale Rotate"),
+	PRM_Name("RTS", "Rotate Translate Scale"),
+	PRM_Name("RST", "Rotate Scale Translate"),
+	PRM_Name("STR", "Scale Translate Rotate"),
+	PRM_Name("SRT", "Scale Rotate Translate"),
+	PRM_Name(0)
 };
-static PRM_Default sizeDef(10);
-static PRM_Range sizeRange(PRM_RANGE_UI, 0, PRM_RANGE_UI, 100);
+
+static PRM_ChoiceList xOrdMenu
+(
+(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+::xordMenuNames
+);
+
+/// Declare Parm Defaults
+static PRM_Default defaultScale{ 500000 };
+static PRM_Default defaultIter{ 50 };
+static PRM_Default defaultPow{ 2 };
+static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
+static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
+static PRM_Default defaultOffset[] = { -1000, -750 };
+static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
+static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
+static PRM_Default defaultSamples{ 100 };
+
+/// Deflare Parm Ranges
+static PRM_Range rangeScale
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
+};
+
+static PRM_Range rangeRotate
+{
+	PRM_RangeFlag::PRM_RANGE_UI, -180,
+	PRM_RangeFlag::PRM_RANGE_UI, 180
+};
+
+static PRM_Range rangeIter
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_UI, 200
+};
+
+
+static PRM_Range rangePow
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 10
+};
+
+static PRM_Range rangeBailout
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 4
+};
+
+static PRM_Range rangeJDepth
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
+	PRM_RangeFlag::PRM_RANGE_UI, 5
+};
+
+static PRM_Range rangeSamples
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_UI, 1000
+};
+
+/// Create Template List
 PRM_Template
-COP2_Buddhabrot::myTemplateList[] =
+COP2_Buddhabrot::myTemplateList[]
 {
-	PRM_Template(PRM_SWITCHER,  3, &PRMswitcherName, switcher),
-	PRM_Template(PRM_FLT_J,     TOOL_PARM, 1, &names[0], &sizeDef, 0,
-				 &sizeRange),
-	PRM_Template(),
+	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
+	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
+	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep4, PRMzeroDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
+	PRM_Template()
 };
+
+
 OP_TemplatePair COP2_Buddhabrot::myTemplatePair(
 	COP2_Buddhabrot::myTemplateList,
 	&COP2_MaskOp::myTemplatePair);
@@ -79,20 +190,29 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	// This method evaluates and stashes parms and any other data that
 	// needs to be setup. Parms cannot be evaluated concurently in separate
 	// threads. This function is guaranteed to be single threaded.
-	COP2_BuddhabrotData *sdata = new COP2_BuddhabrotData();
+	COP2_BuddhabrotData *data = new COP2_BuddhabrotData();
 
+	// Space Xform Attributes
+	double scale = evalFloat(nameScale.getToken(), 0, t);
+	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
+	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
+	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
+	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
+	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
+	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
+	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
 
-	// TODO: Move to interface
-	float offset_x = -1000 / 1000;
-	float offset_y = -750 / 1000;
-	float rotate = 0;
-	float scale = 0;
-	float rotatePivot_x, rotatePivot_y = 0.5;
-	float scalePivot_x, scalePivot_y = 0.5;
-	RSTORDER xOrd = RSTORDER::RST;
+	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
 
-	sdata->space.set_image_size(xres, yres);
-	sdata->space.set_xform(
+	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
+	// The UI artificially inflates the numbers to make them more user friendly at
+	// shallow depths.
+	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
+	offset_x = offset_x / 1000;
+	offset_y = offset_y / 1000;
+
+	data->space.set_image_size(xres, yres);
+	data->space.set_xform(
 		offset_x,
 		offset_y,
 		rotate,
@@ -104,14 +224,28 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 		scalePivot_y,
 		xOrd);
 
-	int index = mySequence.getImageIndex(t);
-	
-	// xres may not be the full image res (if cooked at 1/2 or 1/4). Because
-	// we're dealing with a size, scale down the size based on our res.
-	// getXScaleFactor will return (xres / full_xres). 
-	sdata->mySize = SIZE(t) * getXScaleFactor(xres)*getFrameScopeEffect(index);
 
-	return sdata;
+	// Fractal Attributes
+	int iter = evalInt(nameIter.getToken(), 0, t);
+	double pow = evalFloat(namePow.getToken(), 0, t);
+	double bailout = evalFloat(nameBailout.getToken(), 0, t);
+	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
+	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
+	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
+	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
+
+	data->fractal = Mandelbrot(
+		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
+
+
+	exint samples = evalInt(nameSamples.getToken(), 0, t);
+	int seed = evalFloat(nameSeed.getToken(), 0, t);
+
+	data->samples = samples;
+	data->seed = seed;
+
+
+	return data;
 }
 void
 COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
@@ -238,15 +372,9 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 	int x, y;
 	char *idata, *odata;
 
-
-	// TODO: Promote these attribs
-	int seed = 420;
-	exint samples = 50000;
-	exint iterations = 50;
-
 	std::mt19937 rng;
 
-	rng.seed(seed);  // TODO: stach seed parm to seed data
+	rng.seed(sdata->seed);
 
 	// For each image plane.
 	for (comp = 0; comp < PLANE_MAX_VECTOR_SIZE; comp++)
@@ -268,59 +396,49 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 			{
 				// Choose a random x, y coordinate along the image plane.
 				// The '0's refer to lower left corner, the second argument the upper right
-				std::uniform_int_distribution<int> realDistribution(0, context.myXsize-1);
-				std::uniform_int_distribution<int> imagDistribution(0, context.myYsize-1);
+				std::uniform_real_distribution<double> realDistribution(0, context.myXsize-1);
+				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize-1);
 
-				for (exint idxSample=0; idxSample < samples; idxSample++)
+				for (exint idxSample=0; idxSample < sdata->samples; idxSample++)
 				{
-					WORLDPIXELCOORDS sample(realDistribution(rng), imagDistribution(rng));
+					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
-					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, iterations);
+					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.maxiter);
 
 					for (COMPLEX& point : points)
 					{
 						float *outputPixel = (float *)odata;
 
-						// The 2's here refer to min/max. Leaving default for now.
-						//if (point.real() <= 2, point.real() >= 0 &&
-						//	point.imag() <= 2, point.imag() >= 0)
-						{
-							int sample_x = static_cast<int>(point.real() * context.myXsize);
-							int sample_y = static_cast<int>(point.imag() * context.myYsize);
+						//int sample_x = static_cast<int>(point.real() * context.myXsize);
+						//int sample_y = static_cast<int>(point.imag() * context.myYsize);
+						//int samplePixel = sample_x + (sample_y * context.myXsize);
 
-							int samplePixel = sample_x + (sample_y * context.myXsize);
-							if (samplePixel >= 0 && samplePixel <= context.myXsize * context.myYsize)
-							{
-								outputPixel += samplePixel;
-								++*outputPixel;
-							}
+						WORLDPIXELCOORDS samplePixelCoords = sdata->space.get_pixel_coords(point);
+						int samplePixel = samplePixelCoords.first + (samplePixelCoords.second * context.myXsize);
+
+						if (samplePixel >= 0 && samplePixel <= context.myXsize * context.myYsize)
+						{
+							outputPixel += samplePixel;
+							++*outputPixel;
 						}
 					}
 				}
 			}
-			else
+			else if (comp == 1)  // Test show mandelbrot in second pane
 			{
-				// myXsize & myYsize are the actual sizes of the large canvas,
-				// which may be different from the resolution (myXres, myYres).
-				for (y = 0; y < context.myYsize; y++)
-					for (x = 0; x < context.myXsize; x++)
+				for (int x = 0; x < context.myXsize; ++x)
+				{
+					for (int y = 0; y < context.myYsize; ++y)
 					{
-						// Set the current pixel
 						int currentPixel = x + y * context.myXsize;
-						// Declare output data and set to evaluate every pixel
 						float *outputPixel = (float *)odata;
-						outputPixel += (currentPixel);
+						outputPixel += currentPixel;
+						COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
 
-						// Declare the value of the pixel
-						float *inputPixel = (float *)idata;
-						inputPixel += (currentPixel);  // Set pointer to current pixel
-						*inputPixel += 0.5;  // Add to value from input
-
-						// Add pix value to output position
-						*outputPixel = *outputPixel + *inputPixel;
-
+						*outputPixel = sdata->fractal.calculate(fractalCoords).num_iter;
 					}
+				}
 			}
 		}
 	}

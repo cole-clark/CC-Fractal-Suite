@@ -100,11 +100,21 @@ void CC::FractalSpace::set_xform(
 
 	// Sets RST Order to be used by node.
 	rstorder = xord;
+
+	// TODO : Move these values into their own encapsulated data object.
+	_tx = tx;
+	_ty = ty;
+	_r = r;
+	_sx = sx;
+	_sy = sy;
+	_r_pivx = r_pivx;
+	_r_pivy = r_pivy;
+	_s_pivx = s_pivx;
+	_s_pivy = s_pivy;
 }
 
 /// Return the fractal coordinates, which use the size of the image as a relative
 /// Size. The scale is 0-1 in the x axis of the image.
-/// TODO: This method may not work.
 COMPLEX
 CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 {
@@ -118,6 +128,52 @@ CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 	fc = { m(2, 0), m(2, 1) };  // xz, yz.
 
 	return fc;
+}
+
+// TODO: Move the body of this code and the other version to remove code duplication
+COMPLEX CC::FractalSpace::get_fractal_coords(COMPLEX pixel_coords)
+{
+	COMPLEX fc{ pixel_coords.real() / (double)image_x, pixel_coords.imag() / (double)image_x };
+	UT_Matrix3 m;
+	m.identity();
+	m.xform(rstorder, fc.real(), fc.imag());
+
+	m *= post_matrix;
+
+	fc = { m(2, 0), m(2, 1) };  // xz, yz.
+
+	return fc;
+}
+
+/// Return the world coords from source
+WORLDPIXELCOORDS
+CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
+{
+	UT_Matrix3 m;
+	m.identity();
+
+	m.xform(rstorder, fractal_coords.real(), fractal_coords.imag());
+
+	// We are treating the parametric Y pivot relative to the size of the X axis.
+	double r_image_pivy_size = _r_pivy * image_y / (double)image_x;
+	double s_image_pivy_size = _s_pivy * image_y / (double)image_x;
+
+	// Pre-xform only scale and translate.
+	m.xform(
+		rstorder, -_tx, -_ty, 0, 1.0/_sx, 1.0 / _sy,
+		_s_pivx,
+		_s_pivy * s_image_pivy_size);
+
+	// XForm with only rotate and rotate pivot.
+	m.xform(
+		rstorder, 0, 0, -_r, 1, 1,
+		post_matrix(2, 0) + (_sx * _r_pivx),
+		post_matrix(2, 1) + (_sy * r_image_pivy_size));
+
+	int x = static_cast<int>(m(2, 0) * image_x);
+	int y = static_cast<int>(m(2, 1) * image_y);
+
+	return WORLDPIXELCOORDS(x, y);
 }
 
 COMPLEX CC::FractalSpace::get_minimum()
