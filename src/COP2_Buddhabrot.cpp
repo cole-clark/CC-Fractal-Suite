@@ -410,10 +410,6 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 					{
 						float *outputPixel = (float *)odata;
 
-						//int sample_x = static_cast<int>(point.real() * context.myXsize);
-						//int sample_y = static_cast<int>(point.imag() * context.myYsize);
-						//int samplePixel = sample_x + (sample_y * context.myXsize);
-
 						WORLDPIXELCOORDS samplePixelCoords = sdata->space.get_pixel_coords(point);
 						int samplePixel = samplePixelCoords.first + (samplePixelCoords.second * context.myXsize);
 

@@ -39,7 +39,7 @@ namespace CC
 		int image_x{ 0 };
 		int image_y{ 0 };
 		UT_Matrix3 post_matrix;
-		RSTORDER rstorder{ RSTORDER::TRS };
+		RSTORDER rstorder{ RSTORDER::TSR };
 		double _tx;
 		double _ty;
 		double _r;
