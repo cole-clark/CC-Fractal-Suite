@@ -86,6 +86,9 @@ void CC::FractalSpace::set_xform(
 	double r_image_pivy_size = r_pivy * image_y / (double)image_x;
 	double s_image_pivy_size = s_pivy * image_y / (double)image_x;
 
+	post_matrix.xform(xord, tx, ty, r, sx, sy);// , s_pivx, s_pivy * s_image_pivy_size);
+
+	/*
 	// Pre-xform only scale and translate.
 	post_matrix.xform(
 		xord, tx, ty, 0, sx, sy,
@@ -97,7 +100,7 @@ void CC::FractalSpace::set_xform(
 		xord, 0, 0, r, 1, 1,
 		post_matrix(2, 0) + (sx * r_pivx),
 		post_matrix(2, 1) + (sy * r_image_pivy_size));
-
+		*/
 	// Sets RST Order to be used by node.
 	rstorder = xord;
 
@@ -159,6 +162,7 @@ CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 	double r_image_pivy_size = _r_pivy / image_height;
 	double s_image_pivy_size = _s_pivy / image_height;
 
+	/*
 	m.xform(rstorder, -_tx, -_ty);
 
 	// Pre-xform only scale and translate.
@@ -168,7 +172,7 @@ CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 		(1.0 / _sy), // * (double)image_x / image_y
 		_s_pivx,
 		_s_pivy * s_image_pivy_size);
-
+		*/
 
 	// XForm with only rotate and rotate pivot.
 	/*
@@ -177,6 +181,11 @@ CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 		m(2, 0) + (_sx * _r_pivx),
 		m(2, 1) + (_sy * r_image_pivy_size));
 		*/
+
+	//m *= post_matrix.invert();
+
+	m.xform(rstorder, _tx, _ty, _r, _sx, _sy * (image_y / (double)image_x), 0, 0, true);
+
 	int x = static_cast<int>(m(2, 0) * image_x);
 	int y = static_cast<int>(m(2, 1) * image_y);
 
