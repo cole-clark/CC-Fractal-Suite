@@ -33,12 +33,25 @@ namespace CC
 		TIL_Tile* tile,
 		int pixel_index);
 
+	struct FractalXformData
+	{
+		UT_Matrix3 m;
+		RSTORDER xOrd{ RSTORDER::TSR };
+		std::pair<double, double> t, s, r_piv, s_piv;
+		double r;
+	};
+
+	class FractalXform
+	{
+		FractalXformData data;
+	};
 
 	class FractalSpace
 	{
 		int image_x{ 0 };
 		int image_y{ 0 };
 		UT_Matrix3 post_matrix;
+
 		RSTORDER rstorder{ RSTORDER::TSR };
 		double _tx;
 		double _ty;

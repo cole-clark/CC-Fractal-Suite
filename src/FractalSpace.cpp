@@ -83,24 +83,11 @@ void CC::FractalSpace::set_xform(
 	RSTORDER xord = RSTORDER::TRS)
 {
 	// We are treating the parametric Y pivot relative to the size of the X axis.
-	double r_image_pivy_size = r_pivy * image_y / (double)image_x;
-	double s_image_pivy_size = s_pivy * image_y / (double)image_x;
+	double image_ratio_y = image_y / (double)image_x;
 
+	// THIS WORKS
 	post_matrix.xform(xord, tx, ty, r, sx, sy);// , s_pivx, s_pivy * s_image_pivy_size);
 
-	/*
-	// Pre-xform only scale and translate.
-	post_matrix.xform(
-		xord, tx, ty, 0, sx, sy,
-		s_pivx,
-		s_pivy * s_image_pivy_size);
-
-	// XForm with only rotate and rotate pivot.
-	post_matrix.xform(
-		xord, 0, 0, r, 1, 1,
-		post_matrix(2, 0) + (sx * r_pivx),
-		post_matrix(2, 1) + (sy * r_image_pivy_size));
-		*/
 	// Sets RST Order to be used by node.
 	rstorder = xord;
 
@@ -155,36 +142,16 @@ CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 	UT_Matrix3 m;
 	m.identity();
 
+	// Set m to fractal coordinates
 	m.xform(rstorder, fractal_coords.real(), fractal_coords.imag());
 
-	// We are treating the parametric Y pivot relative to the size of the X axis.
-	double image_height = image_y / (double)image_x;
-	double r_image_pivy_size = _r_pivy / image_height;
-	double s_image_pivy_size = _s_pivy / image_height;
-
-	/*
-	m.xform(rstorder, -_tx, -_ty);
-
-	// Pre-xform only scale and translate.
-
-	m.xform(rstorder, 0, 0, 0,
-		1.0 / _sx,
-		(1.0 / _sy), // * (double)image_x / image_y
-		_s_pivx,
-		_s_pivy * s_image_pivy_size);
-		*/
-
-	// XForm with only rotate and rotate pivot.
-	/*
+	// Apply our object's transform
 	m.xform(
-		rstorder, 0, 0, _r, 1, 1,
-		m(2, 0) + (_sx * _r_pivx),
-		m(2, 1) + (_sy * r_image_pivy_size));
-		*/
-
-	//m *= post_matrix.invert();
-
-	m.xform(rstorder, _tx, _ty, _r, _sx, _sy * (image_y / (double)image_x), 0, 0, true);
+		rstorder,
+		_tx, _ty,
+		_r, _sx, _sy * (image_y / (double)image_x),
+		0, 0,
+		true);
 
 	int x = static_cast<int>(m(2, 0) * image_x);
 	int y = static_cast<int>(m(2, 1) * image_y);
