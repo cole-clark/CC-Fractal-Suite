@@ -179,18 +179,24 @@ double CC::Mandelbrot::calculate_smooth(COMPLEX coords)
 CC::FractalCoordsInfo
 CC::Mandelbrot::calculate_lyapunov(COMPLEX coords)
 {
+
 	double a = coords.real();
 	double b = coords.imag();
 
-	double seq[] = { a, b, a, b, a, b, a, b, a, b, a, b };
-	int size = 12;
+	// TODO: Find a way to push this to the UI
+	//AAAAAABBBBBB
+	double seq[] = { 0.5, b, b, b, b, b, b, a, a, a, a, a, a };
+	int size = 13;
 
 	double lmb{ 0 };
 
-	for (int n = 1; n < size; n++)
+	for (int n = 1; n <= size; n++)
 	{
 		lmb += logf(fabs(seq[n % size] * (1.0f - 2.0f * seq[n]))) / logf(2.0f);
 	}
+
+	if (isinf(lmb))
+		lmb = 0;
 
 	return FractalCoordsInfo(lmb, lmb);
 }
