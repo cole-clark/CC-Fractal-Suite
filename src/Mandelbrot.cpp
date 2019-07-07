@@ -84,7 +84,7 @@ double CC::Mandelbrot::calculate_orbit_trap(COMPLEX coords)
 			z = pow(z, fpow) + joffset;
 
 
-		COMPLEX zMinusPoint{ 0 };
+		COMPLEX zMinusPoint{ 0 }; // TODO: Move to interface
 		zMinusPoint -= z;
 
 		double zMinusPointModulus = std::sqrt(
@@ -174,4 +174,23 @@ double CC::Mandelbrot::calculate_smooth(COMPLEX coords)
 	}
 
 	return color;
+}
+
+CC::FractalCoordsInfo
+CC::Mandelbrot::calculate_lyapunov(COMPLEX coords)
+{
+	double a = coords.real();
+	double b = coords.imag();
+
+	double seq[] = { a, b, a, b, a, b, a, b, a, b, a, b };
+	int size = 12;
+
+	double lmb{ 0 };
+
+	for (int n = 1; n < size; n++)
+	{
+		lmb += logf(fabs(seq[n % size] * (1.0f - 2.0f * seq[n]))) / logf(2.0f);
+	}
+
+	return FractalCoordsInfo(lmb, lmb);
 }

@@ -264,19 +264,11 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 		{
 			WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
 			COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
-			FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
+			FractalCoordsInfo pixelInfo = data->fractal.calculate_lyapunov(fractalCoords);
 
 			if (tileIndex == 0)
 			{
 				dest[i] = pixelInfo.num_iter;
-			}
-			else if (tileIndex == 1)
-			{
-				dest[i] = pixelInfo.z.real();
-			}
-			else if (tileIndex = 2)
-			{
-				dest[i] = pixelInfo.z.imag();
 			}
 			else
 				dest[i] = 0.0f;
