@@ -373,8 +373,9 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 	char *idata, *odata;
 
 	std::mt19937 rng;
-
 	rng.seed(sdata->seed);
+
+	uint32_t highest_sample_value;
 
 	// For each image plane.
 	for (comp = 0; comp < PLANE_MAX_VECTOR_SIZE; comp++)
@@ -417,6 +418,10 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 						{
 							outputPixel += samplePixel;
 							++*outputPixel;
+							
+							// Save the highest output pixel value sampled
+							if (*outputPixel > highest_sample_value)
+								highest_sample_value = static_cast<uint32_t>(*outputPixel);
 						}
 					}
 				}
@@ -435,6 +440,18 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 						*outputPixel = sdata->fractal.calculate(fractalCoords).num_iter;
 					}
 				}
+			}
+			// TEMP: stores max value into the entire image. Beg SideFx to let me put in image metadata
+			else if (comp == 2)
+			{
+				for (int x = 0; x < context.myXsize; ++x)
+					for (int y = 0; y < context.myYsize; ++y)
+					{
+						int currentPixel = x + y * context.myXsize;
+						float* outputPixel = (float*)odata;
+						outputPixel += currentPixel;
+						*outputPixel = highest_sample_value;
+					}
 			}
 		}
 	}
