@@ -16,9 +16,9 @@ namespace CC
 	{
 		int num_iter{ 0 };
 		COMPLEX z;
+		double smooth;
 
-		FractalCoordsInfo() = default;
-		FractalCoordsInfo(int num_iter, COMPLEX z);
+		FractalCoordsInfo(int num_iter=0, COMPLEX z=COMPLEX(), double smooth=0.0);
 	};
 
 

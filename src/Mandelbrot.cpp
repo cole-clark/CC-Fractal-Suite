@@ -6,7 +6,7 @@
  */
 
 #include <complex>
-#include <cmath>
+#include <vector>
 
 #include "Mandelbrot.h"
 
@@ -35,11 +35,13 @@ CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	COMPLEX c{ coords.real(), coords.imag()};
 
 	int iterations{ 0 };
+	double smoothcolor = exp(-abs(-z));
 
 	// Iter here means Max Iterations.
 	while (iterations < maxiter)
 	{
 		z = calculate_z(z, c);
+		smoothcolor += exp(-abs(-z));
 
 		if (abs(z) > bailout)
 			break;
@@ -50,9 +52,11 @@ CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	// Blackhole if maximum iterations reached
 	// Itersations set to -1 for bailed out values, making it a unique value for mattes.
 	if (blackhole && iterations == maxiter)
-		iterations = -1; 
-
-	return FractalCoordsInfo(iterations, z);
+	{
+		iterations = -1;
+		smoothcolor = -1;
+	}
+	return FractalCoordsInfo(iterations, z, smoothcolor);
 }
 
 COMPLEX CC::Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
@@ -179,24 +183,43 @@ double CC::Mandelbrot::calculate_smooth(COMPLEX coords)
 CC::FractalCoordsInfo
 CC::Mandelbrot::calculate_lyapunov(COMPLEX coords)
 {
-
 	double a = coords.real();
 	double b = coords.imag();
 
 	// TODO: Find a way to push this to the UI
-	//AAAAAABBBBBB
-	double seq[] = { 0.5, b, b, b, b, b, b, a, a, a, a, a, a };
-	int size = 13;
+	double seq[] = { a, b, b, a, b, a, a, b, b, a, b, a };
+	int seq_size = 12;
+	double start = 0.5;
+	int N = maxiter;
+	double MIN = -1, MAX = 2;
 
-	double lmb{ 0 };
+	// Initialize N. TODO: Rename this horrible var
+	double* X = new double[N + 1];
+	X[0] = start;
 
-	for (int n = 1; n <= size; n++)
+	for (int n = 1; n <= N; n++)
 	{
-		lmb += logf(fabs(seq[n % size] * (1.0f - 2.0f * seq[n]))) / logf(2.0f);
+		X[n] = seq[n-1 % seq_size] * X[n-1] * (1.0-X[n-1]);
 	}
 
+	// Calculate Lyapunov
+	double lmb{ 0 };
+
+	for (int n = 1; n <= N; n++)
+	{
+		lmb += log(abs(seq[n % seq_size] * (1.0 - 2.0 * X[n]))) / log(2);
+	}
+	lmb /= N;
+
 	if (isinf(lmb))
-		lmb = 0;
+		lmb = 0.0f;
+
+	delete X;
+
+	if (lmb < 0)
+		lmb = (int)(lmb / MIN * 10240);
+	else
+		lmb = (int)(lmb / MAX * 10240);
 
 	return FractalCoordsInfo(lmb, lmb);
 }
