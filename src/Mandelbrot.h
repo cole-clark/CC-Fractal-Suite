@@ -43,7 +43,6 @@ namespace CC
 
 		// Temp Placement
 		double calculate_orbit_trap(COMPLEX coords);
-		double calculate_smooth(COMPLEX coords);
 		FractalCoordsInfo calculate_lyapunov(COMPLEX coords);
 	};
 }

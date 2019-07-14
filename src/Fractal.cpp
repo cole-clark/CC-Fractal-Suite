@@ -1,3 +1,10 @@
+/*
+	Cole Clark's Fractal Suite
+
+	Fractal.cpp
+	Code for Fractal base class.
+ */
+
 #include "Fractal.h"
 
 CC::Fractal::Fractal()

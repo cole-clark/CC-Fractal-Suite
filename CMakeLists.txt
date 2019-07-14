@@ -11,10 +11,14 @@ add_library( ${library_name} SHARED
 	src/COP2_Buddhabrot.h
     src/COP2_FractalMatte.cpp
 	src/COP2_FractalMatte.h
+	src/COP2_Lyapunov.cpp
+	src/COP2_Lyapunov.h
 	src/COP2_Mandelbrot.cpp
     src/COP2_Mandelbrot.h
     src/Fractal.cpp
     src/Fractal.h
+	src/FractalNode.cpp
+	src/FractalNode.h
     src/FractalSpace.cpp
     src/FractalSpace.h
     src/Mandelbrot.cpp
