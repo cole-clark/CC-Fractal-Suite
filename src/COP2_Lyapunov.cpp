@@ -44,6 +44,5 @@ OP_VariablePair COP2_Lyapunov::myVariablePair
 PRM_Template
 COP2_Lyapunov::myTemplateList[]
 {
-	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale),
 	PRM_Template()
 };

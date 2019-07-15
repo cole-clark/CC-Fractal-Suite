@@ -11,11 +11,6 @@
 
 #include "COP2_Mandelbrot.h"
 
-static PRM_Name nameScale("scale", "Scale");
-#define XFORM_PARMS \
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScale), \
-	PRM_Template()
-
 namespace CC
 {
 	class COP2_Lyapunov : public COP2_Generator

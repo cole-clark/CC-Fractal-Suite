@@ -126,7 +126,6 @@ static PRM_Range rangeJDepth
 PRM_Template
 COP2_Mandelbrot::myTemplateList[]
 {
-	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
 	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),

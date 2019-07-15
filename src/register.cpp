@@ -15,6 +15,8 @@
 #include "COP2_Lyapunov.h"
 #include "COP2_Pickover.h"
 
+#include "FractalNode.h"
+
 #include "register.h"
 
 using namespace CC;
@@ -23,6 +25,8 @@ using namespace CC;
 /// Houdini enforces this name for adding Cop2 Nodes.
 void newCop2Operator(OP_OperatorTable* table)
 {
+	// TODO: Update other nodes to call 'CC::get_new_op<Node>'
+
 	// Creates the Buddhabrot Definition
 	OP_Operator* buddhabrot = new OP_Operator(
 		"cc::fractal_buddhabrot",
@@ -69,15 +73,15 @@ void newCop2Operator(OP_OperatorTable* table)
 		&COP2_Mandelbrot::myVariablePair,
 		OP_FLAG_GENERATOR);
 
-	// Creates the Mandelbrot Definition
+	// Creates the Pickover Definition
 	OP_Operator* pickover = new OP_Operator(
 		"cc::fractal_pickover", // Node Name
 		"CC Fractal Pickover", // Pretty Name
-		COP2_Pickover::myConstructor,
-		&COP2_Mandelbrot::myTemplatePair,
+		&OP::get_new_op<COP2_Pickover>,
+		&COP2_Pickover::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs
-		&COP2_Mandelbrot::myVariablePair,
+		&COP2_Pickover::myVariablePair,
 		OP_FLAG_GENERATOR);
 
 	std::vector<OP_Operator*> nodes{
