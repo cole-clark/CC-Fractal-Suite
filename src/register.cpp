@@ -5,14 +5,15 @@
 	Code that adds nodes from the dso to Houdini.
  */
 
- // Houdini never finds this dso without this included.
 #include <UT/UT_String.h>
-
+ // Houdini never finds this dso without this included.
 #include <UT/UT_DSOVersion.h>
 
-#include "COP2_Mandelbrot.h"
-#include "COP2_FractalMatte.h"
 #include "COP2_Buddhabrot.h"
+#include "COP2_FractalMatte.h"
+#include "COP2_Mandelbrot.h"
+#include "COP2_Lyapunov.h"
+#include "COP2_Pickover.h"
 
 #include "register.h"
 
@@ -22,16 +23,17 @@ using namespace CC;
 /// Houdini enforces this name for adding Cop2 Nodes.
 void newCop2Operator(OP_OperatorTable* table)
 {
-	// Creates the Mandelbrot Definition
-	OP_Operator* mandelbrot = new OP_Operator(
-		"cc::fractal_mandelbrot", // Node Name
-		"CC Fractal Mandelbrot", // Pretty Name
-		COP2_Mandelbrot::myConstructor,
-		&COP2_Mandelbrot::myTemplatePair,
-		0,  // min inputs
-		0,  // max inputs
-		&COP2_Mandelbrot::myVariablePair,
-		OP_FLAG_GENERATOR);
+	// Creates the Buddhabrot Definition
+	OP_Operator* buddhabrot = new OP_Operator(
+		"cc::fractal_buddhabrot",
+		"CC Fractal Buddhabrot",
+		COP2_Buddhabrot::myConstructor,
+		&COP2_Buddhabrot::myTemplatePair,
+		0,
+		2, // optional mask input.
+		&COP2_Buddhabrot::myVariablePair,
+		0, // not generator
+		COP2_Buddhabrot::myInputLabels);
 
 	// Creates the Fractal Matte Definition
 	OP_Operator* fractalMatte = new OP_Operator(
@@ -45,25 +47,46 @@ void newCop2Operator(OP_OperatorTable* table)
 		0, // not generator
 		COP2_FractalMatte::myInputLabels);
 
+	// Creates the Lyapunov Definition
+	OP_Operator* lyapunov = new OP_Operator(
+		"cc::fractal_lyapunov", // Node Name
+		"CC Fractal Lyapunov", // Pretty Name
+		COP2_Lyapunov::myConstructor,
+		&COP2_Lyapunov::myTemplatePair,
+		0,  // min inputs
+		0,  // max inputs
+		&COP2_Lyapunov::myVariablePair,
+		OP_FLAG_GENERATOR);
 
-	OP_Operator* buddhabrot = new OP_Operator("cc::fractal_buddhabrot",
-		"CC Fractal Buddhabrot",
-		COP2_Buddhabrot::myConstructor,
-		&COP2_Buddhabrot::myTemplatePair,
-		0,
-		2, // optional mask input.
-		&COP2_Buddhabrot::myVariablePair,
-		0, // not generator
-		COP2_Buddhabrot::myInputLabels);
+	// Creates the Mandelbrot Definition
+	OP_Operator* mandelbrot = new OP_Operator(
+		"cc::fractal_mandelbrot", // Node Name
+		"CC Fractal Mandelbrot", // Pretty Name
+		COP2_Mandelbrot::myConstructor,
+		&COP2_Mandelbrot::myTemplatePair,
+		0,  // min inputs
+		0,  // max inputs
+		&COP2_Mandelbrot::myVariablePair,
+		OP_FLAG_GENERATOR);
 
-	// Add to tab path.
+	// Creates the Mandelbrot Definition
+	OP_Operator* pickover = new OP_Operator(
+		"cc::fractal_pickover", // Node Name
+		"CC Fractal Pickover", // Pretty Name
+		COP2_Pickover::myConstructor,
+		&COP2_Mandelbrot::myTemplatePair,
+		0,  // min inputs
+		0,  // max inputs
+		&COP2_Mandelbrot::myVariablePair,
+		OP_FLAG_GENERATOR);
+
+	std::vector<OP_Operator*> nodes{
+		buddhabrot, fractalMatte, lyapunov, mandelbrot, pickover };
+
 	UT_String menuPath{ "Fractal" };
-	mandelbrot->setOpTabSubMenuPath(menuPath);
-	fractalMatte->setOpTabSubMenuPath(menuPath);
-	buddhabrot->setOpTabSubMenuPath(menuPath);
-
-	// Register the nodes
-	table->addOperator(mandelbrot);
-	table->addOperator(fractalMatte);
-	table->addOperator(buddhabrot);
+	for (auto node : nodes)
+	{
+		node->setOpTabSubMenuPath(menuPath);
+		table->addOperator(node);
+	}
 }

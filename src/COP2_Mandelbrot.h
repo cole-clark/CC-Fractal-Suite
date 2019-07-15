@@ -2,7 +2,7 @@
 	Cole Clark's Fractal Suite
 
 	COP2_Mandelbrot.h
-	Header for CC Mandelbrot Cop Node.
+	Header for CC Mandelbrot COP2 Node.
  */
 
 #pragma once
