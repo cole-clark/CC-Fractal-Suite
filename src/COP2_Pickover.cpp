@@ -10,7 +10,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(5, "Fractal");
+COP_GENERATOR_SWITCHER(6, "Fractal");
 
  /// Private Constructor
 COP2_Pickover::COP2_Pickover(
@@ -18,23 +18,13 @@ COP2_Pickover::COP2_Pickover(
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
-/*
-/// Public Constructor
-OP_Node *
-COP2_Pickover::myConstructor(
-	OP_Network* net,
-	const char* name,
-	OP_Operator* op)
-{
-	return new COP2_Pickover(net, name, op);
-}*/
-
 /// Create Template List
 PRM_Template
 COP2_Pickover::myTemplateList[]
 {
 	TEMPLATE_SWITCHER,
 	TEMPLATES_XFORM,
+	MAKE_SEP_TEMPLATE(1),
 	PRM_Template()
 };
 

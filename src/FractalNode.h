@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <string>
+
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_ChoiceList.h>
 #include <OP/OP_Network.h>
@@ -65,22 +67,31 @@ static PRM_Range rangeRotate
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate)
 
 
+/// Parm separator factory code. Call MAKE_SEP_NAME for each separator needed,
+/// And then call MAKE_SEP_TEMPLATE with the same index when building the template arg list.
+/// Be sure to not have matching indexes within the same node.
+#define MAKE_SEP_NAME(i) \
+	static PRM_Name nameSeparator##i( \
+		static_cast<UT_StringHolder>("sep" + std::to_string(##i)), \
+		static_cast<UT_StringHolder>("sep" + std::to_string(##i)))
+
+#define MAKE_SEP_TEMPLATE(i) \
+		PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSeparator##i)
+
+MAKE_SEP_NAME(1);
+MAKE_SEP_NAME(2);
+MAKE_SEP_NAME(3);
+MAKE_SEP_NAME(4);
+MAKE_SEP_NAME(5);
+MAKE_SEP_NAME(6);
+MAKE_SEP_NAME(7);
+MAKE_SEP_NAME(8);
+MAKE_SEP_NAME(9);
+MAKE_SEP_NAME(10);
+
 /// Boilerplate code calling the constructor for newCop2Operator.
 /// Do not use this if you need to modify the class constructor.
 /// This is only meant for vanilla calls.
-/* THIS OWRKS WITH PUBLIC CONSTRUCTORS
-namespace CC
-{
-	template <typename T>
-	OP_Node* get_new_op(
-		OP_Network* net,
-		const char* name,
-		OP_Operator* op)
-	{
-		return new T(net, name, op);
-	}
-}*/
-
 namespace CC
 {
 	static class OP

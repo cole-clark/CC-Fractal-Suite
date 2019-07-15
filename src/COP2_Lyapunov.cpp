@@ -7,7 +7,7 @@
 
 #include "COP2_Lyapunov.h"
 
-COP_GENERATOR_SWITCHER(1, "Fractal");
+COP_GENERATOR_SWITCHER(5, "Fractal");
 
 using namespace CC;
 
@@ -41,8 +41,11 @@ OP_VariablePair COP2_Lyapunov::myVariablePair
 	&COP2_Node::myVariablePair
 );
 
+/// Create Template List
 PRM_Template
 COP2_Lyapunov::myTemplateList[]
 {
+	TEMPLATE_SWITCHER,
+	TEMPLATES_XFORM,
 	PRM_Template()
 };

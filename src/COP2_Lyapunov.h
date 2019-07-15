@@ -9,6 +9,7 @@
 
 #include <COP2/COP2_Generator.h>
 
+#include "FractalNode.h"
 #include "COP2_Mandelbrot.h"
 
 namespace CC
