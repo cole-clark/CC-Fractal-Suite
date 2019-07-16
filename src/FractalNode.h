@@ -13,6 +13,8 @@
 #include <PRM/PRM_ChoiceList.h>
 #include <OP/OP_Network.h>
 
+#include "typedefs.h"
+
 /// Fractal Xform Data
 
 static PRM_Name nameScale("scale", "Scale");
@@ -89,11 +91,14 @@ MAKE_SEP_NAME(8);
 MAKE_SEP_NAME(9);
 MAKE_SEP_NAME(10);
 
-/// Boilerplate code calling the constructor for newCop2Operator.
-/// Do not use this if you need to modify the class constructor.
-/// This is only meant for vanilla calls.
+
 namespace CC
 {
+	/// Boilerplate code calling the constructor for newCop2Operator.
+	/// Do not use this if you need to modify the class constructor.
+	/// This is only meant for vanilla calls.
+	/// I read online that template calls like this must be declared
+	/// in the header, which is why it's here.
 	static class OP
 	{
 	public:
@@ -105,5 +110,17 @@ namespace CC
 		{
 			return new T(net, name, op);
 		}
+	};
+
+	/// Struct meant to simplify the stashing of xform parm data.
+	struct XformStashData
+	{
+		double offset_x, offset_y{ 0 };
+		double rotate{ 0 };
+		double scale{ 1 };
+
+		RSTORDER xord{ RSTORDER::TRS };
+
+		void evalArgs(const OP_Node* node, fpreal t);
 	};
 }

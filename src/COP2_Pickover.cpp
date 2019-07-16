@@ -18,6 +18,11 @@ COP2_Pickover::COP2_Pickover(
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
+/// Define node-specific attributes
+static PRM_Name namePickoverPoint("pickover_point", "Pickover Offset");
+static PRM_Name namePickoverMode("pickover_mode", "Pickover Use Line");
+static PRM_Name namePickoverLineRotate("pickover_line_rotate", "Pickover Line Rotate");
+
 /// Create Template List
 PRM_Template
 COP2_Pickover::myTemplateList[]
@@ -25,6 +30,9 @@ COP2_Pickover::myTemplateList[]
 	TEMPLATE_SWITCHER,
 	TEMPLATES_XFORM,
 	MAKE_SEP_TEMPLATE(1),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePickoverPoint, PRMzeroDefaults),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePickoverPoint, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePickoverLineRotate, PRMzeroDefaults),
 	PRM_Template()
 };
 
@@ -58,38 +66,26 @@ COP2_Pickover::newContextData
 (
 	const TIL_Plane*,  // planename
 	int,               // array index
-	float t,           // Not actually sure, maybe tile?
-	int image_sizex,         // xsize
-	int image_sizey,         // ysize
+	float t,
+	int image_sizex,   // xsize
+	int image_sizey,   // ysize
 	int,               // thread
 	int                // max_num_threads
 )
 {
 	// Create new empty data object.
 	COP2_PickoverData* data{ new COP2_PickoverData };
+	
+	data->space.set_image_size(image_sizex, image_sizey);
 
+	XformStashData xformData;
+	xformData.evalArgs(this, t);
+
+	data->space.set_xform(xformData);
 	/*
-	// Space Xform Attributes
-	double scale = evalFloat(nameScale.getToken(), 0, t);
-	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
-	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
-	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
-	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
-	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
-
-	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
-
-	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
-	// The UI artificially inflates the numbers to make them more user friendly at
-	// shallow depths.
-	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
-	offset_x = offset_x / 1000;
-	offset_y = offset_y / 1000;
 
 	// Set the size of the fractal space relative to this context's size.
-	data->space.set_image_size(image_sizex, image_sizey);
+	
 
 
 	// Sets the base xform of the fractal from the interface that will be calculated by

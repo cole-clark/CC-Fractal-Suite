@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "typedefs.h"
+#include "FractalNode.h"
 
 namespace CC
 {
@@ -80,10 +81,11 @@ namespace CC
 			double s_pivy,
 			RSTORDER xord);
 
+		void set_xform(XformStashData& xdata);
+
 		COMPLEX get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 		COMPLEX get_fractal_coords(COMPLEX pixel_coords);
 		WORLDPIXELCOORDS get_pixel_coords(COMPLEX fractal_coords);
-
 
 		///Returns in fractal coords the min/max of the image.
 		COMPLEX get_minimum();
