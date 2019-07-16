@@ -76,31 +76,14 @@ void CC::FractalSpace::set_xform(
 	double r,
 	double sx,
 	double sy,
-	double r_pivx,
-	double r_pivy,
-	double s_pivx,
-	double s_pivy,
 	RSTORDER xord = RSTORDER::TRS)
 {
 	// We are treating the parametric Y pivot relative to the size of the X axis.
 	double image_ratio_y = image_y / (double)image_x;
 
-	// THIS WORKS
 	post_matrix.xform(xord, tx, ty, r, sx, sy);// , s_pivx, s_pivy * s_image_pivy_size);
-
-	// Sets RST Order to be used by node.
-	rstorder = xord;
-
-	// TODO : Move these values into their own encapsulated data object.
-	_tx = tx;
-	_ty = ty;
-	_r = r;
-	_sx = sx;
-	_sy = sy;
-	_r_pivx = r_pivx;
-	_r_pivy = r_pivy;
-	_s_pivx = s_pivx;
-	_s_pivy = s_pivy;
+	
+	xdata = XformStashData(tx, ty, r, sx, xord);
 }
 
 //void CC::FractalSpace::set_xform(XformStashData & xdata)
@@ -114,7 +97,7 @@ CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 	COMPLEX fc{ pixel_coords.first / (double)image_x, pixel_coords.second / (double)image_x };
 	UT_Matrix3 m;
 	m.identity();
-	m.xform(rstorder, fc.real(), fc.imag());
+	m.xform(xdata.xord, fc.real(), fc.imag());
 
 	m *= post_matrix;
 
@@ -129,7 +112,7 @@ COMPLEX CC::FractalSpace::get_fractal_coords(COMPLEX pixel_coords)
 	COMPLEX fc{ pixel_coords.real() / (double)image_x, pixel_coords.imag() / (double)image_x };
 	UT_Matrix3 m;
 	m.identity();
-	m.xform(rstorder, fc.real(), fc.imag());
+	m.xform(xdata.xord, fc.real(), fc.imag());
 
 	m *= post_matrix;
 
@@ -146,13 +129,14 @@ CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 	m.identity();
 
 	// Set m to fractal coordinates
-	m.xform(rstorder, fractal_coords.real(), fractal_coords.imag());
+	m.xform(xdata.xord, fractal_coords.real(), fractal_coords.imag());
 
 	// Apply our object's transform
 	m.xform(
-		rstorder,
-		_tx, _ty,
-		_r, _sx, _sy * (image_y / (double)image_x),
+		xdata.xord,
+		xdata.offset_x, xdata.offset_y,
+		xdata.rotate,
+		xdata.scale, xdata.scale * (image_y / (double)image_x),
 		0, 0,
 		true);
 

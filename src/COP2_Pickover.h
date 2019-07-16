@@ -32,7 +32,6 @@ namespace CC
 		virtual TIL_Sequence* cookSequenceInfo(OP_ERROR& error);
 
 		friend class OP;
-		//friend class XformStashData;
 
 	protected:
 		/// Evaluate Parms and Stash Data for Cooking In a COP2_ContextData object

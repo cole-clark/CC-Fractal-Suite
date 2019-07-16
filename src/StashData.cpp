@@ -11,6 +11,12 @@
 
 using namespace CC;
 
+XformStashData::XformStashData(
+	double offset_x, double offset_y,
+	double rotate, double scale, RSTORDER xord) : 
+		offset_x(offset_x), offset_y(offset_y),
+		rotate(rotate), scale(scale), xord(xord) {}
+
 void XformStashData::evalArgs(const OP_Node* node, fpreal t)
 {
 	scale = node->evalFloat(SCALE_NAME, 0, t);

@@ -53,17 +53,7 @@ namespace CC
 		int image_x{ 0 };
 		int image_y{ 0 };
 		UT_Matrix3 post_matrix;
-
-		RSTORDER rstorder{ RSTORDER::TSR };
-		double _tx;
-		double _ty;
-		double _r;
-		double _sx;
-		double _sy;
-		double _r_pivx;
-		double _r_pivy;
-		double _s_pivx;
-		double _s_pivy;
+		XformStashData xdata;
 
 	public:
 
@@ -76,13 +66,13 @@ namespace CC
 			double r,
 			double sx,
 			double sy,
-			double r_pivx,
+			double r_pivx,  // TODO: Delete these piv args
 			double r_pivy,
 			double s_pivx,
 			double s_pivy,
 			RSTORDER xord);
 
-		//void set_xform(XformStashData& xdata);
+		void set_xform(XformStashData& xdata);
 
 		COMPLEX get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 		COMPLEX get_fractal_coords(COMPLEX pixel_coords);
