@@ -13,6 +13,7 @@
 #include "Mandelbrot.h"
 #include "FractalNode.h"
 
+
 namespace CC
 {
 	/// Public Import the COP2_Generator base class

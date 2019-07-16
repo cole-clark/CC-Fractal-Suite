@@ -81,7 +81,7 @@ COP2_Pickover::newContextData
 	XformStashData xformData;
 	xformData.evalArgs(this, t);
 
-	data->space.set_xform(xformData);
+	//data->space.set_xform(xformData);
 	/*
 
 	// Set the size of the fractal space relative to this context's size.

@@ -15,7 +15,8 @@
 #include <utility>
 
 #include "typedefs.h"
-#include "FractalNode.h"
+#include "StashData.h"
+
 
 namespace CC
 {
@@ -81,7 +82,7 @@ namespace CC
 			double s_pivy,
 			RSTORDER xord);
 
-		void set_xform(XformStashData& xdata);
+		//void set_xform(XformStashData& xdata);
 
 		COMPLEX get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 		COMPLEX get_fractal_coords(COMPLEX pixel_coords);

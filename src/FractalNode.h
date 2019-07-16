@@ -17,10 +17,10 @@
 
 /// Fractal Xform Data
 
-static PRM_Name nameScale("scale", "Scale");
-static PRM_Name nameOffset("offset", "Offset");
-static PRM_Name nameRotate("rotate", "Rotate");
-static PRM_Name nameXOrd("xOrd", "Xform Order");
+static PRM_Name nameScale(SCALE_NAME, "Scale");
+static PRM_Name nameOffset(TRANSLATE_NAME, "Offset");
+static PRM_Name nameRotate(ROTATE_NAME, "Rotate");
+static PRM_Name nameXOrd(XORD_NAME, "Xform Order");
 
 /// ChoiceList Lists
 static PRM_Name xordMenuNames[] =
@@ -110,17 +110,5 @@ namespace CC
 		{
 			return new T(net, name, op);
 		}
-	};
-
-	/// Struct meant to simplify the stashing of xform parm data.
-	struct XformStashData
-	{
-		double offset_x, offset_y{ 0 };
-		double rotate{ 0 };
-		double scale{ 1 };
-
-		RSTORDER xord{ RSTORDER::TRS };
-
-		void evalArgs(const OP_Node* node, fpreal t);
 	};
 }

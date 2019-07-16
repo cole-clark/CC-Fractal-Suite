@@ -103,9 +103,8 @@ void CC::FractalSpace::set_xform(
 	_s_pivy = s_pivy;
 }
 
-void CC::FractalSpace::set_xform(XformStashData & xdata)
-{
-}
+//void CC::FractalSpace::set_xform(XformStashData & xdata)
+//{}
 
 /// Return the fractal coordinates, which use the size of the image as a relative
 /// Size. The scale is 0-1 in the x axis of the image.

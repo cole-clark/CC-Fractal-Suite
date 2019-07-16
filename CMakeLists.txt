@@ -25,6 +25,8 @@ add_library( ${library_name} SHARED
     src/Mandelbrot.h
     src/register.cpp
     src/register.h
+	src/StashData.cpp
+	src/StashData.h
 	src/typedefs.h
 )
 # Link against the Houdini libraries, and add required include directories and compile definitions.
