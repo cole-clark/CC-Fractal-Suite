@@ -10,7 +10,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(15, "Fractal");
+COP_GENERATOR_SWITCHER(16, "Fractal");
 
  /// Private Constructor
 COP2_Pickover::COP2_Pickover(
@@ -29,9 +29,9 @@ COP2_Pickover::myTemplateList[]
 {
 	TEMPLATE_SWITCHER,
 	TEMPLATES_XFORM,
-	MAKE_SEP_TEMPLATE(1),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
-	MAKE_SEP_TEMPLATE(2),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePickoverPoint, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePickoverMode, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePickoverLineRotate, PRMzeroDefaults),
@@ -86,7 +86,7 @@ COP2_Pickover::newContextData
 
 	MandelbrotStashData mandelData;
 	mandelData.evalArgs(this, t);
-
+	//data->fractal = Mandelbrot(mandelData); // TODO: Implement
 	/*
 
 	// Set the size of the fractal space relative to this context's size.

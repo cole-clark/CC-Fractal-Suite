@@ -104,30 +104,10 @@ static PRM_Range rangeJDepth
 	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
 
-/// Parm separator factory code. Call MAKE_SEP_NAME for each separator needed,
-/// And then call MAKE_SEP_TEMPLATE with the same index when building the template arg list.
-/// Be sure to not have matching indexes within the same node.
-#define MAKE_SEP_NAME(i) \
-	static PRM_Name nameSeparator##i( \
-		static_cast<UT_StringHolder>("sep_" + std::to_string(##i)), \
-		static_cast<UT_StringHolder>("sep_" + std::to_string(##i)))
-
-#define MAKE_SEP_TEMPLATE(i) \
-		PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSeparator##i)
-
-
 /// Create separator names.
 static PRM_Name nameSeparatorMandelbrot("sep_mandelbrot", "Sep Mandelbrot");
-MAKE_SEP_NAME(1);
-MAKE_SEP_NAME(2);
-MAKE_SEP_NAME(3);
-MAKE_SEP_NAME(4);
-MAKE_SEP_NAME(5);
-MAKE_SEP_NAME(6);
-MAKE_SEP_NAME(7);
-MAKE_SEP_NAME(8);
-MAKE_SEP_NAME(9);
-MAKE_SEP_NAME(10);
+static PRM_Name nameSepA("sep_A", "Sep A");
+static PRM_Name nameSepB("sep_B", "Sep B");
 
 /// Definition of Template Switcher
 #define TEMPLATE_SWITCHER PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher)
