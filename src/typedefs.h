@@ -25,4 +25,9 @@ static NAMEPAIR SCALE_NAME{ "scale", "Scale" };
 static NAMEPAIR XORD_NAME{ "xOrd", "TRS Order"};
 
 /// Mandelbrot Names
-static const char* ITERS_NAME{ "iters" };  // iterations
+static NAMEPAIR ITERS_NAME{ "iters", "Iterations" };
+static NAMEPAIR POWER_NAME{ "pow", "Exponent" };
+static NAMEPAIR BAILOUT_NAME{ "bailout", "Bailout" };
+static NAMEPAIR JDEPTH_NAME{ "jdepth", "Julia Depth" };
+static NAMEPAIR JOFFSET_NAME{ "joffset", "Julia Offset" };
+static NAMEPAIR BLACKHOLE_NAME{ "blackhole", "Blackhole" };
