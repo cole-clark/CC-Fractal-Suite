@@ -218,10 +218,6 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 		rotate,
 		scale,
 		scale,
-		rotatePivot_x,
-		rotatePivot_y,
-		scalePivot_x,
-		scalePivot_y,
 		xOrd);
 
 

@@ -66,10 +66,6 @@ namespace CC
 			double r,
 			double sx,
 			double sy,
-			double r_pivx,  // TODO: Delete these piv args
-			double r_pivy,
-			double s_pivx,
-			double s_pivy,
 			RSTORDER xord);
 
 		void set_xform(XformStashData& xdata);

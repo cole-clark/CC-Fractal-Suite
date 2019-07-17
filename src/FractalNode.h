@@ -17,10 +17,13 @@
 
 /// Fractal Xform Data
 
-static PRM_Name nameScale(SCALE_NAME, "Scale");
-static PRM_Name nameOffset(TRANSLATE_NAME, "Offset");
-static PRM_Name nameRotate(ROTATE_NAME, "Rotate");
-static PRM_Name nameXOrd(XORD_NAME, "Xform Order");
+static PRM_Name nameScale(SCALE_NAME.first, SCALE_NAME.second);
+static PRM_Name nameOffset(TRANSLATE_NAME.first, TRANSLATE_NAME.second);
+static PRM_Name nameRotate(ROTATE_NAME.first, ROTATE_NAME.second);
+static PRM_Name nameXOrd(XORD_NAME.first, XORD_NAME.second);
+
+/// Mandelbrot Data
+//static PRM_Name nameMandelbrot
 
 /// ChoiceList Lists
 static PRM_Name xordMenuNames[] =
@@ -67,6 +70,7 @@ static PRM_Range rangeRotate
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, &defaultOffset), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate)
+
 
 
 /// Parm separator factory code. Call MAKE_SEP_NAME for each separator needed,

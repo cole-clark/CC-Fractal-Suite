@@ -9,15 +9,20 @@
 #pragma once
 
 #include <complex>
-
+#include <utility>
 #include <UT/UT_XformOrder.h>
 
 typedef std::complex<double> COMPLEX;          /// For Complex Numbers
 typedef std::pair<int, int> WORLDPIXELCOORDS;  /// For the pixel coordinates of the image
 typedef UT_XformOrder::rstOrder RSTORDER;      /// To shorten the RSTOrder of a Matrix
-
+typedef std::pair<const char*, const char*> NAMEPAIR; /// To shorten names
 /// Definitions for generically referring to parameter names
-static const char* TRANSLATE_NAME{ "offset" };
-static const char* ROTATE_NAME{ "rotate" };
-static const char* SCALE_NAME{ "scale" };
-static const char* XORD_NAME{ "xOrd" };
+/// Xform Names
+
+static NAMEPAIR TRANSLATE_NAME{ "offset", "Offset" };
+static NAMEPAIR ROTATE_NAME{ "rotate", "Rotate" };
+static NAMEPAIR SCALE_NAME{ "scale", "Scale" };
+static NAMEPAIR XORD_NAME{ "xOrd", "TRS Order"};
+
+/// Mandelbrot Names
+static const char* ITERS_NAME{ "iters" };  // iterations

@@ -216,10 +216,6 @@ COP2_Mandelbrot::newContextData
 		rotate,
 		scale,
 		scale,
-		rotatePivot_x,
-		rotatePivot_y,
-		scalePivot_x,
-		scalePivot_y,
 		xOrd);
 
 	// Fractal Attributes
