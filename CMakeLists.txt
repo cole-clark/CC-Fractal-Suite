@@ -15,6 +15,8 @@ add_library( ${library_name} SHARED
 	src/COP2_Lyapunov.h
 	src/COP2_Mandelbrot.cpp
     src/COP2_Mandelbrot.h
+	src/COP2_Pickover.cpp
+	src/COP2_Pickover.h
     src/Fractal.cpp
     src/Fractal.h
 	src/FractalNode.cpp
