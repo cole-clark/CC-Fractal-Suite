@@ -51,6 +51,9 @@ namespace CC
 	{
 		FractalSpace space;
 		Mandelbrot fractal;
+		COMPLEX poPoint{ 0.0f, 0.0f };
+		bool poMode{ false };
+		fpreal poLineRotate{ 0.0f };
 
 		COP2_PickoverData() = default;
 		virtual ~COP2_PickoverData();

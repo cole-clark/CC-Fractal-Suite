@@ -40,7 +40,6 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	int iterations{ 0 };
 	double smoothcolor = exp(-abs(-z));
 
-	// Iter here means Max Iterations.
 	while (iterations < mdata.iters)
 	{
 		z = calculate_z(z, c);
@@ -49,7 +48,7 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 		if (abs(z) > mdata.bailout)
 			break;
 
-		iterations++;
+		++iterations;
 	}
 
 	// Blackhole if maximum iterations reached
@@ -74,7 +73,7 @@ COMPLEX Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
 	return z;
 }
 
-double Mandelbrot::calculate_orbit_trap(COMPLEX coords)
+double Mandelbrot::calculate_pickover(COMPLEX coords)
 {
 	COMPLEX z{ 0 };
 	COMPLEX c{ coords.real(), coords.imag() };

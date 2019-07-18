@@ -19,9 +19,9 @@ COP2_Pickover::COP2_Pickover(
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
 /// Define node-specific attributes
-static PRM_Name namePickoverPoint("pickover_point", "Pickover Offset");
-static PRM_Name namePickoverMode("pickover_mode", "Pickover Use Line");
-static PRM_Name namePickoverLineRotate("pickover_line_rotate", "Pickover Line Rotate");
+static PRM_Name namePoPoint("pickover_point", "Pickover Offset");
+static PRM_Name namePoMode("pickover_mode", "Pickover Use Line");
+static PRM_Name namePoLineRotate("pickover_line_rotate", "Pickover Line Rotate");
 
 /// Create Template List
 PRM_Template
@@ -32,9 +32,9 @@ COP2_Pickover::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePickoverPoint, PRMzeroDefaults),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePickoverMode, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePickoverLineRotate, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePoPoint, PRMzeroDefaults),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePoMode, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults),
 	PRM_Template()
 };
 
@@ -78,6 +78,7 @@ COP2_Pickover::newContextData
 	// Create new empty data object.
 	COP2_PickoverData* data{ new COP2_PickoverData };
 	
+	// Set the image size and stash the parameters.
 	data->space.set_image_size(image_sizex, image_sizey);
 
 	XformStashData xformData;
@@ -87,38 +88,16 @@ COP2_Pickover::newContextData
 	MandelbrotStashData mandelData;
 	mandelData.evalArgs(this, t);
 	data->fractal = Mandelbrot(mandelData);
-	/*
 
-	// Set the size of the fractal space relative to this context's size.
-	
+	// Evaluate Node-specific parms
+	double poPointX = evalFloat(namePoPoint.getToken(), 0, t);
+	double poPointY = evalFloat(namePoPoint.getToken(), 1, t);
+	COMPLEX poPoint{ poPointX, poPointY };
+	data->poPoint = poPoint;
 
+	data->poMode = evalInt(namePoMode.getToken(), 0, t);
+	data->poLineRotate = evalFloat(namePoLineRotate.getToken(), 0, t);
 
-	// Sets the base xform of the fractal from the interface that will be calculated by
-	// The pixels.
-	data->space.set_xform(
-		offset_x,
-		offset_y,
-		rotate,
-		scale,
-		scale,
-		rotatePivot_x,
-		rotatePivot_y,
-		scalePivot_x,
-		scalePivot_y,
-		xOrd);
-
-	// Fractal Attributes
-	int iter = evalInt(nameIter.getToken(), 0, t);
-	double pow = evalFloat(namePow.getToken(), 0, t);
-	double bailout = evalFloat(nameBailout.getToken(), 0, t);
-	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
-	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
-	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
-
-	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
-	*/
 	return data;
 }
 
