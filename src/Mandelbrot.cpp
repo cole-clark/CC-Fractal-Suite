@@ -12,6 +12,7 @@
 
 using namespace CC;
 
+
 Mandelbrot::Mandelbrot(
 	int iters, double power, double bailout,
 	int jdepth, COMPLEX joffset,
@@ -23,7 +24,7 @@ Mandelbrot::Mandelbrot(
 		blackhole);
 }
 
-Mandelbrot::Mandelbrot(MandelbrotStashData & mandelData)
+Mandelbrot::Mandelbrot(MandelbrotStashData& mandelData)
 {
 	this->mdata = mandelData;
 }

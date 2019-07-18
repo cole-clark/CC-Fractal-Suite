@@ -72,6 +72,7 @@ FractalSpace::FractalSpace(int x, int y)
 }
 
 /// Constructs the matrix. from fed parameters
+/// TODO: Deprecate this method in favor of the stashdata method.
 void FractalSpace::set_xform(
 	double tx,
 	double ty,
@@ -89,9 +90,15 @@ void FractalSpace::set_xform(
 }
 
 
-void FractalSpace::set_xform(XformStashData & xdata)
+void FractalSpace::set_xform(XformStashData& xformData)
 {
-	this->xdata = xdata;
+	this->xdata = xformData;
+
+	post_matrix.xform(
+		xdata.xord,
+		xdata.offset_x, xdata.offset_y,
+		xdata.rotate,
+		xdata.scale, xdata.scale);
 }
 
 /// Return the fractal coordinates, which use the size of the image as a relative
