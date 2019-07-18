@@ -34,7 +34,7 @@ namespace CC
 
 		virtual ~Mandelbrot();
 		virtual FractalCoordsInfo calculate(COMPLEX coords) override;
-		double calculate_pickover(COMPLEX coords);
+		FractalCoordsInfo calculate_pickover(COMPLEX coords);
 
 		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
 

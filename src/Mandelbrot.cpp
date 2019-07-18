@@ -73,7 +73,7 @@ COMPLEX Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
 	return z;
 }
 
-double Mandelbrot::calculate_pickover(COMPLEX coords)
+FractalCoordsInfo Mandelbrot::calculate_pickover(COMPLEX coords)
 {
 	COMPLEX z{ 0 };
 	COMPLEX c{ coords.real(), coords.imag() };
@@ -101,7 +101,7 @@ double Mandelbrot::calculate_pickover(COMPLEX coords)
 			distance = zMinusPointModulus;
 	}
 
-	return distance;
+	return FractalCoordsInfo(0, 0, distance);
 }
 
 FractalCoordsInfo
