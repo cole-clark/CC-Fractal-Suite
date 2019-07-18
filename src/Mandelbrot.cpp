@@ -10,24 +10,27 @@
 
 #include "Mandelbrot.h"
 
+using namespace CC;
 
-CC::Mandelbrot::Mandelbrot()
+Mandelbrot::Mandelbrot(
+	int iters, double power, double bailout,
+	int jdepth, COMPLEX joffset,
+	bool blackhole)
 {
-	joffset = 0;
+	mdata = MandelbrotStashData(
+		iters, power, bailout,
+		jdepth, joffset,
+		blackhole);
 }
 
-CC::Mandelbrot::Mandelbrot(
-	int maxiter, double fpow, double bailout, int jdepth,
-	double joffset_x, double joffset_y, int blackhole) :
-	maxiter(maxiter), fpow(fpow), bailout(bailout), jdepth(jdepth), blackhole(blackhole)
+Mandelbrot::Mandelbrot(MandelbrotStashData & mandelData)
 {
-	// Create joffset as a complex number.
-	joffset = COMPLEX(joffset_x, joffset_y);
+	this->mdata = mandelData;
 }
 
-CC::Mandelbrot::~Mandelbrot() {}
+Mandelbrot::~Mandelbrot() {}
 
-CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
+FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 {
 	// Declares z and c where:Calculates the basic mandelbrot formula
 	// z = z^pow + c;
@@ -38,12 +41,12 @@ CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	double smoothcolor = exp(-abs(-z));
 
 	// Iter here means Max Iterations.
-	while (iterations < maxiter)
+	while (iterations < mdata.iters)
 	{
 		z = calculate_z(z, c);
 		smoothcolor += exp(-abs(-z));
 
-		if (abs(z) > bailout)
+		if (abs(z) > mdata.bailout)
 			break;
 
 		iterations++;
@@ -51,7 +54,7 @@ CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 
 	// Blackhole if maximum iterations reached
 	// Itersations set to -1 for bailed out values, making it a unique value for mattes.
-	if (blackhole && iterations == maxiter)
+	if (mdata.blackhole && iterations == mdata.iters)
 	{
 		iterations = -1;
 		smoothcolor = -1;
@@ -59,33 +62,33 @@ CC::FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	return FractalCoordsInfo(iterations, z, smoothcolor);
 }
 
-COMPLEX CC::Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
+COMPLEX Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
 {
 	// Calculate Mandelbrot
-	z = pow(z, fpow) + c;
+	z = pow(z, mdata.power) + c;
 
 	// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
-	for (int julia = 0; julia < jdepth; julia++)
-		z = pow(z, fpow) + joffset;
+	for (int julia = 0; julia < mdata.jdepth; julia++)
+		z = pow(z, mdata.power) + mdata.joffset;
 
 	return z;
 }
 
-double CC::Mandelbrot::calculate_orbit_trap(COMPLEX coords)
+double Mandelbrot::calculate_orbit_trap(COMPLEX coords)
 {
 	COMPLEX z{ 0 };
 	COMPLEX c{ coords.real(), coords.imag() };
 
 	double distance{ 1e10 };
 
-	for (int i = 0; i < maxiter; i++)
+	for (int i = 0; i < mdata.iters; i++)
 	{
 		// Calculate Mandelbrot
-		z = pow(z, fpow) + c;
+		z = pow(z, mdata.power) + c;
 
 		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
-		for (int julia = 0; julia < jdepth; julia++)
-			z = pow(z, fpow) + joffset;
+		for (int julia = 0; julia < mdata.jdepth; julia++)
+			z = pow(z, mdata.power) + mdata.joffset;
 
 
 		COMPLEX zMinusPoint{ 0 }; // TODO: Move to interface
@@ -102,8 +105,8 @@ double CC::Mandelbrot::calculate_orbit_trap(COMPLEX coords)
 	return distance;
 }
 
-CC::FractalCoordsInfo
-CC::Mandelbrot::calculate_lyapunov(COMPLEX coords)
+FractalCoordsInfo
+Mandelbrot::calculate_lyapunov(COMPLEX coords)
 {
 	double a = coords.real();
 	double b = coords.imag();
@@ -112,7 +115,7 @@ CC::Mandelbrot::calculate_lyapunov(COMPLEX coords)
 	double seq[] = { a, b, b, a, b, a, a, b, b, a, b, a };
 	int seq_size = 12;
 	double start = 0.5;
-	int N = maxiter;
+	int N = mdata.iters;
 	double MIN = -1, MAX = 2;
 
 	// Initialize N. TODO: Rename this horrible var

@@ -42,13 +42,20 @@ namespace CC
 	/// Struct meant to simplify the stashing of Mandelbrot parm data
 	struct MandelbrotStashData : public StashData
 	{
-		int iters{ 0 };
+		int iters{ 50 };
 		double power{ 0 };
 		double bailout{ 2 };
 		int jdepth{ 0 };
-		double joffset_x{ 0 };
-		double joffset_y{ 0 };
+		COMPLEX joffset{ 0.0f, 0.0f };
 		bool blackhole{ false };
+
+		MandelbrotStashData(
+			int iters = 50,
+			double power = 2,
+			double bailout = 2,
+			int jdepth = 0,
+			COMPLEX joffset = (0.0f, 0.0f),
+			bool blackhole = false);
 
 		void evalArgs(const OP_Node* node, fpreal t);
 	};

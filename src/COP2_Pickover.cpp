@@ -86,7 +86,7 @@ COP2_Pickover::newContextData
 
 	MandelbrotStashData mandelData;
 	mandelData.evalArgs(this, t);
-	//data->fractal = Mandelbrot(mandelData); // TODO: Implement
+	data->fractal = Mandelbrot(mandelData);
 	/*
 
 	// Set the size of the fractal space relative to this context's size.

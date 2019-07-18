@@ -227,8 +227,10 @@ COP2_Mandelbrot::newContextData
 	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
 
+	COMPLEX joffset{ joffset_x, joffset_y };
+
 	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
+		iter, pow, bailout, jdepth, joffset, blackhole);
 
 	return data;
 }

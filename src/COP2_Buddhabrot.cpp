@@ -230,8 +230,10 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
 	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
 
+	COMPLEX joffset{ joffset_x, joffset_y };
+
 	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset_x, joffset_y, blackhole);
+		iter, pow, bailout, jdepth, joffset, blackhole);
 
 
 	exint samples = evalInt(nameSamples.getToken(), 0, t);
@@ -313,7 +315,7 @@ std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, 
 		++n;
 		z = fractal->calculate_z(z, c);
 
-		if (abs(z) > fractal->bailout)
+		if (abs(z) > fractal->mdata.bailout)
 			break;
 
 		points.push_back(z);
@@ -321,7 +323,7 @@ std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, 
 	};
 
 	// Return nothing if the point is bounded within the mandelbrot set
-	if (fractal->blackhole)
+	if (fractal->mdata.blackhole)
 	{
 		if (n == nIterations)
 			return std::vector<COMPLEX>();
@@ -401,7 +403,7 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
-					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.maxiter);
+					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.mdata.iters);
 
 					for (COMPLEX& point : points)
 					{

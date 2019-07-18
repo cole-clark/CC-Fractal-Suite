@@ -20,22 +20,17 @@ namespace CC
 	class Mandelbrot : public Fractal
 	{
 	public:
-		int maxiter{ 0 };
-		double fpow{ 2 };  // Fractal Pow
-		double bailout{ 2 };
-		int jdepth{ 0 };  // Julia off by default.
-		COMPLEX joffset;
-		bool blackhole{ false };
+		MandelbrotStashData mdata;
 
-		Mandelbrot();
 		Mandelbrot(
-			int maxiter,
-			double pow,
-			double bailout,
-			int jdepth,
-			double joffset_x,
-			double joffset_y,
-			int blackhole);
+			int iters = 50,
+			double power = 2,
+			double bailout = 4,
+			int jdepth = 0,
+			COMPLEX joffset = (0, 0),
+			bool blackhole = false);
+
+		Mandelbrot(MandelbrotStashData& mandelData);
 
 		virtual ~Mandelbrot();
 		virtual FractalCoordsInfo calculate(COMPLEX coords) override;

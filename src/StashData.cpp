@@ -26,7 +26,24 @@ void XformStashData::evalArgs(const OP_Node* node, fpreal t)
 	xord = get_rst_order(node->evalInt(XORD_NAME.first, 0, t));
 }
 
+MandelbrotStashData::MandelbrotStashData(
+	int iters, double power, double bailout,
+	int jdepth, COMPLEX joffset,
+	bool blackhole) :
+		iters(iters), power(power), bailout(bailout),
+		jdepth(jdepth),
+		joffset(joffset),
+		blackhole(blackhole)
+{}
+
 void MandelbrotStashData::evalArgs(const OP_Node * node, fpreal t)
 {
-	//iterations = node->evalFloat();
+	iters = node->evalInt(ITERS_NAME.first, 0, t);
+	power = node->evalFloat(POWER_NAME.first, 0, t);
+	bailout = node->evalFloat(BAILOUT_NAME.first, 0, t);
+	jdepth = node->evalInt(JDEPTH_NAME.first, 0, t);
+	double joffset_x = node->evalFloat(JOFFSET_NAME.first, 0, t);
+	double joffset_y = node->evalFloat(JOFFSET_NAME.first, 1, t);
+	joffset = COMPLEX(joffset_x, joffset_y);
+	blackhole = node->evalInt(JOFFSET_NAME.first, 1, t) == 1;  // makes boolean
 }
