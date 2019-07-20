@@ -50,7 +50,7 @@ namespace CC
 	struct COP2_PickoverData : public COP2_ContextData
 	{
 		FractalSpace space;
-		Mandelbrot fractal;
+		Pickover fractal;
 		COMPLEX poPoint{ 0.0f, 0.0f };
 		bool poMode{ false };
 		fpreal poLineRotate{ 0.0f };

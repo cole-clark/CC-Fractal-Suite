@@ -127,7 +127,7 @@ COP2_Pickover::generateTile(COP2_Context& context, TIL_TileList* tileList)
 		{
 			WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
 			COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
-			FractalCoordsInfo pixelInfo = data->fractal.calculate_pickover(fractalCoords);
+			FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
 
 			if (tileIndex == 0)
 			{

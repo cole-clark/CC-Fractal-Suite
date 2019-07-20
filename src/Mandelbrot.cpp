@@ -74,37 +74,6 @@ COMPLEX Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
 	return z;
 }
 
-FractalCoordsInfo Mandelbrot::calculate_pickover(COMPLEX coords)
-{
-	COMPLEX z{ 0 };
-	COMPLEX c{ coords.real(), coords.imag() };
-
-	double distance{ 1e10 };
-
-	for (int i = 0; i < data.iters; i++)
-	{
-		// Calculate Mandelbrot
-		z = pow(z, data.power) + c;
-
-		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
-		for (int julia = 0; julia < data.jdepth; julia++)
-			z = pow(z, data.power) + data.joffset;
-
-
-		COMPLEX zMinusPoint{ 0 }; // TODO: Move to interface
-		zMinusPoint -= z;
-
-		double zMinusPointModulus = std::sqrt(
-			std::pow(z.imag() - z.real(), 2) + 
-			std::pow(zMinusPoint.imag() - zMinusPoint.real(), 2));
-
-		if (zMinusPointModulus < distance)
-			distance = zMinusPointModulus;
-	}
-
-	return FractalCoordsInfo(0, 0, distance);
-}
-
 FractalCoordsInfo
 Mandelbrot::calculate_lyapunov(COMPLEX coords)
 {
@@ -163,4 +132,35 @@ Pickover::Pickover(
 Pickover::Pickover(PickoverStashData & pickoverData)
 {
 	data = pickoverData;
+}
+
+FractalCoordsInfo CC::Pickover::calculate(COMPLEX coords)
+{
+	COMPLEX z{ 0 };
+	COMPLEX c{ coords.real(), coords.imag() };
+
+	double distance{ 1e10 };
+
+	for (int i = 0; i < data.iters; i++)
+	{
+		// Calculate Mandelbrot
+		z = pow(z, data.power) + c;
+
+		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
+		for (int julia = 0; julia < data.jdepth; julia++)
+			z = pow(z, data.power) + data.joffset;
+
+		COMPLEX zDist{ 0 };
+		zDist = data.popoint - z;
+
+		// Calculates the magnitude of the complex number sqrt(a^2 + b^2)
+		double zMagnitude = std::sqrt(
+			std::pow(z.imag() - z.real(), 2) +
+			std::pow(zDist.imag() - zDist.real(), 2));
+
+		if (zMagnitude < distance)
+			distance = zMagnitude;
+	}
+
+	return FractalCoordsInfo(0, 0, distance);
 }

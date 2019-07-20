@@ -34,8 +34,6 @@ namespace CC
 
 		virtual ~Mandelbrot();
 		virtual FractalCoordsInfo calculate(COMPLEX coords) override;
-		FractalCoordsInfo calculate_pickover(COMPLEX coords);
-
 		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
 
 		FractalCoordsInfo calculate_lyapunov(COMPLEX coords);
@@ -58,5 +56,7 @@ namespace CC
 			bool pomode = false);
 
 		Pickover(PickoverStashData& pickoverData);
+
+		virtual FractalCoordsInfo calculate(COMPLEX coords);
 	};
 }
