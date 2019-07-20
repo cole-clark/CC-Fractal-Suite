@@ -59,4 +59,24 @@ namespace CC
 
 		void evalArgs(const OP_Node* node, fpreal t);
 	};
+
+	struct PickoverStashData : public MandelbrotStashData
+	{
+		COMPLEX popoint{ 0, 0 };
+		double porotate{ 0 };
+		bool pomode{ false };
+
+		PickoverStashData(
+			int iters = 50,
+			double power = 2,
+			double bailout = 2,
+			int jdepth = 0,
+			COMPLEX joffset = (0.0f, 0.0f),
+			bool blackhole = false,
+			COMPLEX popoint = (0.0f, 0.0f),
+			double porotate = 0.0f,
+			bool pomode = false);
+
+		void evalArgs(const OP_Node* node, fpreal t);
+	};
 }

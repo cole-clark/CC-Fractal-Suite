@@ -20,7 +20,7 @@ namespace CC
 	class Mandelbrot : public Fractal
 	{
 	public:
-		MandelbrotStashData mdata;
+		MandelbrotStashData data;
 
 		Mandelbrot(
 			int iters = 50,
@@ -39,5 +39,24 @@ namespace CC
 		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
 
 		FractalCoordsInfo calculate_lyapunov(COMPLEX coords);
+	};
+
+	class Pickover : public Mandelbrot
+	{
+	public:
+		PickoverStashData data;
+
+		Pickover(
+			int iters = 50,
+			double power = 2,
+			double bailout = 4,
+			int jdepth = 0,
+			COMPLEX joffset = (0, 0),
+			bool blackhole = false,
+			COMPLEX popoint = (0.0f, 0.0f),
+			double porotate = 0.0f,
+			bool pomode = false);
+
+		Pickover(PickoverStashData& pickoverData);
 	};
 }

@@ -315,7 +315,7 @@ std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, 
 		++n;
 		z = fractal->calculate_z(z, c);
 
-		if (abs(z) > fractal->mdata.bailout)
+		if (abs(z) > fractal->data.bailout)
 			break;
 
 		points.push_back(z);
@@ -323,7 +323,7 @@ std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, 
 	};
 
 	// Return nothing if the point is bounded within the mandelbrot set
-	if (fractal->mdata.blackhole)
+	if (fractal->data.blackhole)
 	{
 		if (n == nIterations)
 			return std::vector<COMPLEX>();
@@ -403,7 +403,7 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
-					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.mdata.iters);
+					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.data.iters);
 
 					for (COMPLEX& point : points)
 					{
@@ -453,6 +453,6 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 			}
 		}
 	}
-
+	// TODO: test deleting sdata.
 	return error();
 }

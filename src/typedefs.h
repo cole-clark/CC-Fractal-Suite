@@ -31,3 +31,8 @@ static NAMEPAIR BAILOUT_NAME{ "bailout", "Bailout" };
 static NAMEPAIR JDEPTH_NAME{ "jdepth", "Julia Depth" };
 static NAMEPAIR JOFFSET_NAME{ "joffset", "Julia Offset" };
 static NAMEPAIR BLACKHOLE_NAME{ "blackhole", "Blackhole" };
+
+/// Pickover names
+static NAMEPAIR POPOINT_NAME{ "popoint", "Pickover Point" };
+static NAMEPAIR POROTATE_NAME{ "porotate", "Pickover Rotate" };
+static NAMEPAIR POMODE_NAME{ "pomode", "Pickover Mode" };

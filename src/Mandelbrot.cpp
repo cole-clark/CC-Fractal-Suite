@@ -18,7 +18,7 @@ Mandelbrot::Mandelbrot(
 	int jdepth, COMPLEX joffset,
 	bool blackhole)
 {
-	mdata = MandelbrotStashData(
+	data = MandelbrotStashData(
 		iters, power, bailout,
 		jdepth, joffset,
 		blackhole);
@@ -26,7 +26,7 @@ Mandelbrot::Mandelbrot(
 
 Mandelbrot::Mandelbrot(MandelbrotStashData& mandelData)
 {
-	this->mdata = mandelData;
+	data = mandelData;
 }
 
 Mandelbrot::~Mandelbrot() {}
@@ -41,12 +41,12 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	int iterations{ 0 };
 	double smoothcolor = exp(-abs(-z));
 
-	while (iterations < mdata.iters)
+	while (iterations < data.iters)
 	{
 		z = calculate_z(z, c);
 		smoothcolor += exp(-abs(-z));
 
-		if (abs(z) > mdata.bailout)
+		if (abs(z) > data.bailout)
 			break;
 
 		++iterations;
@@ -54,7 +54,7 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 
 	// Blackhole if maximum iterations reached
 	// Itersations set to -1 for bailed out values, making it a unique value for mattes.
-	if (mdata.blackhole && iterations == mdata.iters)
+	if (data.blackhole && iterations == data.iters)
 	{
 		iterations = -1;
 		smoothcolor = -1;
@@ -65,11 +65,11 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 COMPLEX Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
 {
 	// Calculate Mandelbrot
-	z = pow(z, mdata.power) + c;
+	z = pow(z, data.power) + c;
 
 	// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
-	for (int julia = 0; julia < mdata.jdepth; julia++)
-		z = pow(z, mdata.power) + mdata.joffset;
+	for (int julia = 0; julia < data.jdepth; julia++)
+		z = pow(z, data.power) + data.joffset;
 
 	return z;
 }
@@ -81,14 +81,14 @@ FractalCoordsInfo Mandelbrot::calculate_pickover(COMPLEX coords)
 
 	double distance{ 1e10 };
 
-	for (int i = 0; i < mdata.iters; i++)
+	for (int i = 0; i < data.iters; i++)
 	{
 		// Calculate Mandelbrot
-		z = pow(z, mdata.power) + c;
+		z = pow(z, data.power) + c;
 
 		// Calculate Julias, if present. A jdepth of 1 is the canonical Julia Set.
-		for (int julia = 0; julia < mdata.jdepth; julia++)
-			z = pow(z, mdata.power) + mdata.joffset;
+		for (int julia = 0; julia < data.jdepth; julia++)
+			z = pow(z, data.power) + data.joffset;
 
 
 		COMPLEX zMinusPoint{ 0 }; // TODO: Move to interface
@@ -115,7 +115,7 @@ Mandelbrot::calculate_lyapunov(COMPLEX coords)
 	double seq[] = { a, b, b, a, b, a, a, b, b, a, b, a };
 	int seq_size = 12;
 	double start = 0.5;
-	int N = mdata.iters;
+	int N = data.iters;
 	double MIN = -1, MAX = 2;
 
 	// Initialize N. TODO: Rename this horrible var
@@ -147,4 +147,20 @@ Mandelbrot::calculate_lyapunov(COMPLEX coords)
 		lmb = (int)(lmb / MAX * 10240);
 
 	return FractalCoordsInfo(lmb, lmb);
+}
+
+Pickover::Pickover(
+	int iters, double power, double bailout,
+	int jdepth, COMPLEX joffset, bool blackhole,
+	COMPLEX popoint, double porotate, bool pomode)
+{
+	data = PickoverStashData(
+		iters, power, bailout,
+		jdepth, joffset, blackhole,
+		popoint, porotate, pomode);
+}
+
+Pickover::Pickover(PickoverStashData & pickoverData)
+{
+	data = pickoverData;
 }

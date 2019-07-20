@@ -19,9 +19,9 @@ COP2_Pickover::COP2_Pickover(
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
 /// Define node-specific attributes
-static PRM_Name namePoPoint("pickover_point", "Pickover Offset");
-static PRM_Name namePoMode("pickover_mode", "Pickover Use Line");
-static PRM_Name namePoLineRotate("pickover_line_rotate", "Pickover Line Rotate");
+static PRM_Name namePoPoint(POPOINT_NAME.first, POPOINT_NAME.second);
+static PRM_Name namePoMode(POMODE_NAME.first, POMODE_NAME.second);
+static PRM_Name namePoLineRotate(POROTATE_NAME.first, POROTATE_NAME.second);
 
 /// Create Template List
 PRM_Template
@@ -80,43 +80,14 @@ COP2_Pickover::newContextData
 	
 	// Set the image size and stash the parameters.
 	data->space.set_image_size(image_sizex, image_sizey);
-	/*
-	// Space Xform Attributes
-	double scale = evalFloat(nameScale.getToken(), 0, t);
-	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
 
-	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
-
-	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
-	// The UI artificially inflates the numbers to make them more user friendly at
-	// shallow depths.
-	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
-	offset_x = offset_x / 1000;
-	offset_y = offset_y / 1000;
-
-	// Set the size of the fractal space relative to this context's size.
-	data->space.set_image_size(image_sizex, image_sizey);
-
-
-	// Sets the base xform of the fractal from the interface that will be calculated by
-	// The pixels.
-	data->space.set_xform(
-		offset_x,
-		offset_y,
-		rotate,
-		scale,
-		scale,
-		xOrd);
-	*/
 	XformStashData xformData;
 	xformData.evalArgs(this, t);
 	data->space.set_xform(xformData);
 
-	MandelbrotStashData mandelData;
-	mandelData.evalArgs(this, t);
-	data->fractal = Mandelbrot(mandelData);
+	PickoverStashData pickoverData;
+	pickoverData.evalArgs(this, t);
+	data->fractal = Pickover(pickoverData);
 
 	// Evaluate Node-specific parms
 	double poPointX = evalFloat(namePoPoint.getToken(), 0, t);

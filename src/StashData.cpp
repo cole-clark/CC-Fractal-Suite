@@ -47,3 +47,24 @@ void MandelbrotStashData::evalArgs(const OP_Node * node, fpreal t)
 	joffset = COMPLEX(joffset_x, joffset_y);
 	blackhole = node->evalInt(JOFFSET_NAME.first, 1, t) == 1;  // makes boolean
 }
+
+PickoverStashData::PickoverStashData(
+	int iters, double power, double bailout,
+	int jdepth, COMPLEX joffset, bool blackhole,
+	COMPLEX popoint, double porotate, bool pomode) :
+	MandelbrotStashData(iters, power, bailout, jdepth, joffset, blackhole),
+	popoint(popoint), porotate(porotate), pomode(pomode)
+{}
+
+void PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
+{
+	// Call the mandelbrot stash values first
+	MandelbrotStashData::evalArgs(node, t);
+
+	// Call pickover-specific methods.
+	double popoint_x = node->evalFloat(POPOINT_NAME.first, 0, t);
+	double popoint_y = node->evalFloat(POPOINT_NAME.first, 1, t);
+	popoint = COMPLEX(popoint_x, popoint_y);
+	porotate = node->evalFloat(POROTATE_NAME.first, 0, t);
+	pomode = node->evalInt(POMODE_NAME.first, 0, t);
+}
