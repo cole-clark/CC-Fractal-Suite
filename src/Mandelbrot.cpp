@@ -121,7 +121,7 @@ Mandelbrot::calculate_lyapunov(COMPLEX coords)
 Pickover::Pickover(
 	int iters, double power, double bailout,
 	int jdepth, COMPLEX joffset, bool blackhole,
-	COMPLEX popoint, double porotate, bool pomode)
+	COMPLEX popoint, double porotate, int pomode)
 {
 	data = PickoverStashData(
 		iters, power, bailout,
@@ -134,7 +134,7 @@ Pickover::Pickover(PickoverStashData & pickoverData)
 	data = pickoverData;
 }
 
-FractalCoordsInfo CC::Pickover::calculate(COMPLEX coords)
+FractalCoordsInfo Pickover::calculate(COMPLEX coords)
 {
 	COMPLEX z{ 0 };
 	COMPLEX c{ coords.real(), coords.imag() };
@@ -150,17 +150,58 @@ FractalCoordsInfo CC::Pickover::calculate(COMPLEX coords)
 		for (int julia = 0; julia < data.jdepth; julia++)
 			z = pow(z, data.power) + data.joffset;
 
-		COMPLEX zDist{ 0 };
-		zDist = data.popoint - z;
+		// Calculate the distance
+		double zLength{ 0 };
+		if (data.pomode == 0) // Calculate Point
+			zLength = distance_to_point(z, data.popoint);
+		else  // Calculate Line
+			zLength = distance_to_line(z, data.popoint, data.porotate);
 
-		// Calculates the magnitude of the complex number sqrt(a^2 + b^2)
-		double zMagnitude = std::sqrt(
-			std::pow(z.imag() - z.real(), 2) +
-			std::pow(zDist.imag() - zDist.real(), 2));
-
-		if (zMagnitude < distance)
-			distance = zMagnitude;
+		// Assign distance if a smaller length than current distance.
+		if (zLength < distance)
+			distance = zLength;
 	}
 
 	return FractalCoordsInfo(0, 0, distance);
+}
+
+double Pickover::distance_to_point(COMPLEX z, COMPLEX point)
+{
+	COMPLEX zDist{ 0 };
+	zDist = point - z;
+
+	// Calculates the magnitude of the complex number
+	// sqrt(a^2 + b^2)
+	double distance = std::sqrt(
+		std::pow(z.imag() - z.real(), 2) +
+		std::pow(zDist.imag() - zDist.real(), 2));
+
+	return distance;
+}
+
+double Pickover::distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta)
+{
+	// Get two points of a vector from a rotation and offset value
+	auto m = UT_Matrix2T<fpreal>::rotationMat(SYSdegToRad(theta));
+	COMPLEX pntA = { m(0, 0), m(0, 1) };
+	COMPLEX pntB = { m(1, 0), m(1, 1) };
+	pntA += offset;
+	pntB += offset;
+
+	// Calculate distance from point to line.
+	// Math taken from line defined by equation at:
+	// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+
+	double numerator = abs(
+		pntB.imag() - pntA.imag() * z.real() -
+		pntB.real() - pntA.real() * z.imag() +
+		pntB.real() * pntB.imag() - pntB.imag() * pntA.real()
+	);
+
+	double denominator = sqrt(
+		pow(pntB.imag() - pntA.imag(), 2) +
+		pow(pntB.real() - pntA.real(), 2)
+	);
+
+	return numerator / denominator;
 }

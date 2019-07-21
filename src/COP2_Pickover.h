@@ -41,6 +41,9 @@ namespace CC
 		/// Create the image data for a single tile list -- multithreaded call
 		virtual OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tilelist);
 
+		/// Use to hide/unhide parameters.
+		virtual bool updateParmsFlags() override;
+
 		/// Destructor
 		virtual ~COP2_Pickover();
 	};
@@ -52,7 +55,7 @@ namespace CC
 		FractalSpace space;
 		Pickover fractal;
 		COMPLEX poPoint{ 0.0f, 0.0f };
-		bool poMode{ false };
+		int poMode{ false };
 		fpreal poLineRotate{ 0.0f };
 
 		COP2_PickoverData() = default;

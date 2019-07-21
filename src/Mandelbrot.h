@@ -53,10 +53,14 @@ namespace CC
 			bool blackhole = false,
 			COMPLEX popoint = (0.0f, 0.0f),
 			double porotate = 0.0f,
-			bool pomode = false);
+			int pomode = false);
 
 		Pickover(PickoverStashData& pickoverData);
-
+	
 		virtual FractalCoordsInfo calculate(COMPLEX coords);
+
+		/// Where z is the current iteration, and point is a reference point.
+		double distance_to_point(COMPLEX z, COMPLEX point);
+		double distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta);
 	};
 }

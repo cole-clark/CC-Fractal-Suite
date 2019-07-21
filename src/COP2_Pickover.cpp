@@ -6,6 +6,7 @@
  */
 
 #include "COP2_Pickover.h"
+#include <CH/CH_Manager.h>
 
 using namespace CC;
 
@@ -23,6 +24,27 @@ static PRM_Name namePoPoint(POPOINT_NAME.first, POPOINT_NAME.second);
 static PRM_Name namePoMode(POMODE_NAME.first, POMODE_NAME.second);
 static PRM_Name namePoLineRotate(POROTATE_NAME.first, POROTATE_NAME.second);
 
+/// Define node-specific ranges
+static PRM_Range rangePoRotate
+{
+	PRM_RangeFlag::PRM_RANGE_UI, -180,
+	PRM_RangeFlag::PRM_RANGE_UI, 180
+};
+
+/// ChoiceList Lists
+static PRM_Name poModeMenuNames[] =
+{
+	PRM_Name("point", "Point"),
+	PRM_Name("line", "Line"),
+	PRM_Name(0)
+};
+
+static PRM_ChoiceList poModeMenu
+(
+(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+::poModeMenuNames
+);
+
 /// Create Template List
 PRM_Template
 COP2_Pickover::myTemplateList[]
@@ -32,9 +54,9 @@ COP2_Pickover::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &namePoMode, PRMzeroDefaults, &poModeMenu),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePoPoint, PRMzeroDefaults),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePoMode, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults, 0, &rangePoRotate),
 	PRM_Template()
 };
 
@@ -148,6 +170,26 @@ COP2_Pickover::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	delete[] dest;
 
 	return error();
+}
+
+bool COP2_Pickover::updateParmsFlags()
+{
+	// Determine Mode State
+	fpreal t = CHgetEvalTime();
+	int mode = evalInt(namePoMode.getToken(), 0, t);
+	
+	// Set variables for hiding
+	bool displayRotate{ false };
+
+	if (mode == 1)
+		displayRotate = true;
+
+	// Call parent's updateParmFlags to avoid recursion.
+	bool changed = COP2_Generator::updateParmsFlags();
+
+	changed |= setVisibleState(namePoLineRotate.getToken(), displayRotate);
+
+	return changed;
 }
 
 /// Destructor
