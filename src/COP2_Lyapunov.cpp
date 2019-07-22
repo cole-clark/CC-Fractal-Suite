@@ -17,14 +17,14 @@ COP2_Lyapunov::COP2_Lyapunov(
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
-/// Public Constructor
-OP_Node *
-COP2_Lyapunov::myConstructor(
-	OP_Network* net,
-	const char* name,
-	OP_Operator* op)
+TIL_Sequence* COP2_Lyapunov::cookSequenceInfo(OP_ERROR & error)
 {
-	return new COP2_Lyapunov(net, name, op);
+	return nullptr;
+}
+
+COP2_ContextData* COP2_Lyapunov::newContextData(const TIL_Plane *, int, float t, int xres, int yres, int thread, int max_threads)
+{
+	return nullptr;
 }
 
 /// Assign Template Pair of node to generator

@@ -55,7 +55,7 @@ void newCop2Operator(OP_OperatorTable* table)
 	OP_Operator* lyapunov = new OP_Operator(
 		"cc::fractal_lyapunov", // Node Name
 		"CC Fractal Lyapunov", // Pretty Name
-		COP2_Lyapunov::myConstructor,
+		&OP::get_new_op<COP2_Lyapunov>,
 		&COP2_Lyapunov::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs

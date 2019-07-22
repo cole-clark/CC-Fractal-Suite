@@ -115,10 +115,10 @@ COP2_Pickover::newContextData
 	double poPointX = evalFloat(namePoPoint.getToken(), 0, t);
 	double poPointY = evalFloat(namePoPoint.getToken(), 1, t);
 	COMPLEX poPoint{ poPointX, poPointY };
-	data->poPoint = poPoint;
+	data->fractal.data.popoint = poPoint;
 
-	data->poMode = evalInt(namePoMode.getToken(), 0, t);
-	data->poLineRotate = evalFloat(namePoLineRotate.getToken(), 0, t);
+	data->fractal.data.pomode = evalInt(namePoMode.getToken(), 0, t);
+	data->fractal.data.porotate = evalFloat(namePoLineRotate.getToken(), 0, t);
 
 	return data;
 }

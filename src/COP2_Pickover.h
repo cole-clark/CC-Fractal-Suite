@@ -54,9 +54,6 @@ namespace CC
 	{
 		FractalSpace space;
 		Pickover fractal;
-		COMPLEX poPoint{ 0.0f, 0.0f };
-		int poMode{ false };
-		fpreal poLineRotate{ 0.0f };
 
 		COP2_PickoverData() = default;
 		virtual ~COP2_PickoverData();
