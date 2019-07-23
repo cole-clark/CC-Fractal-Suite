@@ -71,5 +71,6 @@ void PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
 
 void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 {
+	iters = node->evalFloat(ITERS_NAME.first, 0, t);
 
 }

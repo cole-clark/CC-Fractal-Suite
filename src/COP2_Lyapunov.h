@@ -36,7 +36,7 @@ namespace CC
 			float t, int xres, int yres, int thread, int max_threads);
 
 		/// Creates the image. This is called by multiple worker threads by Houdini.
-		OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tileList) { return error(); };
+		OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tileList);
 	};
 
 	struct COP2_LyapunovData : public COP2_ContextData

@@ -82,7 +82,7 @@ namespace CC
 
 	struct LyapunovStashData : public StashData
 	{
-
+		int iters{ 50 };
 		void evalArgs(const OP_Node* node, fpreal t);
 	};
 }

@@ -33,6 +33,7 @@ namespace CC
 		Mandelbrot(MandelbrotStashData& mandelData);
 
 		virtual ~Mandelbrot();
+
 		virtual FractalCoordsInfo calculate(COMPLEX coords) override;
 		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
 	};

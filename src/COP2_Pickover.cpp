@@ -111,15 +111,6 @@ COP2_Pickover::newContextData
 	pickoverData.evalArgs(this, t);
 	data->fractal = Pickover(pickoverData);
 
-	// Evaluate Node-specific parms
-	double poPointX = evalFloat(namePoPoint.getToken(), 0, t);
-	double poPointY = evalFloat(namePoPoint.getToken(), 1, t);
-	COMPLEX poPoint{ poPointX, poPointY };
-	data->fractal.data.popoint = poPoint;
-
-	data->fractal.data.pomode = evalInt(namePoMode.getToken(), 0, t);
-	data->fractal.data.porotate = evalFloat(namePoLineRotate.getToken(), 0, t);
-
 	return data;
 }
 
@@ -140,7 +131,7 @@ COP2_Pickover::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	exint i;  // Huge because number of pixels may be crazy
 	WORLDPIXELCOORDS worldPixel;
 	COMPLEX fractalCoords;
-	// Comes from TIL/TIL_Tile.h
+
 	FOR_EACH_UNCOOKED_TILE(tileList, tile, tileIndex)
 	{
 		tile->getSize(size_x, size_y);
@@ -154,12 +145,7 @@ COP2_Pickover::generateTile(COP2_Context& context, TIL_TileList* tileList)
 			if (tileIndex == 0)
 			{
 				dest[i] = pixelInfo.smooth;
-
 			}
-			else if (tileIndex == 1)
-				dest[i] = pixelInfo.z.real();
-			else if (tileIndex == 2)
-				dest[i] = pixelInfo.z.imag();
 			else
 				dest[i] = 0.0f;
 		}

@@ -2,7 +2,8 @@
 	Cole Clark's Fractal Suite
 
 	FractalNode.h
-	Header defining shared fundamentals of Fractal Nodes
+	Header defining shared fundamentals of Fractal Nodes.
+	Note that this file is header-only.
  */
 
 #pragma once
@@ -51,9 +52,9 @@ static PRM_ChoiceList xOrdMenu
 /// Xform Defaults Data
 
 static PRM_Default defaultScale{ 1 };
-static PRM_Default defaultOffset{ 0, 0 };
-static PRM_Default defaultRotate{ 0 };
-static PRM_Default defaultXOrd{ 0 };  // TRS
+static PRM_Default defaultOffset[] = { 0.0f, 0.0f };
+static PRM_Default defaultRotate{ 0.0f };
+static PRM_Default defaultXOrd{ 0.0f };  // TRS
 
 
 /// Mandelbrot Defaults Data
@@ -116,7 +117,7 @@ static PRM_Name nameSepB("sep_B", "Sep B");
 #define TEMPLATES_XFORM \
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu), \
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale), \
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, &defaultOffset), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate)
 
 /// Definition of Mandelbrot Templates. Add 7 to COP_SWITCHER calls
@@ -129,7 +130,6 @@ static PRM_Name nameSepB("sep_B", "Sep B");
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults)
 
-
 namespace CC
 {
 	/// Boilerplate code calling the constructor for newCop2Operator.
@@ -137,7 +137,7 @@ namespace CC
 	/// This is only meant for vanilla calls.
 	/// I read online that template calls like this must be declared
 	/// in the header, which is why it's here.
-	static class OP
+	class OP
 	{
 	public:
 		template <typename T>

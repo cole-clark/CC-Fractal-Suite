@@ -29,6 +29,7 @@ COP2_Mandelbrot::COP2_Mandelbrot(
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
 /// Public Constructor
+// TODO: Delete this and change the register.cpp for this
 OP_Node *
 COP2_Mandelbrot::myConstructor(
 	OP_Network* net,

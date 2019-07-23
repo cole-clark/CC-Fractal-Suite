@@ -19,7 +19,6 @@ add_library( ${library_name} SHARED
 	src/COP2_Pickover.h
     src/Fractal.cpp
     src/Fractal.h
-	src/FractalNode.cpp
 	src/FractalNode.h
     src/FractalSpace.cpp
     src/FractalSpace.h

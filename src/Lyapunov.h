@@ -17,8 +17,10 @@ namespace CC
 	public:
 		LyapunovStashData data;
 
-		FractalCoordsInfo calculate(COMPLEX coords);
+		Lyapunov() = default;
+		Lyapunov(LyapunovStashData& lyaData);
 		virtual ~Lyapunov();
 
+		FractalCoordsInfo calculate(COMPLEX coords);
 	};
 }
