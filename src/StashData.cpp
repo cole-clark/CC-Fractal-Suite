@@ -68,3 +68,8 @@ void PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
 	porotate = node->evalFloat(POROTATE_NAME.first, 0, t);
 	pomode = node->evalInt(POMODE_NAME.first, 0, t);
 }
+
+void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
+{
+
+}

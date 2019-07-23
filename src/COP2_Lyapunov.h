@@ -9,8 +9,8 @@
 
 #include <COP2/COP2_Generator.h>
 
-#include "FractalNode.h"
-#include "COP2_Mandelbrot.h"
+#include "Lyapunov.h"
+#include "FractalSpace.h"
 
 namespace CC
 {
@@ -42,9 +42,9 @@ namespace CC
 	struct COP2_LyapunovData : public COP2_ContextData
 	{
 		FractalSpace space;
-		//Lyapunov fractal; TODO: IMPLEMENT THIS
+		Lyapunov fractal;
 
 		COP2_LyapunovData() = default;
-		//virtual ~COP2_ContextData();
+		virtual ~COP2_LyapunovData();
 	};
 }

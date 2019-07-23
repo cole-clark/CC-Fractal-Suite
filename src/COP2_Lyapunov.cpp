@@ -6,6 +6,7 @@
  */ 
 
 #include "COP2_Lyapunov.h"
+#include "FractalNode.h"
 
 COP_GENERATOR_SWITCHER(5, "Fractal");
 
@@ -49,3 +50,7 @@ COP2_Lyapunov::myTemplateList[]
 	TEMPLATES_XFORM,
 	PRM_Template()
 };
+
+CC::COP2_LyapunovData::~COP2_LyapunovData()
+{
+}

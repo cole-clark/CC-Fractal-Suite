@@ -79,4 +79,10 @@ namespace CC
 
 		void evalArgs(const OP_Node* node, fpreal t);
 	};
+
+	struct LyapunovStashData : public StashData
+	{
+
+		void evalArgs(const OP_Node* node, fpreal t);
+	};
 }

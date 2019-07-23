@@ -35,8 +35,6 @@ namespace CC
 		virtual ~Mandelbrot();
 		virtual FractalCoordsInfo calculate(COMPLEX coords) override;
 		COMPLEX calculate_z(COMPLEX z, COMPLEX c);
-
-		FractalCoordsInfo calculate_lyapunov(COMPLEX coords);
 	};
 
 	class Pickover : public Mandelbrot

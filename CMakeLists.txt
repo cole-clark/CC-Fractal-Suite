@@ -23,6 +23,8 @@ add_library( ${library_name} SHARED
 	src/FractalNode.h
     src/FractalSpace.cpp
     src/FractalSpace.h
+	src/Lyapunov.cpp
+	src/Lyapunov.h
     src/Mandelbrot.cpp
     src/Mandelbrot.h
     src/register.cpp
