@@ -18,11 +18,14 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 {
 	double a = coords.real();
 	double b = coords.imag();
-
+	double c = SYSlerp(a, b, 0.5f);
 	// TODO: Find a way to push this to the UI
-	double seq[] = { a, b, b, a, b, a, a, b, b, a, b, a };
+	double seq[] = { a, b, c, a, c, a, a, b, c, a, b, c };
 	int seq_size = 12;
+	// TODO: Push these to UI. This may end up not working well
 	double start = 0.5;
+	int max_value = 8192;
+
 	int N = data.iters;
 	double MIN = -1, MAX = 2;
 
@@ -50,9 +53,9 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	delete X;
 
 	if (lmb < 0)
-		lmb = (int)(lmb / MIN * 10240);
+		lmb = (int)(lmb / MIN * max_value);
 	else
-		lmb = (int)(lmb / MAX * 10240);
+		lmb = (int)(lmb / MAX * max_value);
 
 	return FractalCoordsInfo(lmb, lmb);
 }

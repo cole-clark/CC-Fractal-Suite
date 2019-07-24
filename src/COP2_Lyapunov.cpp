@@ -8,9 +8,28 @@
 #include "COP2_Lyapunov.h"
 #include "FractalNode.h"
 
-COP_GENERATOR_SWITCHER(6, "Fractal");
+COP_GENERATOR_SWITCHER(10, "Fractal");
 
 using namespace CC;
+
+/// Declare Parm Names
+static PRM_Name nameSeq("seq", "Sequence");
+static PRM_Name nameSeqWeights("weight_#", "Weight #");
+static PRM_Name nameStart("seqstart", "Seq Start Value");
+static PRM_Name nameMaxValue("maxval", "Max Value");
+static PRM_Name nameMinMax("minmax", "Min Max");
+
+/// Declare Defaults
+static PRM_Default defaultMaxValue(8192);
+static PRM_Default defaultStart(0.5);
+static PRM_Default defaultMinMax[] = { 0.0f, 1.0f };
+
+/// Deflare Parm Ranges
+static PRM_Range rangeMaxValue
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_UI, defaultMaxValue.getFloat()
+};
 
 /// Private Constructor
 COP2_Lyapunov::COP2_Lyapunov(
@@ -68,6 +87,13 @@ OP_VariablePair COP2_Lyapunov::myVariablePair
 	&COP2_Node::myVariablePair
 );
 
+/// Multiparm Template
+static PRM_Template multiparmSeqTemps[] =
+{
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeqWeights, PRMzeroDefaults),
+	PRM_Template()
+};
+
 /// Create Template List
 PRM_Template
 COP2_Lyapunov::myTemplateList[]
@@ -76,6 +102,10 @@ COP2_Lyapunov::myTemplateList[]
 	TEMPLATES_XFORM,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameStart, &defaultStart),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMaxValue, &defaultMaxValue, 0, &rangeMaxValue),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameMinMax, defaultMinMax),
+	PRM_Template(PRM_MULTITYPE_LIST, multiparmSeqTemps, 1, &nameSeq,PRMoneDefaults),
 	PRM_Template()
 };
 
