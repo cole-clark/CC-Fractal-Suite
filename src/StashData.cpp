@@ -71,6 +71,11 @@ void PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
 
 void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 {
-	iters = node->evalFloat(ITERS_NAME.first, 0, t);
+	iters  = node->evalFloat(ITERS_NAME.first, 0, t);
+	start  = node->evalFloat(LYASTART_NAME.first, 0, t);
+	maxval = node->evalInt(LYACEILVALUE_NAME.first, 0, t);
+	minmax[0] = node->evalFloat(LYAMINMAX_NAME.first, 0, t);
+	minmax[1] = node->evalFloat(LYAMINMAX_NAME.first, 1, t);
 
+	// Multiparm load attribs
 }

@@ -32,7 +32,14 @@ static NAMEPAIR JDEPTH_NAME{ "jdepth", "Julia Depth" };
 static NAMEPAIR JOFFSET_NAME{ "joffset", "Julia Offset" };
 static NAMEPAIR BLACKHOLE_NAME{ "blackhole", "Blackhole" };
 
-/// Pickover names
+/// Pickover Names
 static NAMEPAIR POPOINT_NAME{ "popoint", "Pickover Point" };
 static NAMEPAIR POROTATE_NAME{ "porotate", "Pickover Rotate" };
 static NAMEPAIR POMODE_NAME{ "pomode", "Pickover Mode" };
+
+/// Lyapunov Names
+static NAMEPAIR LYASEQ_NAME{ "seq", "Sequence" };
+static NAMEPAIR LYASEQWEIGHTS_NAME{ "weight_#", "Weight #" };
+static NAMEPAIR LYASTART_NAME{ "seqstart", "Seq Start Value" };
+static NAMEPAIR LYACEILVALUE_NAME{ "ceilval", "Ceiling Value" };
+static NAMEPAIR LYAMINMAX_NAME{ "minmax", "Min Max" };

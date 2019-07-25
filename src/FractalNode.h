@@ -31,6 +31,14 @@ static PRM_Name nameJDepth{ JDEPTH_NAME.first, JDEPTH_NAME.second };
 static PRM_Name nameJOffset{ JOFFSET_NAME.first, JOFFSET_NAME.second };
 static PRM_Name nameBlackhole{ BLACKHOLE_NAME.first, BLACKHOLE_NAME.second };
 
+/// Declare Lyapunov Parm Names
+static PRM_Name nameLyaSeq(LYASEQ_NAME.first, LYASEQ_NAME.second);
+static PRM_Name nameLyaSeqWeights(LYASEQWEIGHTS_NAME.first, LYASEQWEIGHTS_NAME.second);
+static PRM_Name nameLyaStart(LYASTART_NAME.first, LYASTART_NAME.second);
+static PRM_Name nameLyaMaxValue(LYACEILVALUE_NAME.first, LYACEILVALUE_NAME.second);
+static PRM_Name nameLyaMinMax(LYAMINMAX_NAME.first, LYAMINMAX_NAME.second);
+
+
 /// ChoiceList Lists
 static PRM_Name xordMenuNames[] =
 {
@@ -64,6 +72,11 @@ static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
 static PRM_Default defaultJDepth{ 0 }; // No Julia
 static PRM_Default defaultJOffset[] = { 0, 0 };
 static PRM_Default defaultBlackhole{ false };
+
+/// Declare Lyapunov Defaults
+static PRM_Default defaultLyaMaxValue(8192);
+static PRM_Default defaultLyaStart(0.5);
+static PRM_Default defaultLyaMinMax[] = { -1.0f, 2.0f };
 
 
 /// Xform Parm Ranges
@@ -105,6 +118,19 @@ static PRM_Range rangeJDepth
 	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
 
+static PRM_Range rangeLyaMaxValue
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_UI, defaultLyaMaxValue.getFloat()
+};
+
+/// Multiparm Templates
+static PRM_Template multiparmSeqTemps[] =
+{
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaSeqWeights, PRMzeroDefaults),
+	PRM_Template()
+};
+
 /// Create separator names.
 static PRM_Name nameSeparatorMandelbrot("sep_mandelbrot", "Sep Mandelbrot");
 static PRM_Name nameSepA("sep_A", "Sep A");
@@ -129,6 +155,15 @@ static PRM_Name nameSepB("sep_B", "Sep B");
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSeparatorMandelbrot, PRMzeroDefaults), \
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults)
+
+/// Definition of Lyapunov Templates. Add 5 to COP_SWITCHER calls
+#define TEMPLATES_LYAPUNOV \
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaStart, &defaultLyaStart), \
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameLyaMaxValue, &defaultLyaMaxValue, 0, &rangeLyaMaxValue), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameLyaMinMax, defaultLyaMinMax), \
+	PRM_Template(PRM_MULTITYPE_LIST, multiparmSeqTemps, 1, &nameLyaSeq, PRMoneDefaults)
+
 
 namespace CC
 {
