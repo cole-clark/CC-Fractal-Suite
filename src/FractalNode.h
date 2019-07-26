@@ -118,6 +118,12 @@ static PRM_Range rangeJDepth
 	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
 
+static PRM_Range rangeLyaStartValue
+{
+	PRM_RangeFlag::PRM_RANGE_UI, 0.001f,
+	PRM_RangeFlag::PRM_RANGE_UI, 0.999f
+};
+
 static PRM_Range rangeLyaMaxValue
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,

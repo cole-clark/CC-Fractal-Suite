@@ -16,22 +16,17 @@ Lyapunov::Lyapunov(LyapunovStashData & lyaData)
 
 FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 {
-	double a = coords.real();
-	double b = coords.imag();
-	double c = SYSlerp(a, b, 0.5f);
-	// TODO: Find a way to push this to the UI
-	double seq[] = { a, b, c, a, c, a, a, b, c, a, b, c };
-	int seq_size = 12;
+	std::vector<double> seq = generate_sequence(
+		data.seq, coords.real(), coords.imag());
 
 	int N = data.iters;
 
-	// Initialize N. TODO: Rename this horrible var
 	double* X = new double[N + 1];
 	X[0] = data.start;
 
 	for (int n = 1; n <= N; n++)
 	{
-		X[n] = seq[n - 1 % seq_size] * X[n - 1] * (1.0 - X[n - 1]);
+		X[n] = seq[n - 1 % data.seq.size()] * X[n - 1] * (1.0 - X[n - 1]);
 	}
 
 	// Calculate Lyapunov
@@ -39,7 +34,7 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 
 	for (int n = 1; n <= N; n++)
 	{
-		lmb += log(abs(seq[n % seq_size] * (1.0 - 2.0 * X[n]))) / log(2);
+		lmb += log(abs(seq[n % data.seq.size()] * (1.0 - 2.0 * X[n]))) / log(2);
 	}
 	lmb /= N;
 
@@ -54,6 +49,19 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 		lmb = (int)(lmb / data.minmax[1] * data.maxval);
 
 	return FractalCoordsInfo(lmb, lmb);
+}
+
+std::vector<double>
+Lyapunov::generate_sequence(std::vector<double> sequence, double x, double y)
+{
+	std::vector<double> vals;
+
+	for (int i = 0; i < sequence.size(); ++i)
+	{
+		vals.emplace_back(SYSlerp(x, y, sequence[i]));
+	}
+
+	return vals;
 }
 
 Lyapunov::~Lyapunov()

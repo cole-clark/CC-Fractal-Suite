@@ -9,6 +9,7 @@
 #include "typedefs.h"
 #include "FractalSpace.h"
 
+
 using namespace CC;
 
 XformStashData::XformStashData(
@@ -78,4 +79,16 @@ void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 	minmax[1] = node->evalFloat(LYAMINMAX_NAME.first, 1, t);
 
 	// Multiparm load attribs
+	int seqSize = node->evalInt(LYASEQ_NAME.first, 0, 1);
+	seq.reserve(seqSize);
+	
+	for (int i = 1; i <= seqSize; ++i)
+	{
+		seq.emplace_back(
+			node->evalFloatInst(LYASEQWEIGHTS_NAME.first, &i, 0, t));
+	}
+}
+
+LyapunovStashData::~LyapunovStashData()
+{
 }

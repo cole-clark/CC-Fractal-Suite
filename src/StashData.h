@@ -83,11 +83,13 @@ namespace CC
 	struct LyapunovStashData : public StashData
 	{
 		int iters{ 50 };
-		float start{ 0.5 };
+		double start{ 0.5 };
 		int maxval{8192};
-		float minmax[2];
-		float* seq;
+		double minmax[2];
+		std::vector<double> seq;
 
 		void evalArgs(const OP_Node* node, fpreal t);
+
+		virtual ~LyapunovStashData();
 	};
 }
