@@ -22,7 +22,6 @@ namespace CC
 		virtual ~Lyapunov();
 
 		FractalCoordsInfo calculate(COMPLEX coords);
-		std::vector<double> generate_sequence(
-			std::vector<double> sequence, double x, double y);
+		std::vector<double> generate_sequence(double x, double y);
 	};
 }

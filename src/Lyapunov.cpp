@@ -16,8 +16,7 @@ Lyapunov::Lyapunov(LyapunovStashData & lyaData)
 
 FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 {
-	std::vector<double> seq = generate_sequence(
-		data.seq, coords.real(), coords.imag());
+	auto seq = generate_sequence(coords.real(), coords.imag());
 
 	int N = data.iters;
 
@@ -51,14 +50,15 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	return FractalCoordsInfo(lmb, lmb);
 }
 
+/// Returns a sequence of values lerped between the x and y coordinates.
 std::vector<double>
-Lyapunov::generate_sequence(std::vector<double> sequence, double x, double y)
+Lyapunov::generate_sequence(double x, double y)
 {
 	std::vector<double> vals;
 
-	for (int i = 0; i < sequence.size(); ++i)
+	for (int i = 0; i < data.seq.size(); ++i)
 	{
-		vals.emplace_back(SYSlerp(x, y, sequence[i]));
+		vals.emplace_back(SYSlerp(x, y, data.seq[i]));
 	}
 
 	return vals;
