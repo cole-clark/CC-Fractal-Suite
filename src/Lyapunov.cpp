@@ -16,38 +16,40 @@ Lyapunov::Lyapunov(LyapunovStashData & lyaData)
 
 FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 {
-	auto seq = generate_sequence(coords.real(), coords.imag());
+	auto preseq = generate_sequence(coords.real(), coords.imag());
 
-	int N = data.iters;
+	std::vector<double> seq;
+	seq.reserve(data.iters + 1);
+	seq[0] = data.start;
 
-	double* X = new double[N + 1];
-	X[0] = data.start;
-
-	for (int n = 1; n <= N; n++)
+	for (int i = 1; i <= data.iters; i++)
 	{
-		X[n] = seq[n - 1 % data.seq.size()] * X[n - 1] * (1.0 - X[n - 1]);
+		seq[i] = 
+			preseq[i - 1 % data.seq.size()] *
+			seq[i - 1] *
+			(1.0 - seq[i - 1]);
 	}
 
 	// Calculate Lyapunov
-	double lmb{ 0 };
+	double value{ 0 };
 
-	for (int n = 1; n <= N; n++)
+	for (int i = 1; i <= data.iters; i++)
 	{
-		lmb += log(abs(seq[n % data.seq.size()] * (1.0 - 2.0 * X[n]))) / log(2);
+		value += log(abs(
+			preseq[i % data.seq.size()]
+			* (1.0 - 2.0 * seq[i]))) / log(2);
 	}
-	lmb /= N;
+	value /= data.iters;
 
-	if (isinf(lmb))
-		lmb = 0.0f;
+	if (isinf(abs(value)))
+		value = 0.0f;
 
-	delete X;
-
-	if (lmb < 0)
-		lmb = (int)(lmb / data.minmax[0] * data.maxval);
+	if (value < 0)
+		value = (int)(value / data.minmax[0] * data.maxval);
 	else
-		lmb = (int)(lmb / data.minmax[1] * data.maxval);
+		value = (int)(value / data.minmax[1] * data.maxval);
 
-	return FractalCoordsInfo(lmb, lmb);
+	return FractalCoordsInfo(0, 0, value);
 }
 
 /// Returns a sequence of values lerped between the x and y coordinates.

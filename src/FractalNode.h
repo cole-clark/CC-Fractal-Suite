@@ -69,7 +69,7 @@ static PRM_Default defaultXOrd{ 0.0f };  // TRS
 static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPower{ 2 };
 static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
-static PRM_Default defaultJDepth{ 0 }; // No Julia
+static PRM_Default defaultJDepth{ 0 };
 static PRM_Default defaultJOffset[] = { 0, 0 };
 static PRM_Default defaultBlackhole{ false };
 
