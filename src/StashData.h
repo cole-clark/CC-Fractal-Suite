@@ -84,8 +84,8 @@ namespace CC
 	{
 		int iters{ 50 };
 		double start{ 0.5 };
-		int maxval{8192};
-		double minmax[2];
+		double maxval{5.0f};
+		bool invertnegative{ true };
 		std::vector<double> seq;
 
 		void evalArgs(const OP_Node* node, fpreal t);

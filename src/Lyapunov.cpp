@@ -19,12 +19,17 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	auto preseq = generate_sequence(coords.real(), coords.imag());
 
 	std::vector<double> seq;
+
+	int niters = data.iters;
+	if (niters > preseq.size())
+		niters = preseq.size();
+
 	seq.reserve(data.iters + 1);
 	seq[0] = data.start;
 
-	for (int i = 1; i <= data.iters; i++)
+	for (int i = 1; i <= niters; i++)
 	{
-		seq[i] = 
+		seq[i] =
 			preseq[i - 1 % data.seq.size()] *
 			seq[i - 1] *
 			(1.0 - seq[i - 1]);
@@ -33,21 +38,25 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	// Calculate Lyapunov
 	double value{ 0 };
 
-	for (int i = 1; i <= data.iters; i++)
+	for (int i = 1; i <= niters; i++)
 	{
-		value += log(abs(
-			preseq[i % data.seq.size()]
-			* (1.0 - 2.0 * seq[i]))) / log(2);
+		value += SYSlog(SYSabs(
+			preseq[i % data.seq.size()] *
+			(1.0 - 2.0) * seq[i])) / SYSlog(2.0);
 	}
-	value /= data.iters;
+	value /= niters;
 
-	if (isinf(abs(value)))
+	if (!SYSisFinite(value))
 		value = 0.0f;
-
+	
 	if (value < 0)
-		value = (int)(value / data.minmax[0] * data.maxval);
-	else
-		value = (int)(value / data.minmax[1] * data.maxval);
+		if (data.invertnegative)
+			value *= -1;
+
+	if (value > data.maxval)
+		value = data.maxval;
+
+	value /= data.maxval;
 
 	return FractalCoordsInfo(0, 0, value);
 }

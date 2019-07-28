@@ -42,4 +42,4 @@ static NAMEPAIR LYASEQ_NAME{ "seq", "Sequence" };
 static NAMEPAIR LYASEQWEIGHTS_NAME{ "weight_#", "Weight #" };
 static NAMEPAIR LYASTART_NAME{ "seqstart", "Seq Start Value" };
 static NAMEPAIR LYACEILVALUE_NAME{ "ceilval", "Ceiling Value" };
-static NAMEPAIR LYAMINMAX_NAME{ "minmax", "Min Max" };
+static NAMEPAIR LYAINVERTNEGATIVE_NAME{ "invertnegative", "Invert Negative" };

@@ -75,8 +75,7 @@ void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 	iters  = node->evalFloat(ITERS_NAME.first, 0, t);
 	start  = node->evalFloat(LYASTART_NAME.first, 0, t);
 	maxval = node->evalInt(LYACEILVALUE_NAME.first, 0, t);
-	minmax[0] = node->evalFloat(LYAMINMAX_NAME.first, 0, t);
-	minmax[1] = node->evalFloat(LYAMINMAX_NAME.first, 1, t);
+	invertnegative = node->evalInt(LYAINVERTNEGATIVE_NAME.first, 0, t);
 
 	// Multiparm load attribs
 	int seqSize = node->evalInt(LYASEQ_NAME.first, 0, 1);

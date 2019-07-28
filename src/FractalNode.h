@@ -36,7 +36,7 @@ static PRM_Name nameLyaSeq(LYASEQ_NAME.first, LYASEQ_NAME.second);
 static PRM_Name nameLyaSeqWeights(LYASEQWEIGHTS_NAME.first, LYASEQWEIGHTS_NAME.second);
 static PRM_Name nameLyaStart(LYASTART_NAME.first, LYASTART_NAME.second);
 static PRM_Name nameLyaMaxValue(LYACEILVALUE_NAME.first, LYACEILVALUE_NAME.second);
-static PRM_Name nameLyaMinMax(LYAMINMAX_NAME.first, LYAMINMAX_NAME.second);
+static PRM_Name nameLyaInvertNegative(LYAINVERTNEGATIVE_NAME.first, LYAINVERTNEGATIVE_NAME.second);
 
 
 /// ChoiceList Lists
@@ -74,10 +74,8 @@ static PRM_Default defaultJOffset[] = { 0, 0 };
 static PRM_Default defaultBlackhole{ false };
 
 /// Declare Lyapunov Defaults
-static PRM_Default defaultLyaMaxValue(8192);
+static PRM_Default defaultLyaMaxValue(5.0f);
 static PRM_Default defaultLyaStart(0.5);
-static PRM_Default defaultLyaMinMax[] = { -1.0f, 2.0f };
-
 
 /// Xform Parm Ranges
 static PRM_Range rangeScale
@@ -130,6 +128,18 @@ static PRM_Range rangeLyaMaxValue
 	PRM_RangeFlag::PRM_RANGE_UI, defaultLyaMaxValue.getFloat()
 };
 
+static PRM_Range rangeLyaSeq
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 40
+};
+
+static PRM_Range rangeLyaIters
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 40
+};
+
 /// Multiparm Templates
 static PRM_Template multiparmSeqTemps[] =
 {
@@ -164,11 +174,11 @@ static PRM_Name nameSepB("sep_B", "Sep B");
 
 /// Definition of Lyapunov Templates. Add 5 to COP_SWITCHER calls
 #define TEMPLATES_LYAPUNOV \
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter), \
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeLyaIters), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaStart, &defaultLyaStart), \
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameLyaMaxValue, &defaultLyaMaxValue, 0, &rangeLyaMaxValue), \
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameLyaMinMax, defaultLyaMinMax), \
-	PRM_Template(PRM_MULTITYPE_LIST, multiparmSeqTemps, 1, &nameLyaSeq, PRMoneDefaults)
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaMaxValue, &defaultLyaMaxValue, 0, &rangeLyaMaxValue), \
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameLyaInvertNegative, PRMoneDefaults), \
+	PRM_Template(PRM_MULTITYPE_LIST, multiparmSeqTemps, 1, &nameLyaSeq, PRMoneDefaults, &rangeLyaSeq)
 
 
 namespace CC
