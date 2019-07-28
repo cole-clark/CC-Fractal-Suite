@@ -103,12 +103,12 @@ COP2_Lyapunov::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 		for (exint i = 0; i < size_x * size_y; i++)
 		{
-			WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
-			COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
-			FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
-
 			if (tileIndex == 0)
 			{
+				WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
+				COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
+				FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
+
 				dest[i] = pixelInfo.smooth;
 			}
 			else
