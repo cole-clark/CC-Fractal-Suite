@@ -47,7 +47,7 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	value /= niters;
 
 	if (!SYSisFinite(value))
-		value = 0.0f;
+		;// value = 0.0f;
 	
 	if (value < 0)
 		if (data.invertnegative)

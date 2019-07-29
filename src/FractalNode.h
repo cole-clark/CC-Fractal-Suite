@@ -175,7 +175,7 @@ static PRM_Name nameSepB("sep_B", "Sep B");
 /// Definition of Lyapunov Templates. Add 5 to COP_SWITCHER calls
 #define TEMPLATES_LYAPUNOV \
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeLyaIters), \
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaStart, &defaultLyaStart), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaStart, &defaultLyaStart, 0, &rangeLyaStartValue), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameLyaMaxValue, &defaultLyaMaxValue, 0, &rangeLyaMaxValue), \
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameLyaInvertNegative, PRMoneDefaults), \
 	PRM_Template(PRM_MULTITYPE_LIST, multiparmSeqTemps, 1, &nameLyaSeq, PRMoneDefaults, &rangeLyaSeq)

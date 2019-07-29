@@ -266,7 +266,7 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 			if (tileIndex == 0)
 			{
-				dest[i] = pixelInfo.num_iter;
+				dest[i] = pixelInfo.smooth;
 			}
 			else
 				dest[i] = 0.0f;
