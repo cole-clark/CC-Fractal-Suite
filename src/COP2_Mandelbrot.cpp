@@ -5,17 +5,9 @@
 	Code for CC Mandelbrot Generator Cop Node.
  */
 
-#include <UT/UT_Matrix3.h>
-
-// For PRMoneDefaults
-#include <PRM/PRM_Include.h>
-#include <PRM/PRM_ChoiceList.h>
-
-// For FOR_EACH_UNCOOKED_TILE
-#include <TIL/TIL_Tile.h>
-
-#include "FractalSpace.h"
 #include "COP2_Mandelbrot.h"
+#include <CH/CH_Manager.h>
+#include <PRM/PRM_ChoiceList.h>
 
 using namespace CC;
 
@@ -28,121 +20,41 @@ COP2_Mandelbrot::COP2_Mandelbrot(
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
-/// Public Constructor
-// TODO: Delete this and change the register.cpp for this
-OP_Node *
-COP2_Mandelbrot::myConstructor(
-	OP_Network* net,
-	const char* name,
-	OP_Operator* op)
+/// Node Specific Parm Information
+
+// Parm Name
+static PRM_Name nameMode("mode", "Mode");
+static PRM_Name nameFit("fit", "Fit");
+
+// ChoiceList Lists
+static PRM_Name modeMenuNames[] =
 {
-	return new COP2_Mandelbrot(net, name, op);
-}
-
-/// Declare Parm Names
-static PRM_Name nameScale("scale", "Scale");
-static PRM_Name nameOffset("offset", "Offset");
-static PRM_Name nameRotate("rotate", "Rotate");
-static PRM_Name nameXOrd("xOrd", "Xform Order");
-static PRM_Name nameIter("iter", "Iterations");
-static PRM_Name namePow("pow", "Exponent");
-static PRM_Name nameBailout("bailout", "Bailout");
-static PRM_Name nameJDepth("jdepth", "Julia Depth");
-static PRM_Name nameJOffset("joffset", "Julia Offset");
-static PRM_Name nameBlackhole("blackhole", "Blackhole");
-static PRM_Name nameSep1("sep1", "sep1");
-static PRM_Name nameSep2("sep2", "sep2");
-static PRM_Name nameSep3("sep3", "sep3");
-static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
-static PRM_Name nameScalePivot("spivot", "Scale Pivot");
-
-
-/// ChoiceList Lists
-static PRM_Name xordMenuNames[] =
-{
-	PRM_Name("TRS", "Translate Rotate Scale"),
-	PRM_Name("TSR", "Translate Scale Rotate"),
-	PRM_Name("RTS", "Rotate Translate Scale"),
-	PRM_Name("RST", "Rotate Scale Translate"),
-	PRM_Name("STR", "Scale Translate Rotate"),
-	PRM_Name("SRT", "Scale Rotate Translate"),
+	PRM_Name("smooth", "Smooth"),
+	PRM_Name("raw", "Raw"),
 	PRM_Name(0)
 };
 
-static PRM_ChoiceList xOrdMenu
+static PRM_ChoiceList modeMenu
 (
 	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
-	::xordMenuNames
+	::modeMenuNames
 );
 
-/// Declare Parm Defaults
-static PRM_Default defaultScale{ 500000 };
-static PRM_Default defaultIter{ 50 };
-static PRM_Default defaultPow{ 2 };
-static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
-static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
-static PRM_Default defaultOffset[] = { -1000, -750 };
-static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
-static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
-
-/// Deflare Parm Ranges
-static PRM_Range rangeScale
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
-};
-
-static PRM_Range rangeRotate
-{
-	PRM_RangeFlag::PRM_RANGE_UI, -180,
-	PRM_RangeFlag::PRM_RANGE_UI, 180
-};
-
-static PRM_Range rangeIter
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
-	PRM_RangeFlag::PRM_RANGE_UI, 200
-};
-
-
-static PRM_Range rangePow
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 10
-};
-
-static PRM_Range rangeBailout
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 4
-};
-
-static PRM_Range rangeJDepth
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 5
-};
+// Declare Parm Defaults
+static PRM_Default defaultModeMenu{ 0 };
+static PRM_Default defaultFit{ 1 };
 
 /// Create Template List
 PRM_Template
 COP2_Mandelbrot::myTemplateList[]
 {
-	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
-	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
+	TEMPLATE_SWITCHER,
+	TEMPLATES_XFORM,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
+	TEMPLATES_MANDELBROT,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMode, &defaultModeMenu, &modeMenu),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameFit, &defaultFit),
 	PRM_Template()
 };
 
@@ -186,52 +98,21 @@ COP2_Mandelbrot::newContextData
 	// Create new empty data object.
 	COP2_MandelbrotData* data{ new COP2_MandelbrotData };
 
-	// Space Xform Attributes
-	double scale = evalFloat(nameScale.getToken(), 0, t);
-	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
-	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
-	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
-	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
-	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
-
-	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
-
-	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
-	// The UI artificially inflates the numbers to make them more user friendly at
-	// shallow depths.
-	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
-	offset_x = offset_x / 1000;
-	offset_y = offset_y / 1000;
-
-	// Set the size of the fractal space relative to this context's size.
 	data->space.set_image_size(image_sizex, image_sizey);
 
+	XformStashData xformData;
+	xformData.evalArgs(this, t);
+	data->space.set_xform(xformData);
 
-	// Sets the base xform of the fractal from the interface that will be calculated by
-	// The pixels.
-	data->space.set_xform(
-		offset_x,
-		offset_y,
-		rotate,
-		scale,
-		scale,
-		xOrd);
+	MandelbrotStashData mandelData;
+	mandelData.evalArgs(this, t);
+	data->fractal = Mandelbrot(mandelData);
 
-	// Fractal Attributes
-	int iter = evalInt(nameIter.getToken(), 0, t);
-	double pow = evalFloat(namePow.getToken(), 0, t);
-	double bailout = evalFloat(nameBailout.getToken(), 0, t);
-	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
-	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
-	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
+	// Node-specific parms
+	data->mode = static_cast<MandelbrotMode>(
+		evalInt(nameMode.getToken(), 0, t));
 
-	COMPLEX joffset{ joffset_x, joffset_y };
-
-	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset, blackhole);
+	data->fit = evalInt(nameFit.getToken(), 0, t);
 
 	return data;
 }
@@ -260,13 +141,21 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 
 		for (exint i = 0; i < size_x * size_y; i++)
 		{
-			WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
-			COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
-			FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
-
 			if (tileIndex == 0)
 			{
-				dest[i] = pixelInfo.smooth;
+				WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
+				COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
+				FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
+
+				float val = pixelInfo.smooth;
+
+				if (data->mode == MandelbrotMode::RAW)
+					val = pixelInfo.num_iter;
+
+				if (data->fit)
+					val /= (float)data->fractal.data.iters;
+					
+				dest[i] = val;
 			}
 			else
 				dest[i] = 0.0f;

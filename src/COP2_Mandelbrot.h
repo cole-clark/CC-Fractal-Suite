@@ -1,5 +1,5 @@
 /*
-	Cole Clark's Fractal Suite
+	CC Fractal Suite
 
 	COP2_Mandelbrot.h
 	Header for CC Mandelbrot COP2 Node.
@@ -11,6 +11,7 @@
 
 #include "FractalSpace.h"
 #include "Mandelbrot.h"
+#include "FractalNode.h"
 
 namespace CC
 {
@@ -20,9 +21,6 @@ namespace CC
 		COP2_Mandelbrot(OP_Network* parent, const char* name, OP_Operator* entry);
 
 	public:
-		/// Static Public Constructor, check register.h for how it's used.
-		static OP_Node *myConstructor(OP_Network*, const char*, OP_Operator*);
-
 		/// Static Lists to define parameters and local variables
 		static PRM_Template myTemplateList[];
 		static OP_TemplatePair myTemplatePair;
@@ -31,6 +29,8 @@ namespace CC
 
 		/// Determine Frame Range, Image Composition, and other Sequence Info
 		virtual TIL_Sequence* cookSequenceInfo(OP_ERROR& error);
+
+		friend class OP;
 
 	protected:
 		/// Evaluate Parms and Stash Data for Cooking In a COP2_ContextData object
@@ -44,12 +44,21 @@ namespace CC
 		virtual ~COP2_Mandelbrot();
 	};
 
+	enum MandelbrotMode
+	{
+		SMOOTH,
+		RAW
+	};
+
 	/// This class is used to stash the evaluated parms and data.
 	/// The data here is fed to several worker threads when cooking the node.
 	struct COP2_MandelbrotData : public COP2_ContextData
 	{
+		// TODO: Implement 1 / iters member into fractal
 		FractalSpace space;
 		Mandelbrot fractal;
+		MandelbrotMode mode{ MandelbrotMode::SMOOTH };
+		bool fit{ true };
 
 		COP2_MandelbrotData() = default;
 		virtual ~COP2_MandelbrotData();

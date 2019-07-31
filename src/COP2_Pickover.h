@@ -1,8 +1,8 @@
 /*
-	Cole Clark's Fractal Suite
+	CC Fractal Suite
 
 	COP2_Pickover.h
-	Header for CC Lyapunov Cop Node.
+	Header for CC Lyapunov Cop2 Node.
  */
 
 #pragma once

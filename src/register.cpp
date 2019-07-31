@@ -66,7 +66,7 @@ void newCop2Operator(OP_OperatorTable* table)
 	OP_Operator* mandelbrot = new OP_Operator(
 		"cc::fractal_mandelbrot", // Node Name
 		"CC Fractal Mandelbrot", // Pretty Name
-		COP2_Mandelbrot::myConstructor,
+		&OP::get_new_op<COP2_Mandelbrot>,
 		&COP2_Mandelbrot::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs

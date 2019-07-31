@@ -151,6 +151,7 @@ static PRM_Template multiparmSeqTemps[] =
 static PRM_Name nameSeparatorMandelbrot("sep_mandelbrot", "Sep Mandelbrot");
 static PRM_Name nameSepA("sep_A", "Sep A");
 static PRM_Name nameSepB("sep_B", "Sep B");
+static PRM_Name nameSepC("sep_C", "Sep C");
 
 /// Definition of Template Switcher
 #define TEMPLATE_SWITCHER PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher)
