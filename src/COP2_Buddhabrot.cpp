@@ -20,6 +20,10 @@
 #include <COP2/COP2_CookAreaInfo.h>
 #include "COP2_Buddhabrot.h"
 
+
+//Temp
+#include "typedefs.h"
+
 using namespace CC;
 
 COP_MASK_SWITCHER(18, "Fractal");
@@ -30,7 +34,7 @@ static PRM_Name nameScale("scale", "Scale");
 static PRM_Name nameOffset("offset", "Offset");
 static PRM_Name nameRotate("rotate", "Rotate");
 static PRM_Name nameXOrd("xOrd", "Xform Order");
-static PRM_Name nameIter("iter", "Iterations");
+static PRM_Name nameIter(ITERS_NAME.first, "Iterations");
 static PRM_Name namePow("pow", "Exponent");
 static PRM_Name nameBailout("bailout", "Bailout");
 static PRM_Name nameJDepth("jdepth", "Julia Depth");
@@ -184,7 +188,7 @@ COP2_Buddhabrot::~COP2_Buddhabrot()
 COP2_ContextData *
 COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	int /*arrayindex*/,
-	float t, int xres, int yres,
+	float t, int image_sizex, int image_sizey,
 	int /*thread*/, int /*maxthreads*/)
 {
 	// This method evaluates and stashes parms and any other data that
@@ -192,48 +196,15 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	// threads. This function is guaranteed to be single threaded.
 	COP2_BuddhabrotData *data = new COP2_BuddhabrotData();
 
-	// Space Xform Attributes
-	double scale = evalFloat(nameScale.getToken(), 0, t);
-	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
-	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
-	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
-	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
-	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
+	data->space.set_image_size(image_sizex, image_sizey);
 
-	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
+	XformStashData xformData;
+	xformData.evalArgs(this, t);
+	data->space.set_xform(xformData);
 
-	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
-	// The UI artificially inflates the numbers to make them more user friendly at
-	// shallow depths.
-	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
-	offset_x = offset_x / 1000;
-	offset_y = offset_y / 1000;
-
-	data->space.set_image_size(xres, yres);
-	data->space.set_xform(
-		offset_x,
-		offset_y,
-		rotate,
-		scale,
-		scale,
-		xOrd);
-
-
-	// Fractal Attributes
-	int iter = evalInt(nameIter.getToken(), 0, t);
-	double pow = evalFloat(namePow.getToken(), 0, t);
-	double bailout = evalFloat(nameBailout.getToken(), 0, t);
-	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
-	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
-	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
-
-	COMPLEX joffset{ joffset_x, joffset_y };
-
-	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset, blackhole);
+	MandelbrotStashData mandelData;
+	mandelData.evalArgs(this, t);
+	data->fractal = Mandelbrot(mandelData);
 
 
 	exint samples = evalInt(nameSamples.getToken(), 0, t);
@@ -395,10 +366,10 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 			{
 				// Choose a random x, y coordinate along the image plane.
 				// The '0's refer to lower left corner, the second argument the upper right
-				std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
-				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
+				std::uniform_real_distribution<double> realDistribution(0, context.myXsize-1);
+				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize-1);
 
-				for (exint idxSample = 0; idxSample < sdata->samples; idxSample++)
+				for (exint idxSample=0; idxSample < sdata->samples; idxSample++)
 				{
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
@@ -416,7 +387,7 @@ COP2_Buddhabrot::filterImage(COP2_Context &context,
 						{
 							outputPixel += samplePixel;
 							++*outputPixel;
-
+							
 							// Save the highest output pixel value sampled
 							if (*outputPixel > highest_sample_value)
 								highest_sample_value = static_cast<uint32_t>(*outputPixel);
