@@ -22,7 +22,7 @@
 
 using namespace CC;
 
-COP_MASK_SWITCHER(18, "Fractal");
+COP_MASK_SWITCHER(16, "Fractal");
 
 
 /// Declare Parm Names
@@ -129,14 +129,8 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
 	TEMPLATES_XFORM,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep4, PRMzeroDefaults),
+	TEMPLATES_MANDELBROT,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template()
@@ -192,27 +186,16 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	xformData.evalArgs(this, t);
 	data->space.set_xform(xformData);
 
-	// Fractal Attributes
-	int iter = evalInt(nameIter.getToken(), 0, t);
-	double pow = evalFloat(namePow.getToken(), 0, t);
-	double bailout = evalFloat(nameBailout.getToken(), 0, t);
-	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
-	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
-	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
+	MandelbrotStashData mandelData;
+	mandelData.evalArgs(this, t);
+	data->fractal = Mandelbrot(mandelData);
 
-	COMPLEX joffset{ joffset_x, joffset_y };
-
-	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset, blackhole);
-
-
+	// Node-specific parms
 	exint samples = evalInt(nameSamples.getToken(), 0, t);
 	int seed = evalFloat(nameSeed.getToken(), 0, t);
 
 	data->samples = samples;
 	data->seed = seed;
-
 
 	return data;
 }
