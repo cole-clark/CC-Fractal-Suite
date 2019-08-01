@@ -26,16 +26,16 @@ COP_MASK_SWITCHER(18, "Fractal");
 
 
 /// Declare Parm Names
-static PRM_Name nameScale("scale", "Scale");
-static PRM_Name nameOffset("offset", "Offset");
-static PRM_Name nameRotate("rotate", "Rotate");
-static PRM_Name nameXOrd("xOrd", "Xform Order");
-static PRM_Name nameIter("iter", "Iterations");
+//static PRM_Name nameScale("scale", "Scale");
+//static PRM_Name nameOffset("offset", "Offset");
+//static PRM_Name nameRotate("rotate", "Rotate");
+//static PRM_Name nameXOrd("xOrd", "Xform Order");
+//static PRM_Name nameIter("iter", "Iterations");
 static PRM_Name namePow("pow", "Exponent");
-static PRM_Name nameBailout("bailout", "Bailout");
-static PRM_Name nameJDepth("jdepth", "Julia Depth");
-static PRM_Name nameJOffset("joffset", "Julia Offset");
-static PRM_Name nameBlackhole("blackhole", "Blackhole");
+//static PRM_Name nameBailout("bailout", "Bailout");
+//static PRM_Name nameJDepth("jdepth", "Julia Depth");
+//static PRM_Name nameJOffset("joffset", "Julia Offset");
+//static PRM_Name nameBlackhole("blackhole", "Blackhole");
 static PRM_Name nameSep1("sep1", "sep1");
 static PRM_Name nameSep2("sep2", "sep2");
 static PRM_Name nameSep3("sep3", "sep3");
@@ -48,7 +48,7 @@ static PRM_Name nameSeed("seed", "Seed");
 
 
 /// ChoiceList Lists
-static PRM_Name xordMenuNames[] =
+/*static PRM_Name xordMenuNames[] =
 {
 	PRM_Name("TRS", "Translate Rotate Scale"),
 	PRM_Name("TSR", "Translate Scale Rotate"),
@@ -57,27 +57,27 @@ static PRM_Name xordMenuNames[] =
 	PRM_Name("STR", "Scale Translate Rotate"),
 	PRM_Name("SRT", "Scale Rotate Translate"),
 	PRM_Name(0)
-};
+};*/
 
-static PRM_ChoiceList xOrdMenu
+/*static PRM_ChoiceList xOrdMenu
 (
 (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
 ::xordMenuNames
-);
+);*/
 
 /// Declare Parm Defaults
-static PRM_Default defaultScale{ 500000 };
-static PRM_Default defaultIter{ 50 };
+//static PRM_Default defaultScale{ 500000 };
+//static PRM_Default defaultIter{ 50 };
 static PRM_Default defaultPow{ 2 };
-static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
-static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
-static PRM_Default defaultOffset[] = { -1000, -750 };
+//static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
+//static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
+//static PRM_Default defaultOffset[] = { -1000, -750 };
 static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
 static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
 static PRM_Default defaultSamples{ 100 };
 
 /// Deflare Parm Ranges
-static PRM_Range rangeScale
+/*static PRM_Range rangeScale
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
 	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
@@ -95,13 +95,13 @@ static PRM_Range rangeIter
 	PRM_RangeFlag::PRM_RANGE_UI, 200
 };
 
-
+*/
 static PRM_Range rangePow
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
 	PRM_RangeFlag::PRM_RANGE_UI, 10
 };
-
+/*
 static PRM_Range rangeBailout
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
@@ -113,7 +113,7 @@ static PRM_Range rangeJDepth
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
 	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
-
+*/
 static PRM_Range rangeSamples
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
@@ -125,7 +125,7 @@ PRM_Template
 COP2_Buddhabrot::myTemplateList[]
 {
 	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
-	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
+	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
