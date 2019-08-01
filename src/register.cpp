@@ -31,7 +31,7 @@ void newCop2Operator(OP_OperatorTable* table)
 	OP_Operator* buddhabrot = new OP_Operator(
 		"cc::fractal_buddhabrot",
 		"CC Fractal Buddhabrot",
-		COP2_Buddhabrot::myConstructor,
+		&OP::get_new_op<COP2_Buddhabrot>,
 		&COP2_Buddhabrot::myTemplatePair,
 		0,
 		2, // optional mask input.

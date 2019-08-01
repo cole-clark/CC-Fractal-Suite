@@ -8,7 +8,9 @@
 #pragma once
 
 #include <COP2/COP2_MaskOp.h>
+
 #include "Mandelbrot.h"
+#include "FractalNode.h"
 
 namespace CC
 {
@@ -60,6 +62,8 @@ namespace CC
 
 		std::vector<COMPLEX> buddhabrotPoints(
 			Mandelbrot* fractal, const COMPLEX& c, int nIterations);
+
+		friend class OP;
 
 	protected:
 		virtual ~COP2_Buddhabrot();

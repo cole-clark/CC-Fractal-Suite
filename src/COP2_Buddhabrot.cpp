@@ -30,94 +30,15 @@ COP_MASK_SWITCHER(18, "Fractal");
 
 
 /// Declare Parm Names
-static PRM_Name nameScale("scale", "Scale");
-static PRM_Name nameOffset("offset", "Offset");
-static PRM_Name nameRotate("rotate", "Rotate");
-static PRM_Name nameXOrd("xOrd", "Xform Order");
-static PRM_Name nameIter(ITERS_NAME.first, "Iterations");
-static PRM_Name namePow("pow", "Exponent");
-static PRM_Name nameBailout("bailout", "Bailout");
-static PRM_Name nameJDepth("jdepth", "Julia Depth");
-static PRM_Name nameJOffset("joffset", "Julia Offset");
-static PRM_Name nameBlackhole("blackhole", "Blackhole");
-static PRM_Name nameSep1("sep1", "sep1");
-static PRM_Name nameSep2("sep2", "sep2");
-static PRM_Name nameSep3("sep3", "sep3");
-static PRM_Name nameSep4("sep4", "sep4");
-static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
-static PRM_Name nameScalePivot("spivot", "Scale Pivot");
 
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 
-
-/// ChoiceList Lists
-static PRM_Name xordMenuNames[] =
-{
-	PRM_Name("TRS", "Translate Rotate Scale"),
-	PRM_Name("TSR", "Translate Scale Rotate"),
-	PRM_Name("RTS", "Rotate Translate Scale"),
-	PRM_Name("RST", "Rotate Scale Translate"),
-	PRM_Name("STR", "Scale Translate Rotate"),
-	PRM_Name("SRT", "Scale Rotate Translate"),
-	PRM_Name(0)
-};
-
-static PRM_ChoiceList xOrdMenu
-(
-(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
-::xordMenuNames
-);
-
 /// Declare Parm Defaults
-static PRM_Default defaultScale{ 500000 };
-static PRM_Default defaultIter{ 50 };
-static PRM_Default defaultPow{ 2 };
-static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
-static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
-static PRM_Default defaultOffset[] = { -1000, -750 };
-static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
-static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
+
 static PRM_Default defaultSamples{ 100 };
 
 /// Deflare Parm Ranges
-static PRM_Range rangeScale
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
-};
-
-static PRM_Range rangeRotate
-{
-	PRM_RangeFlag::PRM_RANGE_UI, -180,
-	PRM_RangeFlag::PRM_RANGE_UI, 180
-};
-
-static PRM_Range rangeIter
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
-	PRM_RangeFlag::PRM_RANGE_UI, 200
-};
-
-
-static PRM_Range rangePow
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 10
-};
-
-static PRM_Range rangeBailout
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 4
-};
-
-static PRM_Range rangeJDepth
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 5
-};
-
 static PRM_Range rangeSamples
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
@@ -129,23 +50,11 @@ PRM_Template
 COP2_Buddhabrot::myTemplateList[]
 {
 	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
-	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
-	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep4, PRMzeroDefaults),
+	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
+	TEMPLATES_XFORM,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
+	TEMPLATES_MANDELBROT,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template()
