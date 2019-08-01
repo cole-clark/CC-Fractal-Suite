@@ -56,43 +56,42 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template()
 };
 
-
 OP_TemplatePair COP2_Buddhabrot::myTemplatePair(
 	COP2_Buddhabrot::myTemplateList,
 	&COP2_MaskOp::myTemplatePair);
-OP_VariablePair COP2_Buddhabrot::myVariablePair(0,
+
+OP_VariablePair COP2_Buddhabrot::myVariablePair(
+	0,
 	&COP2_MaskOp::myVariablePair);
-const char *    COP2_Buddhabrot::myInputLabels[] =
+
+const char* COP2_Buddhabrot::myInputLabels[] =
 {
 	"Image to Filter",
 	"Mask Input",
 	0
 };
 
-COP2_Buddhabrot::COP2_Buddhabrot(OP_Network *parent,
-	const char *name,
-	OP_Operator *entry)
+COP2_Buddhabrot::COP2_Buddhabrot(
+	OP_Network* parent,
+	const char* name,
+	OP_Operator* entry)
 	: COP2_MaskOp(parent, name, entry)
 {
-	// sets the default scope to only affect color and alpha. The global
-	// default is 'true, true, "*"', which affects color, alpha and all
-	// extra planes.
+	// Node affects (C, A, All Extra Image Planes)
 	setDefaultScope(true, true, 0);
 }
-COP2_Buddhabrot::~COP2_Buddhabrot()
-{
-	;
-}
-// -----------------------------------------------------------------------
+
+COP2_Buddhabrot::~COP2_Buddhabrot() {}
+
 COP2_ContextData *
-COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
+COP2_Buddhabrot::newContextData(
+	const TIL_Plane* /*plane*/,
 	int /*arrayindex*/,
-	float t, int image_sizex, int image_sizey,
+	float t,
+	int image_sizex, int image_sizey,
 	int /*thread*/, int /*maxthreads*/)
 {
-	// This method evaluates and stashes parms and any other data that
-	// needs to be setup. Parms cannot be evaluated concurently in separate
-	// threads. This function is guaranteed to be single threaded.
+	// Stash Node Parms into this data object and return
 	COP2_BuddhabrotData *data = new COP2_BuddhabrotData();
 
 	data->space.set_image_size(image_sizex, image_sizey);
@@ -105,6 +104,7 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	mandelData.evalArgs(this, t);
 	data->fractal = Mandelbrot(mandelData);
 
+	// Node-Specific Parms
 
 	exint samples = evalInt(nameSamples.getToken(), 0, t);
 	int seed = evalFloat(nameSeed.getToken(), 0, t);
@@ -112,9 +112,9 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	data->samples = samples;
 	data->seed = seed;
 
-
 	return data;
 }
+
 void
 COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 {
@@ -122,42 +122,31 @@ COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 	// In theory `copyInputBounds(0, context);` should work, but it
 	// results in a black image in 17.5.
 }
+
 void
 COP2_Buddhabrot::getInputDependenciesForOutputArea(
-	COP2_CookAreaInfo           &output_area,
-	const COP2_CookAreaList     &input_areas,
-	COP2_CookAreaList           &needed_areas)
+	COP2_CookAreaInfo& output_area,
+	const COP2_CookAreaList& input_areas,
+	COP2_CookAreaList& needed_areas)
 {
-	COP2_CookAreaInfo   *area;
-	// for a given output area and plane, set up which input planes and areas
-	// it is dependent on. Basically, if you call inputTile or inputRegion in
-	// the cook, for each call you need to make a dependency here.
-	// this makes a dependency on the input plane corresponding to the output
-	// area's plane. 
+	COP2_CookAreaInfo* area;
+
 	area = makeOutputAreaDependOnInputPlane(0,
 		output_area.getPlane().getName(),
 		output_area.getArrayIndex(),
 		output_area.getTime(),
 		input_areas, needed_areas);
 
-	// Always check for null before setting the bounds of the input area.
-	// in this case, all of the input area is required.
+	// Set All of Input Area to Output area
 	if (area)
 		area->enlargeNeededAreaToBounds();
-	// If the node depends on its input counterpart PLUS another plane,
-	// we need to add a dependency on that plane as well. In this case, we
-	// add an extra dependency on alpha (same input, same time).
-	area = makeOutputAreaDependOnInputPlane(0,
-		getAlphaPlaneName(), 0,
-		output_area.getTime(),
-		input_areas, needed_areas);
-	// again, we'll use all of the area.
-	if (area)
-		area->enlargeNeededAreaToBounds();
-	getMaskDependency(output_area, input_areas, needed_areas);
 
+	getMaskDependency(output_area, input_areas, needed_areas);
 }
-std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, const COMPLEX & c, int nIterations)
+
+std::vector<COMPLEX>
+COP2_Buddhabrot::buddhabrotPoints(
+	Mandelbrot* fractal, const COMPLEX & c, int nIterations)
 {
 	std::vector<COMPLEX> points;
 	points.reserve(nIterations);
@@ -187,38 +176,41 @@ std::vector<COMPLEX> CC::COP2_Buddhabrot::buddhabrotPoints(Mandelbrot* fractal, 
 	return points;
 }
 
-
-
 OP_ERROR
-COP2_Buddhabrot::doCookMyTile(COP2_Context &context, TIL_TileList *tiles)
+COP2_Buddhabrot::doCookMyTile(COP2_Context& context, TIL_TileList* tiles)
 {
-	// normally, this is where you would process your tile. However,
-	// cookFullImage() is a convenience function which assembles a full image
-	// and does all the proper locking for you, then calls your filter
-	// function.
+	COP2_BuddhabrotData* sdata =
+		static_cast<COP2_BuddhabrotData*>(context.data());
 
-	COP2_BuddhabrotData *sdata =
-		static_cast<COP2_BuddhabrotData *>(context.data());
-	return cookFullImage(context, tiles, &COP2_Buddhabrot::filter,
+	// Convenience Method that cooks the entire image.
+	return cookFullImage(
+		context,
+		tiles,
+		&COP2_Buddhabrot::filter,
 		sdata->myLock, true);
 }
+
 OP_ERROR
-COP2_Buddhabrot::filter(COP2_Context &context,
-	const TIL_Region *input,
-	TIL_Region *output,
-	COP2_Node  *me)
+COP2_Buddhabrot::filter(
+	COP2_Context& context,
+	const TIL_Region* input,
+	TIL_Region* output,
+	COP2_Node* me)
 {
-	// since I don't like typing me-> constantly, just call a member function
-	// from this static function. 
+	// Avoid having to write pointer-references (me->...)
+	// in the filter by passing these
+	// Args to a static version of this function prototype.
 	return ((COP2_Buddhabrot*)me)->filterImage(context, input, output);
 }
+
 OP_ERROR
-COP2_Buddhabrot::filterImage(COP2_Context &context,
-	const TIL_Region *input,
-	TIL_Region *output)
+COP2_Buddhabrot::filterImage(
+	COP2_Context& context,
+	const TIL_Region* input,
+	TIL_Region* output)
 {
-	// retrieve my context data information (built in newContextData).
-	COP2_BuddhabrotData *sdata =
+	// Get the context data
+	COP2_BuddhabrotData* sdata =
 		(COP2_BuddhabrotData *)context.data();
 
 	int comp;
