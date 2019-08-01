@@ -5,9 +5,10 @@
 	Code for CC Mandelbrot Generator Cop Node.
  */
 
-#include "COP2_Mandelbrot.h"
 #include <CH/CH_Manager.h>
 #include <PRM/PRM_ChoiceList.h>
+
+#include "COP2_Mandelbrot.h"
 
 using namespace CC;
 
@@ -89,8 +90,8 @@ COP2_Mandelbrot::newContextData
 	const TIL_Plane*,  // planename
 	int,               // array index
 	float t,           // Not actually sure, maybe tile?
-	int image_sizex,         // xsize
-	int image_sizey,         // ysize
+	int image_sizex,   // xsize
+	int image_sizey,   // ysize
 	int,               // thread
 	int                // max_num_threads
 )

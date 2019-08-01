@@ -26,94 +26,15 @@ COP_MASK_SWITCHER(18, "Fractal");
 
 
 /// Declare Parm Names
-static PRM_Name nameScale("scale", "Scale");
-static PRM_Name nameOffset("offset", "Offset");
-static PRM_Name nameRotate("rotate", "Rotate");
-static PRM_Name nameXOrd("xOrd", "Xform Order");
-static PRM_Name nameIter("iter", "Iterations");
-static PRM_Name namePow("pow", "Exponent");
-static PRM_Name nameBailout("bailout", "Bailout");
-static PRM_Name nameJDepth("jdepth", "Julia Depth");
-static PRM_Name nameJOffset("joffset", "Julia Offset");
-static PRM_Name nameBlackhole("blackhole", "Blackhole");
-static PRM_Name nameSep1("sep1", "sep1");
-static PRM_Name nameSep2("sep2", "sep2");
-static PRM_Name nameSep3("sep3", "sep3");
-static PRM_Name nameSep4("sep4", "sep4");
-static PRM_Name nameRotatePivot("rpivot", "Rotate Pivot");
-static PRM_Name nameScalePivot("spivot", "Scale Pivot");
 
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 
-
-/// ChoiceList Lists
-static PRM_Name xordMenuNames[] =
-{
-	PRM_Name("TRS", "Translate Rotate Scale"),
-	PRM_Name("TSR", "Translate Scale Rotate"),
-	PRM_Name("RTS", "Rotate Translate Scale"),
-	PRM_Name("RST", "Rotate Scale Translate"),
-	PRM_Name("STR", "Scale Translate Rotate"),
-	PRM_Name("SRT", "Scale Rotate Translate"),
-	PRM_Name(0)
-};
-
-static PRM_ChoiceList xOrdMenu
-(
-(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
-::xordMenuNames
-);
-
 /// Declare Parm Defaults
-static PRM_Default defaultScale{ 500000 };
-static PRM_Default defaultIter{ 50 };
-static PRM_Default defaultPow{ 2 };
-static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
-static PRM_Default defaultXOrd{ 5 };  // Scale Rotate Translate
-static PRM_Default defaultOffset[] = { -1000, -750 };
-static PRM_Default defaultRotatePivot[] = { 0.5, 0.5 };
-static PRM_Default defaultScalePivot[] = { 0.5, 0.5 };
+
 static PRM_Default defaultSamples{ 100 };
 
 /// Deflare Parm Ranges
-static PRM_Range rangeScale
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, defaultScale.getFloat()
-};
-
-static PRM_Range rangeRotate
-{
-	PRM_RangeFlag::PRM_RANGE_UI, -180,
-	PRM_RangeFlag::PRM_RANGE_UI, 180
-};
-
-static PRM_Range rangeIter
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
-	PRM_RangeFlag::PRM_RANGE_UI, 200
-};
-
-
-static PRM_Range rangePow
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 10
-};
-
-static PRM_Range rangeBailout
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 4
-};
-
-static PRM_Range rangeJDepth
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0,
-	PRM_RangeFlag::PRM_RANGE_UI, 5
-};
-
 static PRM_Range rangeSamples
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
@@ -125,23 +46,11 @@ PRM_Template
 COP2_Buddhabrot::myTemplateList[]
 {
 	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
-	PRM_Template(PRM_SWITCHER, 4, &PRMswitcherName, switcher),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
-	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameBlackhole, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep3, PRMzeroDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep4, PRMzeroDefaults),
+	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
+	TEMPLATES_XFORM,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
+	TEMPLATES_MANDELBROT,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template()
@@ -159,13 +68,7 @@ const char *    COP2_Buddhabrot::myInputLabels[] =
 	"Mask Input",
 	0
 };
-OP_Node *
-COP2_Buddhabrot::myConstructor(OP_Network      *net,
-	const char      *name,
-	OP_Operator     *op)
-{
-	return new COP2_Buddhabrot(net, name, op);
-}
+
 COP2_Buddhabrot::COP2_Buddhabrot(OP_Network *parent,
 	const char *name,
 	OP_Operator *entry)
@@ -184,7 +87,7 @@ COP2_Buddhabrot::~COP2_Buddhabrot()
 COP2_ContextData *
 COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	int /*arrayindex*/,
-	float t, int xres, int yres,
+	float t, int image_sizex, int image_sizey,
 	int /*thread*/, int /*maxthreads*/)
 {
 	// This method evaluates and stashes parms and any other data that
@@ -192,48 +95,15 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	// threads. This function is guaranteed to be single threaded.
 	COP2_BuddhabrotData *data = new COP2_BuddhabrotData();
 
-	// Space Xform Attributes
-	double scale = evalFloat(nameScale.getToken(), 0, t);
-	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
-	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
-	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
-	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
-	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
+	data->space.set_image_size(image_sizex, image_sizey);
 
-	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
+	XformStashData xformData;
+	xformData.evalArgs(this, t);
+	data->space.set_xform(xformData);
 
-	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
-	// The UI artificially inflates the numbers to make them more user friendly at
-	// shallow depths.
-	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
-	offset_x = offset_x / 1000;
-	offset_y = offset_y / 1000;
-
-	data->space.set_image_size(xres, yres);
-	data->space.set_xform(
-		offset_x,
-		offset_y,
-		rotate,
-		scale,
-		scale,
-		xOrd);
-
-
-	// Fractal Attributes
-	int iter = evalInt(nameIter.getToken(), 0, t);
-	double pow = evalFloat(namePow.getToken(), 0, t);
-	double bailout = evalFloat(nameBailout.getToken(), 0, t);
-	int jdepth = evalInt(nameJDepth.getToken(), 0, t);
-	double joffset_x = evalFloat(nameJOffset.getToken(), 0, t);
-	double joffset_y = evalFloat(nameJOffset.getToken(), 1, t);
-	int blackhole = evalInt(nameBlackhole.getToken(), 0, t);
-
-	COMPLEX joffset{ joffset_x, joffset_y };
-
-	data->fractal = Mandelbrot(
-		iter, pow, bailout, jdepth, joffset, blackhole);
+	MandelbrotStashData mandelData;
+	mandelData.evalArgs(this, t);
+	data->fractal = Mandelbrot(mandelData);
 
 
 	exint samples = evalInt(nameSamples.getToken(), 0, t);
@@ -248,24 +118,9 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 void
 COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 {
-	// if your algorthim increases the image bounds (like blurring or
-	// transforming) you can set the bounds here.
-	// if you need to access your context data for some information to
-	// compute the bounds (like blur size), you can do it like:
-	//   COP2_BuddhabrotData *sdata =
-	//                (COP2_BuddhabrotData *) context.data();
-	// SAMPLES:
-
-	// expands or contracts the bounds to the visible image resolution
 	context.setImageBounds(0, 0, context.myXres - 1, context.myYres - 1);
-	// just copies the input bounds (ie this node don't modify it)
-	//copyInputBounds(0, context);
-	// expands the input bounds by 5 pixels in each direction.
-	//   copyInputBounds(0, context);
-	//   int x1,y1,x2,y2;
-	//   context.getImageBounds(x1,y1,x2,y2);
-	//   context.setImageBounds(x1-5, y1-5, x2+5, y2+5);
-
+	// In theory `copyInputBounds(0, context);` should work, but it
+	// results in a black image in 17.5.
 }
 void
 COP2_Buddhabrot::getInputDependenciesForOutputArea(
