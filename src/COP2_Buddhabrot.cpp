@@ -20,10 +20,6 @@
 #include <COP2/COP2_CookAreaInfo.h>
 #include "COP2_Buddhabrot.h"
 
-
-//Temp
-#include "typedefs.h"
-
 using namespace CC;
 
 COP_MASK_SWITCHER(18, "Fractal");
@@ -72,13 +68,7 @@ const char *    COP2_Buddhabrot::myInputLabels[] =
 	"Mask Input",
 	0
 };
-OP_Node *
-COP2_Buddhabrot::myConstructor(OP_Network      *net,
-	const char      *name,
-	OP_Operator     *op)
-{
-	return new COP2_Buddhabrot(net, name, op);
-}
+
 COP2_Buddhabrot::COP2_Buddhabrot(OP_Network *parent,
 	const char *name,
 	OP_Operator *entry)
@@ -128,24 +118,9 @@ COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 void
 COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 {
-	// if your algorthim increases the image bounds (like blurring or
-	// transforming) you can set the bounds here.
-	// if you need to access your context data for some information to
-	// compute the bounds (like blur size), you can do it like:
-	//   COP2_BuddhabrotData *sdata =
-	//                (COP2_BuddhabrotData *) context.data();
-	// SAMPLES:
-
-	// expands or contracts the bounds to the visible image resolution
 	context.setImageBounds(0, 0, context.myXres - 1, context.myYres - 1);
-	// just copies the input bounds (ie this node don't modify it)
-	//copyInputBounds(0, context);
-	// expands the input bounds by 5 pixels in each direction.
-	//   copyInputBounds(0, context);
-	//   int x1,y1,x2,y2;
-	//   context.getImageBounds(x1,y1,x2,y2);
-	//   context.setImageBounds(x1-5, y1-5, x2+5, y2+5);
-
+	// In theory `copyInputBounds(0, context);` should work, but it
+	// results in a black image in 17.5.
 }
 void
 COP2_Buddhabrot::getInputDependenciesForOutputArea(
