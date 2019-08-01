@@ -124,16 +124,11 @@ static PRM_Range rangeSamples
 PRM_Template
 COP2_Buddhabrot::myTemplateList[]
 {
-	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
+	// The Cop2 Mask Switcher comes with 3 tabs:
+	// Ours, Mask, and Sequence.
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu),
-	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep1, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameRotatePivot, defaultRotatePivot),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameScalePivot, defaultScalePivot),
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSep2, PRMzeroDefaults),
+	TEMPLATES_XFORM,
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameIter, &defaultIter, 0, &rangeIter),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePow, &defaultPow, 0, &rangePow),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameBailout, &defaultBailout, 0, &rangeBailout),
@@ -184,42 +179,18 @@ COP2_Buddhabrot::~COP2_Buddhabrot()
 COP2_ContextData *
 COP2_Buddhabrot::newContextData(const TIL_Plane * /*plane*/,
 	int /*arrayindex*/,
-	float t, int xres, int yres,
+	float t, int image_sizex, int image_sizey,
 	int /*thread*/, int /*maxthreads*/)
 {
-	// This method evaluates and stashes parms and any other data that
-	// needs to be setup. Parms cannot be evaluated concurently in separate
-	// threads. This function is guaranteed to be single threaded.
+
 	COP2_BuddhabrotData *data = new COP2_BuddhabrotData();
 
+	data->space.set_image_size(image_sizex, image_sizey);
 	// Space Xform Attributes
-	double scale = evalFloat(nameScale.getToken(), 0, t);
-	double offset_x = evalFloat(nameOffset.getToken(), 0, t);
-	double offset_y = evalFloat(nameOffset.getToken(), 1, t);
-	const double rotate = evalFloat(nameRotate.getToken(), 0, t);
-	const double rotatePivot_x = evalFloat(nameRotatePivot.getToken(), 0, t);
-	const double rotatePivot_y = evalFloat(nameRotatePivot.getToken(), 1, t);
-	const double scalePivot_x = evalFloat(nameScalePivot.getToken(), 0, t);
-	const double scalePivot_y = evalFloat(nameScalePivot.getToken(), 1, t);
 
-	const RSTORDER xOrd = get_rst_order(evalInt(nameXOrd.getToken(), 0, t));
-
-	// In the houdini UI, it's annoying to type in really small numbers below 0.0001.
-	// The UI artificially inflates the numbers to make them more user friendly at
-	// shallow depths.
-	scale = scale / 100000;  // This is set to make the default scale relative to 1e+5.
-	offset_x = offset_x / 1000;
-	offset_y = offset_y / 1000;
-
-	data->space.set_image_size(xres, yres);
-	data->space.set_xform(
-		offset_x,
-		offset_y,
-		rotate,
-		scale,
-		scale,
-		xOrd);
-
+	XformStashData xformData;
+	xformData.evalArgs(this, t);
+	data->space.set_xform(xformData);
 
 	// Fractal Attributes
 	int iter = evalInt(nameIter.getToken(), 0, t);
