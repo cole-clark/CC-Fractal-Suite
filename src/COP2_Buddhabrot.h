@@ -93,6 +93,7 @@ namespace CC
 		UT_Lock myLock;
 		int seed;
 		exint samples;
+		bool normalize;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData() = default;

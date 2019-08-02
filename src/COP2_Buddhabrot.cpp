@@ -29,6 +29,7 @@ COP_MASK_SWITCHER(18, "Fractal");
 
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
+static PRM_Name nameNormalize("normalize", "Normalize");
 
 /// Declare Parm Defaults
 
@@ -53,6 +54,7 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameNormalize, PRMoneDefaults),
 	PRM_Template()
 };
 
@@ -106,11 +108,9 @@ COP2_Buddhabrot::newContextData(
 
 	// Node-Specific Parms
 
-	exint samples = evalInt(nameSamples.getToken(), 0, t);
-	int seed = evalFloat(nameSeed.getToken(), 0, t);
-
-	data->samples = samples;
-	data->seed = seed;
+	data->samples = evalInt(nameSamples.getToken(), 0, t);
+	data->seed = evalFloat(nameSeed.getToken(), 0, t);
+	data->normalize = evalInt(nameNormalize.getToken(), 0, t);
 
 	return data;
 }
@@ -242,10 +242,10 @@ COP2_Buddhabrot::filterImage(
 			{
 				// Choose a random x, y coordinate along the image plane.
 				// The '0's refer to lower left corner, the second argument the upper right
-				std::uniform_real_distribution<double> realDistribution(0, context.myXsize-1);
-				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize-1);
+				std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
+				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
 
-				for (exint idxSample=0; idxSample < sdata->samples; idxSample++)
+				for (exint idxSample = 0; idxSample < sdata->samples; idxSample++)
 				{
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
@@ -263,10 +263,25 @@ COP2_Buddhabrot::filterImage(
 						{
 							outputPixel += samplePixel;
 							++*outputPixel;
-							
+
 							// Save the highest output pixel value sampled
 							if (*outputPixel > highest_sample_value)
 								highest_sample_value = static_cast<uint32_t>(*outputPixel);
+						}
+					}
+				}
+				// Normalize to highest sample value if needed
+				if (sdata->normalize)
+				{
+					float multiplier = 1.0f / highest_sample_value;
+					for (int x = 0; x < context.myXsize; ++x)
+					{
+						for (int y = 0; y < context.myYsize; ++y)
+						{
+							int currentPixel = x + y * context.myXsize;
+							float* outputPixel = (float*)odata;
+							outputPixel += currentPixel;
+							*outputPixel *= multiplier;
 						}
 					}
 				}
@@ -286,20 +301,9 @@ COP2_Buddhabrot::filterImage(
 					}
 				}
 			}
-			// TEMP: stores max value into the entire image. Beg SideFx to let me put in image metadata
-			else if (comp == 2)
-			{
-				for (int x = 0; x < context.myXsize; ++x)
-					for (int y = 0; y < context.myYsize; ++y)
-					{
-						int currentPixel = x + y * context.myXsize;
-						float* outputPixel = (float*)odata;
-						outputPixel += currentPixel;
-						*outputPixel = highest_sample_value;
-					}
-			}
 		}
 	}
+
 	// TODO: test deleting sdata.
 	return error();
 }
