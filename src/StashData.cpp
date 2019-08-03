@@ -46,7 +46,8 @@ void MandelbrotStashData::evalArgs(const OP_Node * node, fpreal t)
 	double joffset_x = node->evalFloat(JOFFSET_NAME.first, 0, t);
 	double joffset_y = node->evalFloat(JOFFSET_NAME.first, 1, t);
 	joffset = COMPLEX(joffset_x, joffset_y);
-	blackhole = node->evalInt(JOFFSET_NAME.first, 1, t) == 1;  // makes boolean
+	int rawblackhole = node->evalInt(BLACKHOLE_NAME.first, 0, t);
+	blackhole = rawblackhole > 0; // Make boolean
 }
 
 PickoverStashData::PickoverStashData(
