@@ -288,6 +288,15 @@ COP2_Buddhabrot::filterImage(
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
+
+					// Look at the sample's input as a 0-1 multiplier on the iters
+					/*
+					float* inputPixel = (float *)idata;
+					WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(sample);
+					inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
+					
+					int nIters = (int)SYSrint(*inputPixel * sdata->fractal.data.iters);
+					*/
 					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.data.iters);
 
 					for (COMPLEX& point : points)
@@ -335,6 +344,7 @@ COP2_Buddhabrot::filterImage(
 			// Display reference fractal in second image plane
 			else if (comp == 1 && sdata->displayreffractal)
 			{
+				float fitmult = 1.0 / (float)refFractal.data.iters;
 				for (int x = 0; x < context.myXsize; ++x)
 				{
 					for (int y = 0; y < context.myYsize; ++y)
@@ -345,8 +355,7 @@ COP2_Buddhabrot::filterImage(
 						COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
 
 						// Assign as a normalized value
-						*outputPixel = refFractal.calculate(fractalCoords).num_iter /
-									   (float)refFractal.data.iters;
+						*outputPixel = refFractal.calculate(fractalCoords).num_iter * fitmult;
 					}
 				}
 			}
