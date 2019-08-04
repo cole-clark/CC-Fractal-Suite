@@ -78,6 +78,9 @@ namespace CC
 		// this method results in a black frame.
 		virtual void computeImageBounds(COP2_Context &context);
 
+		/// Use to hide/unhide parameters.
+		virtual bool updateParmsFlags() override;
+
 	private:
 		COP2_Buddhabrot(
 			OP_Network* parent,
@@ -94,6 +97,7 @@ namespace CC
 		int seed;
 		exint samples;
 		bool normalize;
+		int maxval;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData() = default;

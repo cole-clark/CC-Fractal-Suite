@@ -7,18 +7,23 @@
 
 #include <random>
 
-#include <OP/OP_Context.h>
-#include <OP/OP_OperatorTable.h>
-#include <SYS/SYS_Math.h>
-#include <SYS/SYS_Floor.h>
-#include <PRM/PRM_Include.h>
-#include <PRM/PRM_Parm.h>
-#include <TIL/TIL_Region.h>
-#include <TIL/TIL_Plane.h>
-#include <TIL/TIL_Sequence.h>
-#include <TIL/TIL_Tile.h>
+#include <CH/CH_Manager.h>
 #include <COP2/COP2_CookAreaInfo.h>
+
 #include "COP2_Buddhabrot.h"
+
+//#include <OP/OP_Context.h>
+//#include <OP/OP_OperatorTable.h>
+//#include <SYS/SYS_Math.h>
+//#include <SYS/SYS_Floor.h>
+//#include <PRM/PRM_Include.h>
+//#include <PRM/PRM_Parm.h>
+//#include <TIL/TIL_Region.h>
+//#include <TIL/TIL_Plane.h>
+//#include <TIL/TIL_Sequence.h>
+//#include <TIL/TIL_Tile.h>
+//
+
 
 using namespace CC;
 
@@ -30,16 +35,24 @@ COP_MASK_SWITCHER(18, "Fractal");
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 static PRM_Name nameNormalize("normalize", "Normalize");
+static PRM_Name nameMaxval("maxval", "Maximum Value");
 
 /// Declare Parm Defaults
 
 static PRM_Default defaultSamples{ 100 };
+static PRM_Default defaultMaxval{ 50 };
 
 /// Deflare Parm Ranges
 static PRM_Range rangeSamples
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
 	PRM_RangeFlag::PRM_RANGE_UI, 1000
+};
+
+static PRM_Range rangeMaxval
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, -1,
+	PRM_RangeFlag::PRM_RANGE_UI, 100
 };
 
 /// Create Template List
@@ -55,6 +68,7 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameNormalize, PRMoneDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMaxval, &defaultMaxval, 0, &rangeMaxval),
 	PRM_Template()
 };
 
@@ -111,6 +125,7 @@ COP2_Buddhabrot::newContextData(
 	data->samples = evalInt(nameSamples.getToken(), 0, t);
 	data->seed = evalFloat(nameSeed.getToken(), 0, t);
 	data->normalize = evalInt(nameNormalize.getToken(), 0, t);
+	data->maxval = evalInt(nameMaxval.getToken(), 0, t);
 
 	return data;
 }
@@ -121,6 +136,29 @@ COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 	context.setImageBounds(0, 0, context.myXres - 1, context.myYres - 1);
 	// In theory `copyInputBounds(0, context);` should work, but it
 	// results in a black image in 17.5.
+}
+
+bool COP2_Buddhabrot::updateParmsFlags()
+{
+	// Determine If Normalizing
+	fpreal t = CHgetEvalTime();
+	bool normalize = evalInt(nameNormalize.getToken(), 0, t);
+
+	// Set variables for hiding
+	bool displayMaxval{ false };
+
+	if (normalize)
+	{
+		displayMaxval = true;
+	}
+
+	// Set the visibility state for hidable parms.
+	bool changed = COP2_MaskOp::updateParmsFlags();
+
+	changed |= setVisibleState(nameMaxval.getToken(), displayMaxval);
+
+
+	return changed;
 }
 
 void
@@ -273,6 +311,10 @@ COP2_Buddhabrot::filterImage(
 				// Normalize to highest sample value if needed
 				if (sdata->normalize)
 				{
+					// Get the lower value, so that normalize always fits 0-1.
+					highest_sample_value = (sdata->maxval < highest_sample_value ?
+						sdata->maxval : highest_sample_value);
+
 					float multiplier = 1.0f / highest_sample_value;
 					for (int x = 0; x < context.myXsize; ++x)
 					{
@@ -281,6 +323,10 @@ COP2_Buddhabrot::filterImage(
 							int currentPixel = x + y * context.myXsize;
 							float* outputPixel = (float*)odata;
 							outputPixel += currentPixel;
+
+							// Clamp maximum pixel value if maxval is not -1
+							if (sdata->maxval > -1 && *outputPixel > sdata->maxval)
+								*outputPixel = sdata->maxval;
 							*outputPixel *= multiplier;
 						}
 					}
