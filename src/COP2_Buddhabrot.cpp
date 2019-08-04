@@ -173,7 +173,7 @@ COP2_Buddhabrot::getInputDependenciesForOutputArea(
 
 std::vector<COMPLEX>
 COP2_Buddhabrot::buddhabrotPoints(
-	Mandelbrot* fractal, const COMPLEX & c, int nIterations)
+	Mandelbrot* fractal, const COMPLEX & c, unsigned int nIterations)
 {
 	std::vector<COMPLEX> points;
 	points.reserve(nIterations);
@@ -289,15 +289,14 @@ COP2_Buddhabrot::filterImage(
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
 
-					// Look at the sample's input as a 0-1 multiplier on the iters
-					/*
+					// Look at the sample's input as a multiplier on the iters
+					WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(fractalCoords);
 					float* inputPixel = (float *)idata;
-					WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(sample);
-					inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
 					
-					int nIters = (int)SYSrint(*inputPixel * sdata->fractal.data.iters);
-					*/
-					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.data.iters);
+					inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
+					// The buddhabrotPoints function takes unsigned integers.
+					int nIters = (int)SYSrint(abs(*inputPixel) * sdata->fractal.data.iters);
+					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, nIters);
 
 					for (COMPLEX& point : points)
 					{

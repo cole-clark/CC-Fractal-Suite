@@ -59,7 +59,7 @@ namespace CC
 		std::vector<COMPLEX> buddhabrotPoints(
 			Mandelbrot* fractal,
 			const COMPLEX& c,
-			int nIterations);
+			unsigned int nIterations);
 
 		friend class OP;
 
