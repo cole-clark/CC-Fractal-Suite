@@ -95,7 +95,7 @@ namespace CC
 		FractalSpace space;
 		UT_Lock myLock;
 		int seed;
-		exint samples;
+		double samples;
 		bool normalize;
 		int maxval;
 

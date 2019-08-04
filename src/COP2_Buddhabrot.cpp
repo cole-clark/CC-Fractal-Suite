@@ -12,22 +12,9 @@
 
 #include "COP2_Buddhabrot.h"
 
-//#include <OP/OP_Context.h>
-//#include <OP/OP_OperatorTable.h>
-//#include <SYS/SYS_Math.h>
-//#include <SYS/SYS_Floor.h>
-//#include <PRM/PRM_Include.h>
-//#include <PRM/PRM_Parm.h>
-//#include <TIL/TIL_Region.h>
-//#include <TIL/TIL_Plane.h>
-//#include <TIL/TIL_Sequence.h>
-//#include <TIL/TIL_Tile.h>
-//
-
-
 using namespace CC;
 
-COP_MASK_SWITCHER(18, "Fractal");
+COP_MASK_SWITCHER(17, "Fractal");
 
 
 /// Declare Parm Names
@@ -39,14 +26,14 @@ static PRM_Name nameMaxval("maxval", "Maximum Value");
 
 /// Declare Parm Defaults
 
-static PRM_Default defaultSamples{ 100 };
+static PRM_Default defaultSamples{ 0.25 };
 static PRM_Default defaultMaxval{ 50 };
 
 /// Deflare Parm Ranges
 static PRM_Range rangeSamples
 {
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
-	PRM_RangeFlag::PRM_RANGE_UI, 1000
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.01,
+	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
 
 static PRM_Range rangeMaxval
@@ -65,8 +52,8 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameNormalize, PRMoneDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMaxval, &defaultMaxval, 0, &rangeMaxval),
 	PRM_Template()
@@ -122,8 +109,8 @@ COP2_Buddhabrot::newContextData(
 
 	// Node-Specific Parms
 
-	data->samples = evalInt(nameSamples.getToken(), 0, t);
-	data->seed = evalFloat(nameSeed.getToken(), 0, t);
+	data->samples = evalFloat(nameSamples.getToken(), 0, t);
+	data->seed = evalInt(nameSeed.getToken(), 0, t);
 	data->normalize = evalInt(nameNormalize.getToken(), 0, t);
 	data->maxval = evalInt(nameMaxval.getToken(), 0, t);
 
@@ -156,7 +143,6 @@ bool COP2_Buddhabrot::updateParmsFlags()
 	bool changed = COP2_MaskOp::updateParmsFlags();
 
 	changed |= setVisibleState(nameMaxval.getToken(), displayMaxval);
-
 
 	return changed;
 }
@@ -258,6 +244,9 @@ COP2_Buddhabrot::filterImage(
 	std::mt19937 rng;
 	rng.seed(sdata->seed);
 
+	// Scale num of samples to the size of the image.
+	exint num_samples = SYSrint(context.myXsize * context.myYsize * sdata->samples);
+
 	uint32_t highest_sample_value;
 
 	// For each image plane.
@@ -283,7 +272,7 @@ COP2_Buddhabrot::filterImage(
 				std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
 				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
 
-				for (exint idxSample = 0; idxSample < sdata->samples; idxSample++)
+				for (exint idxSample = 0; idxSample < num_samples; idxSample++)
 				{
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
