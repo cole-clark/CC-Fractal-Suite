@@ -12,6 +12,9 @@
 #include "Mandelbrot.h"
 #include "FractalNode.h"
 
+// A low value that will roughly display the fractal
+static const int REFERENCE_FRACTAL_ITERS{ 10 };
+
 namespace CC
 {
 	class COP2_Buddhabrot : public COP2_MaskOp
@@ -56,7 +59,7 @@ namespace CC
 		std::vector<COMPLEX> buddhabrotPoints(
 			Mandelbrot* fractal,
 			const COMPLEX& c,
-			int nIterations);
+			unsigned int nIterations);
 
 		friend class OP;
 
@@ -78,6 +81,9 @@ namespace CC
 		// this method results in a black frame.
 		virtual void computeImageBounds(COP2_Context &context);
 
+		/// Use to hide/unhide parameters.
+		virtual bool updateParmsFlags() override;
+
 	private:
 		COP2_Buddhabrot(
 			OP_Network* parent,
@@ -92,8 +98,10 @@ namespace CC
 		FractalSpace space;
 		UT_Lock myLock;
 		int seed;
-		exint samples;
+		double samples;
 		bool normalize;
+		int maxval;
+		bool displayreffractal;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData() = default;

@@ -7,39 +7,39 @@
 
 #include <random>
 
-#include <OP/OP_Context.h>
-#include <OP/OP_OperatorTable.h>
-#include <SYS/SYS_Math.h>
-#include <SYS/SYS_Floor.h>
-#include <PRM/PRM_Include.h>
-#include <PRM/PRM_Parm.h>
-#include <TIL/TIL_Region.h>
-#include <TIL/TIL_Plane.h>
-#include <TIL/TIL_Sequence.h>
-#include <TIL/TIL_Tile.h>
+#include <CH/CH_Manager.h>
 #include <COP2/COP2_CookAreaInfo.h>
+
 #include "COP2_Buddhabrot.h"
 
 using namespace CC;
 
-COP_MASK_SWITCHER(18, "Fractal");
-
+COP_MASK_SWITCHER(19, "Fractal");
 
 /// Declare Parm Names
 
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 static PRM_Name nameNormalize("normalize", "Normalize");
+static PRM_Name nameMaxval("maxval", "Maximum Value");
+static PRM_Name nameDisplayReferenceFractal("displayreffractal", "Display Reference Fractal");
 
 /// Declare Parm Defaults
 
-static PRM_Default defaultSamples{ 100 };
+static PRM_Default defaultSamples{ 0.25 };  // Sample by 25% of image size.
+static PRM_Default defaultMaxval{ -1 };  // Off by default
 
 /// Deflare Parm Ranges
 static PRM_Range rangeSamples
 {
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
-	PRM_RangeFlag::PRM_RANGE_UI, 1000
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.01,
+	PRM_RangeFlag::PRM_RANGE_UI, 5
+};
+
+static PRM_Range rangeMaxval
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, -1,
+	PRM_RangeFlag::PRM_RANGE_UI, 100
 };
 
 /// Create Template List
@@ -52,9 +52,12 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameNormalize, PRMoneDefaults),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMaxval, &defaultMaxval, 0, &rangeMaxval),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepC),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameDisplayReferenceFractal, PRMoneDefaults),
 	PRM_Template()
 };
 
@@ -108,9 +111,11 @@ COP2_Buddhabrot::newContextData(
 
 	// Node-Specific Parms
 
-	data->samples = evalInt(nameSamples.getToken(), 0, t);
-	data->seed = evalFloat(nameSeed.getToken(), 0, t);
+	data->samples = evalFloat(nameSamples.getToken(), 0, t);
+	data->seed = evalInt(nameSeed.getToken(), 0, t);
 	data->normalize = evalInt(nameNormalize.getToken(), 0, t);
+	data->maxval = evalInt(nameMaxval.getToken(), 0, t);
+	data->displayreffractal = evalInt(nameDisplayReferenceFractal.getToken(), 0, t);
 
 	return data;
 }
@@ -121,6 +126,28 @@ COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 	context.setImageBounds(0, 0, context.myXres - 1, context.myYres - 1);
 	// In theory `copyInputBounds(0, context);` should work, but it
 	// results in a black image in 17.5.
+}
+
+bool COP2_Buddhabrot::updateParmsFlags()
+{
+	// Determine If Normalizing
+	fpreal t = CHgetEvalTime();
+	bool normalize = evalInt(nameNormalize.getToken(), 0, t);
+
+	// Set variables for hiding
+	bool displayMaxval{ false };
+
+	if (normalize)
+	{
+		displayMaxval = true;
+	}
+
+	// Set the visibility state for hidable parms.
+	bool changed = COP2_MaskOp::updateParmsFlags();
+
+	changed |= setVisibleState(nameMaxval.getToken(), displayMaxval);
+
+	return changed;
 }
 
 void
@@ -146,7 +173,7 @@ COP2_Buddhabrot::getInputDependenciesForOutputArea(
 
 std::vector<COMPLEX>
 COP2_Buddhabrot::buddhabrotPoints(
-	Mandelbrot* fractal, const COMPLEX & c, int nIterations)
+	Mandelbrot* fractal, const COMPLEX & c, unsigned int nIterations)
 {
 	std::vector<COMPLEX> points;
 	points.reserve(nIterations);
@@ -220,7 +247,18 @@ COP2_Buddhabrot::filterImage(
 	std::mt19937 rng;
 	rng.seed(sdata->seed);
 
+	// Scale num of samples to the size of the image.
+	exint num_samples = SYSrint(context.myXsize * context.myYsize * sdata->samples);
+
 	uint32_t highest_sample_value;
+
+	// Declare reference fractal (with lower iteration count) if requested.
+	Mandelbrot refFractal;
+	if (sdata->displayreffractal)
+	{
+		refFractal = sdata->fractal;
+		refFractal.data.iters = REFERENCE_FRACTAL_ITERS;
+	}
 
 	// For each image plane.
 	for (comp = 0; comp < PLANE_MAX_VECTOR_SIZE; comp++)
@@ -245,12 +283,20 @@ COP2_Buddhabrot::filterImage(
 				std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
 				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
 
-				for (exint idxSample = 0; idxSample < sdata->samples; idxSample++)
+				for (exint idxSample = 0; idxSample < num_samples; idxSample++)
 				{
 					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
 					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
 
-					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, sdata->fractal.data.iters);
+
+					// Look at the sample's input as a multiplier on the iters
+					WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(fractalCoords);
+					float* inputPixel = (float *)idata;
+					
+					inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
+					// The buddhabrotPoints function takes unsigned integers.
+					int nIters = (int)SYSrint(abs(*inputPixel) * sdata->fractal.data.iters);
+					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, nIters);
 
 					for (COMPLEX& point : points)
 					{
@@ -273,6 +319,10 @@ COP2_Buddhabrot::filterImage(
 				// Normalize to highest sample value if needed
 				if (sdata->normalize)
 				{
+					// Get the lower value, so that normalize always fits 0-1.
+					highest_sample_value = (sdata->maxval < highest_sample_value ?
+						sdata->maxval : highest_sample_value);
+
 					float multiplier = 1.0f / highest_sample_value;
 					for (int x = 0; x < context.myXsize; ++x)
 					{
@@ -281,13 +331,19 @@ COP2_Buddhabrot::filterImage(
 							int currentPixel = x + y * context.myXsize;
 							float* outputPixel = (float*)odata;
 							outputPixel += currentPixel;
+
+							// Clamp maximum pixel value if maxval is not -1
+							if (sdata->maxval > -1 && *outputPixel > sdata->maxval)
+								*outputPixel = sdata->maxval;
 							*outputPixel *= multiplier;
 						}
 					}
 				}
 			}
-			else if (comp == 1)  // Test show mandelbrot in second pane
+			// Display reference fractal in second image plane
+			else if (comp == 1 && sdata->displayreffractal)
 			{
+				float fitmult = 1.0 / (float)refFractal.data.iters;
 				for (int x = 0; x < context.myXsize; ++x)
 				{
 					for (int y = 0; y < context.myYsize; ++y)
@@ -297,7 +353,8 @@ COP2_Buddhabrot::filterImage(
 						outputPixel += currentPixel;
 						COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
 
-						*outputPixel = sdata->fractal.calculate(fractalCoords).num_iter;
+						// Assign as a normalized value
+						*outputPixel = refFractal.calculate(fractalCoords).num_iter * fitmult;
 					}
 				}
 			}
