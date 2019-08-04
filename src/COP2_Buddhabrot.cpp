@@ -14,8 +14,7 @@
 
 using namespace CC;
 
-COP_MASK_SWITCHER(17, "Fractal");
-
+COP_MASK_SWITCHER(19, "Fractal");
 
 /// Declare Parm Names
 
@@ -23,11 +22,12 @@ static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 static PRM_Name nameNormalize("normalize", "Normalize");
 static PRM_Name nameMaxval("maxval", "Maximum Value");
+static PRM_Name nameDisplayReferenceFractal("displayreffractal", "Display Reference Fractal");
 
 /// Declare Parm Defaults
 
-static PRM_Default defaultSamples{ 0.25 };
-static PRM_Default defaultMaxval{ 50 };
+static PRM_Default defaultSamples{ 0.25 };  // Sample by 25% of image size.
+static PRM_Default defaultMaxval{ -1 };  // Off by default
 
 /// Deflare Parm Ranges
 static PRM_Range rangeSamples
@@ -56,6 +56,8 @@ COP2_Buddhabrot::myTemplateList[]
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameNormalize, PRMoneDefaults),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMaxval, &defaultMaxval, 0, &rangeMaxval),
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepC),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameDisplayReferenceFractal, PRMoneDefaults),
 	PRM_Template()
 };
 
@@ -113,6 +115,7 @@ COP2_Buddhabrot::newContextData(
 	data->seed = evalInt(nameSeed.getToken(), 0, t);
 	data->normalize = evalInt(nameNormalize.getToken(), 0, t);
 	data->maxval = evalInt(nameMaxval.getToken(), 0, t);
+	data->displayreffractal = evalInt(nameDisplayReferenceFractal.getToken(), 0, t);
 
 	return data;
 }
@@ -249,6 +252,14 @@ COP2_Buddhabrot::filterImage(
 
 	uint32_t highest_sample_value;
 
+	// Declare reference fractal (with lower iteration count) if requested.
+	Mandelbrot refFractal;
+	if (sdata->displayreffractal)
+	{
+		refFractal = sdata->fractal;
+		refFractal.data.iters = REFERENCE_FRACTAL_ITERS;
+	}
+
 	// For each image plane.
 	for (comp = 0; comp < PLANE_MAX_VECTOR_SIZE; comp++)
 	{
@@ -321,7 +332,8 @@ COP2_Buddhabrot::filterImage(
 					}
 				}
 			}
-			else if (comp == 1)  // Test show mandelbrot in second pane
+			// Display reference fractal in second image plane
+			else if (comp == 1 && sdata->displayreffractal)
 			{
 				for (int x = 0; x < context.myXsize; ++x)
 				{
@@ -332,7 +344,9 @@ COP2_Buddhabrot::filterImage(
 						outputPixel += currentPixel;
 						COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
 
-						*outputPixel = sdata->fractal.calculate(fractalCoords).num_iter;
+						// Assign as a normalized value
+						*outputPixel = refFractal.calculate(fractalCoords).num_iter /
+									   (float)refFractal.data.iters;
 					}
 				}
 			}

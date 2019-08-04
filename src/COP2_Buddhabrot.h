@@ -12,6 +12,9 @@
 #include "Mandelbrot.h"
 #include "FractalNode.h"
 
+// A low value that will roughly display the fractal
+static const int REFERENCE_FRACTAL_ITERS{ 10 };
+
 namespace CC
 {
 	class COP2_Buddhabrot : public COP2_MaskOp
@@ -98,6 +101,7 @@ namespace CC
 		double samples;
 		bool normalize;
 		int maxval;
+		bool displayreffractal;
 
 		COP2_BuddhabrotData() = default;
 		virtual ~COP2_BuddhabrotData() = default;
