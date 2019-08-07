@@ -22,14 +22,7 @@ namespace CC
 	public:
 		MandelbrotStashData data;
 
-		Mandelbrot(
-			int iters = 50,
-			double power = 2,
-			double bailout = 4,
-			int jdepth = 0,
-			COMPLEX joffset = (0, 0),
-			bool blackhole = false);
-
+		Mandelbrot() = default;
 		Mandelbrot(MandelbrotStashData& mandelData);
 
 		virtual ~Mandelbrot();
@@ -43,17 +36,7 @@ namespace CC
 	public:
 		PickoverStashData data;
 
-		Pickover(
-			int iters = 50,
-			double power = 2,
-			double bailout = 4,
-			int jdepth = 0,
-			COMPLEX joffset = (0, 0),
-			bool blackhole = false,
-			COMPLEX popoint = (0.0f, 0.0f),
-			double porotate = 0.0f,
-			int pomode = false);
-
+		Pickover() = default;
 		Pickover(PickoverStashData& pickoverData);
 	
 		virtual FractalCoordsInfo calculate(COMPLEX coords);

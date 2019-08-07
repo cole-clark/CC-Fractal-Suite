@@ -12,18 +12,6 @@
 
 using namespace CC;
 
-
-Mandelbrot::Mandelbrot(
-	int iters, double power, double bailout,
-	int jdepth, COMPLEX joffset,
-	bool blackhole)
-{
-	data = MandelbrotStashData(
-		iters, power, bailout,
-		jdepth, joffset,
-		blackhole);
-}
-
 Mandelbrot::Mandelbrot(MandelbrotStashData& mandelData)
 {
 	data = mandelData;
@@ -72,17 +60,6 @@ COMPLEX Mandelbrot::calculate_z(COMPLEX z, COMPLEX c)
 		z = pow(z, data.power) + data.joffset;
 
 	return z;
-}
-
-Pickover::Pickover(
-	int iters, double power, double bailout,
-	int jdepth, COMPLEX joffset, bool blackhole,
-	COMPLEX popoint, double porotate, int pomode)
-{
-	data = PickoverStashData(
-		iters, power, bailout,
-		jdepth, joffset, blackhole,
-		popoint, porotate, pomode);
 }
 
 Pickover::Pickover(PickoverStashData & pickoverData)
