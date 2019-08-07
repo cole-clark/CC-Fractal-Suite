@@ -137,27 +137,38 @@ double Pickover::distance_to_point(COMPLEX z, COMPLEX point)
 
 double Pickover::distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta)
 {
-	// Get two points of a vector from a rotation and offset value
-	auto m = UT_Matrix2T<fpreal>::rotationMat(SYSdegToRad(theta));
-	COMPLEX pntA = { m(0, 0), m(0, 1) };
-	COMPLEX pntB = { m(1, 0), m(1, 1) };
-	pntA += offset;
-	pntB += offset;
+	// Create 2D point Transformation Matrices that will be our line
+	UT_Matrix3T<fpreal> mA, mB;
+	mA.identity();
+	// First translate line 'A'
+	mA.xform(RSTORDER::TRS, offset.real(), offset.imag());
+	// Assign 'B' to 'A', and offset by one in the x axis
+	mB = mA;
+	mB.translate({ 1, 0 });
+	// Rotate 'B' around A
+	mB.xform(RSTORDER::TRS, 0.0, 0.0, theta, 1.0, 1.0, offset.real(), offset.imag());
+
+	// Extract point positions from which we will draw our line.
+	COMPLEX pntA{ mA(2, 0), mA(2, 1) };
+	COMPLEX pntB{ mB(2, 0), mB(2, 1) };
 
 	// Calculate distance from point to line.
 	// Math taken from line defined by equation at:
 	// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
 
 	double numerator = abs(
-		pntB.imag() - pntA.imag() * z.real() -
-		pntB.real() - pntA.real() * z.imag() +
-		pntB.real() * pntB.imag() - pntB.imag() * pntA.real()
+		(pntB.imag() - pntA.imag()) * z.real() -
+		(pntB.real() - pntA.real()) * z.imag() +
+		pntB.real() * pntA.imag() - pntB.imag() * pntA.real()
 	);
 
 	double denominator = sqrt(
 		pow(pntB.imag() - pntA.imag(), 2) +
 		pow(pntB.real() - pntA.real(), 2)
 	);
+
+	if (denominator == 0.0)
+		denominator = 1.0f;
 
 	return numerator / denominator;
 }

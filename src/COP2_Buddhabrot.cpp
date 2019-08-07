@@ -5,8 +5,6 @@
 	Code for CC Buddhabrot Generator Cop Node.
  */
 
-#include <random>
-
 #include <CH/CH_Manager.h>
 #include <COP2/COP2_CookAreaInfo.h>
 
@@ -230,6 +228,119 @@ COP2_Buddhabrot::filter(
 	return ((COP2_Buddhabrot*)me)->filterImage(context, input, output);
 }
 
+int COP2_Buddhabrot::evaluateBuddhabrot(
+	COP2_BuddhabrotData* sdata,
+	const COP2_Context& context,
+	char* idata,
+	char* odata,
+	std::mt19937& rng,
+	const int numSamples)
+{
+	// Declare highest sample value, which may be used by the normalize method.
+	int highest_sample_value;
+
+	// Choose a random x, y coordinate along the image plane.
+	// The '0's refer to lower left corner, the second argument the upper right
+	std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
+	std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
+
+	for (exint idxSample = 0; idxSample < numSamples; idxSample++)
+	{
+		COMPLEX sample(realDistribution(rng), imagDistribution(rng));
+		COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
+
+
+		// Look at the sample's input as a multiplier on the iters
+		WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(fractalCoords);
+		float* inputPixel = (float *)idata;
+
+		inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
+		// The buddhabrotPoints function takes unsigned integers.
+		int nIters = (int)SYSrint(abs(*inputPixel) * sdata->fractal.data.iters);
+		std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, nIters);
+
+		for (COMPLEX& point : points)
+		{
+			float *outputPixel = (float *)odata;
+
+			WORLDPIXELCOORDS samplePixelCoords = sdata->space.get_pixel_coords(point);
+			int samplePixel = samplePixelCoords.first + (samplePixelCoords.second * context.myXsize);
+
+			if (samplePixel >= 0 && samplePixel <= context.myXsize * context.myYsize)
+			{
+				outputPixel += samplePixel;
+				++*outputPixel;
+
+				// Save the highest output pixel value sampled
+				if (*outputPixel > highest_sample_value)
+					highest_sample_value = static_cast<uint32_t>(*outputPixel);
+			}
+		}
+	}
+
+	return highest_sample_value;
+}
+
+void COP2_Buddhabrot::normalizeBuddhabrot(
+	COP2_BuddhabrotData* sdata,
+	const COP2_Context& context,
+	char* odata,
+	int highest_sample_value)
+{
+	// Normalize to highest sample value if needed
+	if (sdata->normalize)
+	{
+		// Get the lower value, so that normalize always fits 0-1.
+		highest_sample_value = (sdata->maxval < highest_sample_value ?
+			sdata->maxval : highest_sample_value);
+
+		float multiplier = 1.0f / highest_sample_value;
+		for (int x = 0; x < context.myXsize; ++x)
+		{
+			for (int y = 0; y < context.myYsize; ++y)
+			{
+				int currentPixel = x + y * context.myXsize;
+				float* outputPixel = (float*)odata;
+				outputPixel += currentPixel;
+
+				// Clamp maximum pixel value if maxval is not -1
+				if (sdata->maxval > -1 && *outputPixel > sdata->maxval)
+					*outputPixel = sdata->maxval;
+				*outputPixel *= multiplier;
+			}
+		}
+	}
+}
+
+void COP2_Buddhabrot::displayReferenceFractal(
+	COP2_BuddhabrotData* sdata,
+	const COP2_Context& context,
+	char* idata,
+	char* odata,
+	Mandelbrot& refFractal)
+{
+	float fitmult = 1.0 / (float)refFractal.data.iters;
+	for (int x = 0; x < context.myXsize; ++x)
+	{
+		for (int y = 0; y < context.myYsize; ++y)
+		{
+			int currentPixel = x + y * context.myXsize;
+			
+			float *inputPixel = (float *)idata;
+			float *outputPixel = (float *)odata;
+			
+			inputPixel += currentPixel;
+			outputPixel += currentPixel;
+
+			COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
+
+			// Assign as a normalized value, made absolute value
+			*outputPixel = refFractal.calculate(fractalCoords).num_iter *
+				fitmult * abs(*inputPixel);
+		}
+	}
+}
+
 OP_ERROR
 COP2_Buddhabrot::filterImage(
 	COP2_Context& context,
@@ -248,9 +359,7 @@ COP2_Buddhabrot::filterImage(
 	rng.seed(sdata->seed);
 
 	// Scale num of samples to the size of the image.
-	exint num_samples = SYSrint(context.myXsize * context.myYsize * sdata->samples);
-
-	uint32_t highest_sample_value;
+	exint numSamples = SYSrint(context.myXsize * context.myYsize * sdata->samples);
 
 	// Declare reference fractal (with lower iteration count) if requested.
 	Mandelbrot refFractal;
@@ -278,89 +387,33 @@ COP2_Buddhabrot::filterImage(
 		{
 			if (comp == 0) // First plane only
 			{
-				// Choose a random x, y coordinate along the image plane.
-				// The '0's refer to lower left corner, the second argument the upper right
-				std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
-				std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
+				int highest_sample_value = evaluateBuddhabrot(
+					sdata,
+					context,
+					idata,
+					odata,
+					rng,
+					numSamples);
 
-				for (exint idxSample = 0; idxSample < num_samples; idxSample++)
-				{
-					COMPLEX sample(realDistribution(rng), imagDistribution(rng));
-					COMPLEX fractalCoords = sdata->space.get_fractal_coords(sample);
+				normalizeBuddhabrot(
+					sdata,
+					context,
+					odata,
+					highest_sample_value);
 
-
-					// Look at the sample's input as a multiplier on the iters
-					WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(fractalCoords);
-					float* inputPixel = (float *)idata;
-					
-					inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
-					// The buddhabrotPoints function takes unsigned integers.
-					int nIters = (int)SYSrint(abs(*inputPixel) * sdata->fractal.data.iters);
-					std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, nIters);
-
-					for (COMPLEX& point : points)
-					{
-						float *outputPixel = (float *)odata;
-
-						WORLDPIXELCOORDS samplePixelCoords = sdata->space.get_pixel_coords(point);
-						int samplePixel = samplePixelCoords.first + (samplePixelCoords.second * context.myXsize);
-
-						if (samplePixel >= 0 && samplePixel <= context.myXsize * context.myYsize)
-						{
-							outputPixel += samplePixel;
-							++*outputPixel;
-
-							// Save the highest output pixel value sampled
-							if (*outputPixel > highest_sample_value)
-								highest_sample_value = static_cast<uint32_t>(*outputPixel);
-						}
-					}
-				}
-				// Normalize to highest sample value if needed
-				if (sdata->normalize)
-				{
-					// Get the lower value, so that normalize always fits 0-1.
-					highest_sample_value = (sdata->maxval < highest_sample_value ?
-						sdata->maxval : highest_sample_value);
-
-					float multiplier = 1.0f / highest_sample_value;
-					for (int x = 0; x < context.myXsize; ++x)
-					{
-						for (int y = 0; y < context.myYsize; ++y)
-						{
-							int currentPixel = x + y * context.myXsize;
-							float* outputPixel = (float*)odata;
-							outputPixel += currentPixel;
-
-							// Clamp maximum pixel value if maxval is not -1
-							if (sdata->maxval > -1 && *outputPixel > sdata->maxval)
-								*outputPixel = sdata->maxval;
-							*outputPixel *= multiplier;
-						}
-					}
-				}
 			}
 			// Display reference fractal in second image plane
 			else if (comp == 1 && sdata->displayreffractal)
 			{
-				float fitmult = 1.0 / (float)refFractal.data.iters;
-				for (int x = 0; x < context.myXsize; ++x)
-				{
-					for (int y = 0; y < context.myYsize; ++y)
-					{
-						int currentPixel = x + y * context.myXsize;
-						float *outputPixel = (float *)odata;
-						outputPixel += currentPixel;
-						COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
-
-						// Assign as a normalized value
-						*outputPixel = refFractal.calculate(fractalCoords).num_iter * fitmult;
-					}
-				}
+				displayReferenceFractal(
+					sdata,
+					context,
+					idata,
+					odata,
+					refFractal);
 			}
 		}
 	}
 
-	// TODO: test deleting sdata.
 	return error();
 }

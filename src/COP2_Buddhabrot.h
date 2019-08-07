@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <random>
+
 #include <COP2/COP2_MaskOp.h>
 
 #include "Mandelbrot.h"
@@ -17,6 +19,22 @@ static const int REFERENCE_FRACTAL_ITERS{ 10 };
 
 namespace CC
 {
+	struct COP2_BuddhabrotData : public COP2_ContextData
+	{
+		Mandelbrot fractal;
+		FractalSpace space;
+		UT_Lock myLock;
+		int seed;
+		double samples;
+		bool normalize;
+		int maxval;
+		bool displayreffractal;
+
+		COP2_BuddhabrotData() = default;
+		virtual ~COP2_BuddhabrotData() = default;
+
+	};
+
 	class COP2_Buddhabrot : public COP2_MaskOp
 	{
 	public:
@@ -47,7 +65,7 @@ namespace CC
 			// MAX Plane cooking threads
 			maxp = 1;
 			// MAX Node cooking threads
-			maxn = op = TIL_MAX_THREADS; 
+			maxn = op = TIL_MAX_THREADS;
 		}
 
 		virtual void getInputDependenciesForOutputArea(
@@ -89,22 +107,35 @@ namespace CC
 			OP_Network* parent,
 			const char* name,
 			OP_Operator* entry);
-	};
 
+		// Creates the Buddhabrot, and sets values
+		// For image idata and odata, which
+		// calls to the inputs and outputs of a TIL_Region
+		// Returns highest sampled value
+		int COP2_Buddhabrot::evaluateBuddhabrot(
+			COP2_BuddhabrotData* sdata,
+			const COP2_Context& context,
+			char* idata,
+			char* odata,
+			std::mt19937& rng,
+			const int numSamples);
 
-	struct COP2_BuddhabrotData : public COP2_ContextData
-	{
-		Mandelbrot fractal;
-		FractalSpace space;
-		UT_Lock myLock;
-		int seed;
-		double samples;
-		bool normalize;
-		int maxval;
-		bool displayreffractal;
-
-		COP2_BuddhabrotData() = default;
-		virtual ~COP2_BuddhabrotData() = default;
-
+		// Normalizes the buddhabrot fractal based on
+		// Either a user-defined maximum, or the highest
+		// Value sampled by the Buddhabrot
+		void COP2_Buddhabrot::normalizeBuddhabrot(
+			COP2_BuddhabrotData* sdata,
+			const COP2_Context& context,
+			char* odata,
+			int highest_sample_value);
+			
+		// Display a Mandelbrot fractal to guide the user.
+		// Note that the input masking is taken into account.
+		void COP2_Buddhabrot::displayReferenceFractal(
+			COP2_BuddhabrotData* sdata,
+			const COP2_Context& context,
+			char* idata,
+			char* odata,
+			Mandelbrot& refFractal);
 	};
 }
