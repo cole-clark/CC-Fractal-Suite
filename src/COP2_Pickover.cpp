@@ -142,10 +142,42 @@ COP2_Pickover::generateTile(COP2_Context& context, TIL_TileList* tileList)
 			COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
 			FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
 
-			if (tileIndex == 0)
+			if (tileIndex == 0)  // Main Fractal
 			{
 				dest[i] = pixelInfo.smooth;
 			}
+			// TODO: Make optional in interface
+			else if (tileIndex == 1)  // Reference Lines
+			{
+				// TODO: Move into its own method and encapsulate code
+				auto world_point = data->space.get_pixel_coords(data->fractal.data.popoint);
+
+				double distance = SYSsqrt(
+					SYSpow(world_point.first - worldPixel.first, 2.0) +
+					SYSpow(world_point.second - worldPixel.second, 2.0));
+
+				// TODO: Move '10' to a parm
+				if (distance < 10.0)
+					dest[i] = (10.0 - distance) / 10.0;
+				else
+					dest[i] = 0.0f;
+
+				// TODO: Move into the fractal class
+				if (data->fractal.data.pomode)
+				{
+					distance = data->fractal.distance_to_line(
+						fractalCoords,
+						data->fractal.data.popoint,
+						data->fractal.data.porotate);
+
+					// TODO: Move this all to a parm
+					if (distance < .1)
+						dest[i] = (.1 - distance) * 10;
+					else
+						dest[i] = 0.0f;
+				}
+			}
+
 			else
 				dest[i] = 0.0f;
 		}

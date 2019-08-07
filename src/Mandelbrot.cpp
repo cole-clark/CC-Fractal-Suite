@@ -138,7 +138,9 @@ double Pickover::distance_to_point(COMPLEX z, COMPLEX point)
 double Pickover::distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta)
 {
 	// Get two points of a vector from a rotation and offset value
-	auto m = UT_Matrix2T<fpreal>::rotationMat(SYSdegToRad(theta));
+	// -45 degrees subtracted because for unknown reasons, the math 
+	//  by exactly this much consistently.
+	auto m = UT_Matrix2T<fpreal>::rotationMat(SYSdegToRad(theta - 45.0f));
 	COMPLEX pntA = { m(0, 0), m(0, 1) };
 	COMPLEX pntB = { m(1, 0), m(1, 1) };
 	pntA += offset;
@@ -149,15 +151,18 @@ double Pickover::distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta)
 	// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
 
 	double numerator = abs(
-		pntB.imag() - pntA.imag() * z.real() -
-		pntB.real() - pntA.real() * z.imag() +
-		pntB.real() * pntB.imag() - pntB.imag() * pntA.real()
+		(pntB.imag() - pntA.imag()) * z.real() -
+		(pntB.real() - pntA.real()) * z.imag() +
+		pntB.real() * pntA.imag() - pntB.imag() * pntA.real()
 	);
 
 	double denominator = sqrt(
 		pow(pntB.imag() - pntA.imag(), 2) +
 		pow(pntB.real() - pntA.real(), 2)
 	);
+
+	if (denominator == 0.0)
+		denominator = 1.0f;
 
 	return numerator / denominator;
 }
