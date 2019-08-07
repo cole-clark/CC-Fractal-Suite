@@ -137,14 +137,20 @@ double Pickover::distance_to_point(COMPLEX z, COMPLEX point)
 
 double Pickover::distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta)
 {
-	// Get two points of a vector from a rotation and offset value
-	// -45 degrees subtracted because for unknown reasons, the math 
-	//  by exactly this much consistently.
-	auto m = UT_Matrix2T<fpreal>::rotationMat(SYSdegToRad(theta - 45.0f));
-	COMPLEX pntA = { m(0, 0), m(0, 1) };
-	COMPLEX pntB = { m(1, 0), m(1, 1) };
-	pntA += offset;
-	pntB += offset;
+	// Create 2D point Transformation Matrices that will be our line
+	UT_Matrix3T<fpreal> mA, mB;
+	mA.identity();
+	// First translate line 'A'
+	mA.xform(RSTORDER::TRS, offset.real(), offset.imag());
+	// Assign 'B' to 'A', and offset by one in the x axis
+	mB = mA;
+	mB.translate({ 1, 0 });
+	// Rotate 'B' around A
+	mB.xform(RSTORDER::TRS, 0.0, 0.0, theta, 1.0, 1.0, offset.real(), offset.imag());
+
+	// Extract point positions from which we will draw our line.
+	COMPLEX pntA{ mA(2, 0), mA(2, 1) };
+	COMPLEX pntB{ mB(2, 0), mB(2, 1) };
 
 	// Calculate distance from point to line.
 	// Math taken from line defined by equation at:
