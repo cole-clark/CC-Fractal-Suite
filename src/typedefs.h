@@ -36,6 +36,8 @@ static NAMEPAIR BLACKHOLE_NAME{ "blackhole", "Blackhole" };
 static NAMEPAIR POPOINT_NAME{ "popoint", "Pickover Point" };
 static NAMEPAIR POROTATE_NAME{ "porotate", "Pickover Rotate" };
 static NAMEPAIR POMODE_NAME{ "pomode", "Pickover Mode" };
+static NAMEPAIR POREFERENCE_NAME{ "poreference", "Display Reference" };
+static NAMEPAIR POREFSIZE_NAME{ "porefsize", "Reference Size" };
 
 /// Lyapunov Names
 static NAMEPAIR LYASEQ_NAME{ "seq", "Sequence" };

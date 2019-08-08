@@ -53,9 +53,11 @@ void MandelbrotStashData::evalArgs(const OP_Node * node, fpreal t)
 PickoverStashData::PickoverStashData(
 	int iters, double power, double bailout,
 	int jdepth, COMPLEX joffset, bool blackhole,
-	COMPLEX popoint, double porotate, bool pomode) :
+	COMPLEX popoint, double porotate, bool pomode,
+	bool poref, fpreal porefsize) :
 	MandelbrotStashData(iters, power, bailout, jdepth, joffset, blackhole),
-	popoint(popoint), porotate(porotate), pomode(pomode)
+	popoint(popoint), porotate(porotate), pomode(pomode),
+	poref(poref), porefsize(porefsize)
 {}
 
 void PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
@@ -69,6 +71,8 @@ void PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
 	popoint = COMPLEX(popoint_x, popoint_y);
 	porotate = node->evalFloat(POROTATE_NAME.first, 0, t);
 	pomode = node->evalInt(POMODE_NAME.first, 0, t);
+	poref = node->evalInt(POREFERENCE_NAME.first, 0, t);
+	porefsize = node->evalFloat(POREFSIZE_NAME.first, 0, t);
 }
 
 void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)

@@ -11,7 +11,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(16, "Fractal");
+COP_GENERATOR_SWITCHER(18, "Fractal");
 
  /// Private Constructor
 COP2_Pickover::COP2_Pickover(
@@ -23,12 +23,23 @@ COP2_Pickover::COP2_Pickover(
 static PRM_Name namePoPoint(POPOINT_NAME.first, POPOINT_NAME.second);
 static PRM_Name namePoMode(POMODE_NAME.first, POMODE_NAME.second);
 static PRM_Name namePoLineRotate(POROTATE_NAME.first, POROTATE_NAME.second);
+static PRM_Name namePoReference(POREFERENCE_NAME.first, POREFERENCE_NAME.second);
+static PRM_Name namePoRefSize(POREFSIZE_NAME.first, POREFSIZE_NAME.second);
+
+/// Define node-specific defaults
+static PRM_Default defaultPoRefSize{ 10.0 };
 
 /// Define node-specific ranges
 static PRM_Range rangePoRotate
 {
 	PRM_RangeFlag::PRM_RANGE_UI, -180,
 	PRM_RangeFlag::PRM_RANGE_UI, 180
+};
+
+static PRM_Range rangePoRefSize
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.0,
+	PRM_RangeFlag::PRM_RANGE_FREE, 25
 };
 
 /// ChoiceList Lists
@@ -38,6 +49,7 @@ static PRM_Name poModeMenuNames[] =
 	PRM_Name("line", "Line"),
 	PRM_Name(0)
 };
+
 
 static PRM_ChoiceList poModeMenu
 (
@@ -57,6 +69,8 @@ COP2_Pickover::myTemplateList[]
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &namePoMode, PRMzeroDefaults, &poModeMenu),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePoPoint, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults, 0, &rangePoRotate),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePoReference, PRMoneDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoRefSize, &defaultPoRefSize, 0, &rangePoRefSize),
 	PRM_Template()
 };
 
@@ -102,7 +116,7 @@ COP2_Pickover::newContextData
 	
 	// Set the image size and stash the parameters.
 	data->space.set_image_size(image_sizex, image_sizey);
-
+	
 	XformStashData xformData;
 	xformData.evalArgs(this, t);
 	data->space.set_xform(xformData);
@@ -110,6 +124,9 @@ COP2_Pickover::newContextData
 	PickoverStashData pickoverData;
 	pickoverData.evalArgs(this, t);
 	data->fractal = Pickover(pickoverData);
+
+	// Set the world point for the pickover
+	data->world_point = data->space.get_pixel_coords(data->fractal.data.popoint);
 
 	return data;
 }
@@ -146,36 +163,10 @@ COP2_Pickover::generateTile(COP2_Context& context, TIL_TileList* tileList)
 			{
 				dest[i] = pixelInfo.smooth;
 			}
-			// TODO: Make optional in interface
-			else if (tileIndex == 1)  // Reference Lines
+			
+			else if (tileIndex == 1 && data->fractal.data.poref)  // Reference image
 			{
-				// TODO: Move into its own method and encapsulate code
-				auto world_point = data->space.get_pixel_coords(data->fractal.data.popoint);
-
-				double distance = SYSsqrt(
-					SYSpow(world_point.first - worldPixel.first, 2.0) +
-					SYSpow(world_point.second - worldPixel.second, 2.0));
-
-				// TODO: Move '10' to a parm
-				if (distance < 10.0)
-					dest[i] = (10.0 - distance) / 10.0;
-				else
-					dest[i] = 0.0f;
-
-				// TODO: Move into the fractal class
-				if (data->fractal.data.pomode)
-				{
-					distance = data->fractal.distance_to_line(
-						fractalCoords,
-						data->fractal.data.popoint,
-						data->fractal.data.porotate);
-
-					// TODO: Move this all to a parm
-					if (distance < .1)
-						dest[i] = (.1 - distance) * 10;
-					else
-						dest[i] = 0.0f;
-				}
+				dest[i] = data->calculate_reference(fractalCoords, worldPixel);
 			}
 
 			else
@@ -194,24 +185,67 @@ bool COP2_Pickover::updateParmsFlags()
 {
 	// Determine Mode State
 	fpreal t = CHgetEvalTime();
-	int mode = evalInt(namePoMode.getToken(), 0, t);
-	
+	bool modeRotate = evalInt(namePoMode.getToken(), 0, t);
+	bool modePoRef = evalInt(POREFERENCE_NAME.first, 0, t);
+
 	// Set variables for hiding
 	bool displayRotate{ false };
+	bool displayPoRefSize{ false };
 
-	if (mode == 1)
+	if (modeRotate)
 		displayRotate = true;
+
+	if (modePoRef)
+		displayPoRefSize = true;
 
 	// Call parent's updateParmFlags to avoid recursion.
 	bool changed = COP2_Generator::updateParmsFlags();
 
 	changed |= setVisibleState(namePoLineRotate.getToken(), displayRotate);
+	changed |= setVisibleState(POREFSIZE_NAME.first, displayPoRefSize);
 
 	return changed;
 }
 
 /// Destructor
 COP2_Pickover::~COP2_Pickover() {}
+
+float COP2_PickoverData::calculate_reference(
+	COMPLEX fractalCoords, WORLDPIXELCOORDS worldPixel)
+{
+	// Acts as a typedef
+	double& refsize = fractal.data.porefsize;
+
+	// Get distance of the 'world point' to the current pixel
+	double distance = SYSsqrt(
+		SYSpow(world_point.first - worldPixel.first, 2.0) +
+		SYSpow(world_point.second - worldPixel.second, 2.0));
+
+	float val = 0.0;
+
+	// Set val to the 0-1 distance, if pomode in point mode
+	if (distance < refsize && !fractal.data.pomode)
+		val = (refsize - distance) / refsize;
+
+	if (fractal.data.pomode)  // If in line mode
+	{
+		distance = fractal.distance_to_line(
+			fractalCoords,
+			fractal.data.popoint,
+			fractal.data.porotate);
+
+		// Set 0-1 size if within a range.
+		// This 1000x smaller multiplier is fudging the difference between
+		// A 'fractal space' distance and a 'world pixel' space distance.
+		// This is acceptable for a reference line, but not an exact comparison.
+		if (distance < refsize * 0.001)
+			val = (refsize - distance) * 1000;
+		else
+			val = 0.0f;
+	}
+
+	return val;
+}
 
 /// Destructor
 COP2_PickoverData::~COP2_PickoverData() {}
