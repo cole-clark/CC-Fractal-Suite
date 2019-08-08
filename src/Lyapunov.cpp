@@ -37,12 +37,12 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 
 	// Calculate Lyapunov
 	double value{ 0 };
-
+	float log2mult = 1.0 / SYSlog(2.0);
 	for (int i = 1; i <= niters; i++)
 	{
 		value += SYSlog(SYSabs(
 			preseq[i % data.seq.size()] *
-			(1.0 - 2.0) * seq[i])) / SYSlog(2.0);
+			(1.0 - 2.0) * seq[i])) * log2mult;
 	}
 	value /= niters;
 	

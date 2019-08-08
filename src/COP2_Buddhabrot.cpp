@@ -19,7 +19,7 @@ COP_MASK_SWITCHER(19, "Fractal");
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 static PRM_Name nameNormalize("normalize", "Normalize");
-static PRM_Name nameMaxval("maxval", "Maximum Value");
+static PRM_Name nameMaxval("maxval", "Maximum Raw Value");
 static PRM_Name nameDisplayReferenceFractal("displayreffractal", "Display Reference Fractal");
 
 /// Declare Parm Defaults
@@ -290,11 +290,13 @@ void COP2_Buddhabrot::normalizeBuddhabrot(
 	// Normalize to highest sample value if needed
 	if (sdata->normalize)
 	{
-		// Get the lower value, so that normalize always fits 0-1.
-		highest_sample_value = (sdata->maxval < highest_sample_value ?
+		// If maxval is smaller than highest value and maxval is not -1,
+		// Set the highest sample to the highest value effectively clamping it.
+		highest_sample_value = (
+			sdata->maxval < highest_sample_value && sdata->maxval != -1.0 ?
 			sdata->maxval : highest_sample_value);
 
-		float multiplier = 1.0f / highest_sample_value;
+		float multiplier = 1.0 / highest_sample_value;
 		for (int x = 0; x < context.myXsize; ++x)
 		{
 			for (int y = 0; y < context.myYsize; ++y)
@@ -304,7 +306,7 @@ void COP2_Buddhabrot::normalizeBuddhabrot(
 				outputPixel += currentPixel;
 
 				// Clamp maximum pixel value if maxval is not -1
-				if (sdata->maxval > -1 && *outputPixel > sdata->maxval)
+				if (sdata->maxval > -1.0 && *outputPixel > sdata->maxval)
 					*outputPixel = sdata->maxval;
 				*outputPixel *= multiplier;
 			}
