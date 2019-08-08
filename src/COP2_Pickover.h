@@ -55,6 +55,12 @@ namespace CC
 		FractalSpace space;
 		Pickover fractal;
 
+		float calculate_reference(
+			COMPLEX fractalCoords, WORLDPIXELCOORDS worldPixel);
+
+		// The pixel-space location of the pickover point position.
+		WORLDPIXELCOORDS world_point;
+
 		COP2_PickoverData() = default;
 		virtual ~COP2_PickoverData();
 	};
