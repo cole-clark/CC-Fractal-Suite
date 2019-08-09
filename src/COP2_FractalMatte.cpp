@@ -76,11 +76,11 @@ PRM_Template
 COP2_FractalMatte::myTemplateList[] =
 {
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMode, PRMzeroDefaults, &menuMode),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMode, PRMzeroDefaults, &menuMode, 0, helpMode),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameCompType, PRMzeroDefaults, &menuComparison),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameCompValue, PRMzeroDefaults),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameCompValue, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameInvert, PRMzeroDefaults),
 	PRM_Template(),
 };
@@ -126,13 +126,13 @@ COP2_FractalMatte::addPixelFunction(
 
 	if (mode == ModeType::MODULUS)  // Use the modulus type constructor
 	{
-		int modulo = evalInt(nameModulo.getToken(), 0, t);
-		int offset = evalInt(nameOffset.getToken(), 0, t);
+		double modulo = evalFloat(nameModulo.getToken(), 0, t);
+		double offset = evalFloat(nameOffset.getToken(), 0, t);
 		return new cop2_FractalMatteFunc(modulo, offset, invert);
 	}
 	else  // Use the comparison type constructor
 	{
-		int compValue = evalInt(nameCompValue.getToken(), 0, t);
+		double compValue = evalFloat(nameCompValue.getToken(), 0, t);
 		ComparisonType compType = (ComparisonType)evalInt(nameCompType.getToken(), 0, t);
 		return new cop2_FractalMatteFunc(compValue, compType, invert);
 	}
@@ -185,7 +185,7 @@ COP2_FractalMatte::getInfoPopup()
 }
 
 cop2_FractalMatteFunc::cop2_FractalMatteFunc(
-	int modulo, int offset, bool invert)
+	double modulo, double offset, bool invert)
 {
 	this->modulo = modulo;
 	this->offset = offset;
@@ -195,7 +195,7 @@ cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 }
 
 cop2_FractalMatteFunc::cop2_FractalMatteFunc(
-	int compValue, ComparisonType compType, bool invert)
+	double compValue, ComparisonType compType, bool invert)
 {
 	this->compValue = compValue;
 	this->compType = compType;

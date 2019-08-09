@@ -234,7 +234,7 @@ float COP2_PickoverData::calculate_reference(
 			fractal.data.popoint,
 			fractal.data.porotate);
 
-		// Set 0-1 size if within a range.
+		// Set 0-1 size if within the distance range.
 		// This 1000x smaller multiplier is fudging the difference between
 		// A 'fractal space' distance and a 'world pixel' space distance.
 		// This is acceptable for a reference line, but not an exact comparison.
