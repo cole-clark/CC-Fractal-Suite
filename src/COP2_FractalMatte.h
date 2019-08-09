@@ -68,10 +68,10 @@ namespace CC
 		};
 
 		cop2_FractalMatteFunc(
-			int modulo, int offset, bool invert=false);
+			double modulo, double offset, bool invert=false);
 
 		cop2_FractalMatteFunc(
-			int compValue, ComparisonType compType, bool invert = false);
+			double compValue, ComparisonType compType, bool invert = false);
 
 	protected:
 		virtual bool eachComponentDifferent() const
@@ -113,10 +113,10 @@ namespace CC
 		}
 
 	private:
-		int modulo{ 0 };
-		int offset{ 0 };
+		double modulo{ 0 };
+		double offset{ 0 };
 		bool invert{ false };
-		int compValue{ 0 };
+		double compValue{ 0 };
 		ComparisonType compType{ ComparisonType::LESS_THAN };
 		ModeType mode{ ModeType::MODULUS };
 	};
