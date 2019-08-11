@@ -19,7 +19,7 @@ typedef std::pair<const char*, const char*> NAMEPAIR; /// To shorten names
 /// Definitions for generically referring to parameter names
 /// Xform Names
 
-static NAMEPAIR TRANSLATE_NAME{ "offset", "Offset" };
+static NAMEPAIR TRANSLATE_NAME{ "translate", "Translate" };
 static NAMEPAIR ROTATE_NAME{ "rotate", "Rotate" };
 static NAMEPAIR SCALE_NAME{ "scale", "Scale" };
 static NAMEPAIR XORD_NAME{ "xOrd", "TRS Order"};
