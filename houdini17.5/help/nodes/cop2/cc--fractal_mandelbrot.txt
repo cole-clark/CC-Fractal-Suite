@@ -1,30 +1,121 @@
-= My Asset =
+= Fractal Mandelbrot =
 
 #icon: /nodes/cop2/COP2_cc-fractal_mandelbrot.svg
 
-"""A quick summary of what the node does."""
+"""Generator for Mandelbrots, Julia Sets, and Multibrots."""
 
 == Overview ==
 
-Explanation of the node's purpose and operation.
+Fractal Mandelbrot is a general-purpose escape-time fractal generator that was designed with an emphasis on animating simple fractals. By default, it comes with the ability to create the canonical Mandelbrot fractal, but has been extended to also handle higher-order multibrots, and deep Julia sets.
 
-@inputs
+== The CC Mandelbrot Formula ==
 
-Label:
-    What the input is for.
+The original Mandelbrot Formula is a kind of escape-time fractal. Escape-time fractals work by measuring the amount of iterations required for a formula evaluating a position in space to escape a threshold. In the case of our node, the position in space is created from the pixels of the image, the formula is our CC Mandelbrot formula, and the threshold is the bailout parameter.
+
+Where z is a complex number, and c is a complex number representing 2D coordinates, the canonical Mandelbrot formula is:
+
+{{{z = z^2 + c}}}
+
+This node calculates a more advanced:
+{{{
+    z = z^pow + c
+    for j in jdepth
+        z = z^pow + joffset
+}}}
+
+With these augmentations to the Mandelbrot equation, it is possible to create a large variety of different looking fractals quickly, and adds many more possibilities for things to animate.
+
+== The Fractal Plane ==
+
+The fractal plane is the transformation space built to support our fractal transformations. The origin of this transformation space is the bottom left corner of the screen By default, the fractal's transformation space is set by the size of the X axis. This means that the image can change in resolution. However, changes to the Y axis will be added from the bottom of the image.
+
+:dev:
+    Fractal Transforms have some restrictions to avoid unintuitive values. Uniform scale is enforced, because non-uniform scale is better handled in downstream nodes. Transformation shear is hidden. Transformation pivots, for the moment, are not exposed to make it simple for values to be converted from the 'fractal' transformation space and the 'pixel' transformation space.
 
 @parameters
 
-Label:
-    #id: internalname
+== Transformation ==
 
-    Explanation of what the parameter does.
+TRS Order:
+    #id: xOrd
 
-Label:
-    #id: internalname
+    Sets the Translate, Rotate, and Scale order for the fractal plane transformation. 
+    :tip:
+        Set this value to your desired transform behavior *before* animating the other transform parameters.
 
-    Explanation of what the parameter does.
+Scale:
+    #id: scale
+
+    Scales the size of the fractal plane. Smaller values delve deeper into the fractal. The default pivot is in the bottom-left corner of the screen.
+
+Translate:
+    #id: translate
+
+    Translates the fractal plane.
+
+Rotate:
+    #id: rotate
+
+    Rotates the image. The default pivot is in the bottom-left corner of the screen.
+
+== Mandelbrot ==
+
+Iterations:
+    #id: iters
+
+    Number of times each pixel calculates the Mandelbrot formula.
+    :warning:
+        The higher this value is, the slower the fractal cook time is. High numbers of iterations are only visible deep into the fractal, be weary of oversampling this value.
+
+Exponent:
+    #id: pow
+
+    The Mandelbrot formula's exponent value. '2' is the value for the canonical Mandelbrot, with higher values used for multibrots. Values below '2' are undesirable but permitted.
+
+Bailout:
+    #id: bailout
+
+    The threshold value for when a pixel escapes the Mandelbrot formula. 
+    :tip:
+        While '2' is the value used by the canonical Mandelbrot, a value of '4' looks much better with Julia sets and multibrots. This can be animated or exaggerated to make the fractal appear to grow.
+
+Blackhole:
+    #id: blackhole
+
+    Determines the pixel value for pixels whose positions escape the Mandelbrot formula within the number of iterations required. When checked off, the pixels return the number of iterations calculated as their value. When checked on, the pixels return '-1' as their value. Some areas will always hit the iteration limit. These are called 'cardioids'.
+
+Julia Depth:
+    #id: jdepth
+
+    The number of times per-iteration the result of a Mandelbrot is fed back into itself. The canonical Julia Set has a Julia Depth of '1'. 
+    :warning:
+        This parameter directly multiplies the time the fractal takes to calculate, so use it judiciously.
+
+Julia Offset:
+    #id: joffset
+
+    An arbitary value that offsets the position of the incoming fractal coordinates for each Julia Depth value calculated. Animate this value to watch the fractal phase in-and-out of existence.
+
+== Post-Processes ==
+
+Mode:
+    #id: mode
+
+    The return type of the fractal. By default, returns a continuously smoothed version of the fractal. When set to 'raw', the continuous smoothing is disabled.
+
+Fit:
+    #id: fit
+
+    Fit normalizes the fractal when enabled. 
+    :tip:
+        Normalization is recommended when the number of iterations is not animated. Animating the iteration value while this is checked will give the image a baked-in value change in the midtones that is usually undesirable. Often for final-quality fractals, it is wiser to disable this option, and control this with a levels node downstream. This option is great for quick visualizations and non-animated fractals.
+
+== Support ==
+
+Want to help improve the CC Fractal Suite? Join us by contributing code or feedback at the project's [Github Page|https://github.com/colevfx/CC-Fractal-Suite] We'd love to hear from you!
 
 @related
 
-* [Node:sop/copy]
+* [Node:cop2/CC--fractal_buddhabrot]
+* [Node:cop2/CC--fractal_pickover]
+* [Node:cop2/CC--fractal_buddhabrot]
