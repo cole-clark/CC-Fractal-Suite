@@ -66,7 +66,7 @@ COP2_Pickover::myTemplateList[]
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &namePoMode, PRMzeroDefaults, &poModeMenu),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &namePoMode, PRMoneDefaults, &poModeMenu),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePoPoint, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults, 0, &rangePoRotate),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePoReference, PRMoneDefaults),

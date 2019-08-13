@@ -58,9 +58,10 @@ static PRM_ChoiceList xOrdMenu
 );
 
 /// Xform Defaults Data
-
-static PRM_Default defaultScale{ 1 };
-static PRM_Default defaultOffset[] = { 0.0f, 0.0f };
+/// The Y value is equal to the default rez coefficient * 50%.
+/// Literally, 1080 / 1920 * 0.5
+static PRM_Default defaultScale{ 5 };
+static PRM_Default defaultOffset[] = { -0.6, -0.28125 };
 static PRM_Default defaultRotate{ 0.0f };
 static PRM_Default defaultXOrd{ 0.0f };  // TRS
 

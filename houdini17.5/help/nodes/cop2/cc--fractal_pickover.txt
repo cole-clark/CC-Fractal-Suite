@@ -1,1 +1,123 @@
-Test Help.
+= Fractal Pickover =
+
+#icon: /nodes/cop2/COP2_cc-fractal_pickover.svg
+
+"""Generator for Pickover Stalk Fractals."""
+
+== Overview ==
+
+Fractal Pickover is a fractal generator specializing in the creation of Pickover Stalks. It is a unique rendering technique for escape-time fractals, not a different kind of fractal altogether.
+
+At its core, the Fractal Pickover inherits almost all of its fractal functionality from the Fractal Mandelbrot node. What differs is what it does with the data after the fractal is calculated. While the Fractal Mandelbrot relies on returning the number of numbers in the Mandelbrot set a given position in space possesses, the Fractal Pickover works by returning the closest distance of the numbers in a Mandelbrot set to an artibrary point or line in space.
+
+:dev:
+    To learn about the how the pickover stalk works, read here: [Pickover Stalk|Wp:Pickover Stalk]
+
+:tip:
+    To understand the Fractals this node generates, read the documentation for [Node:cop2/cc--fractal_mandelbrot].
+
+@parameters
+
+== Transformation ==
+
+TRS Order:
+    #id: xOrd
+
+    Sets the Translate, Rotate, and Scale order for the fractal plane transformation. 
+    :tip:
+        Set this value to your desired transform behavior *before* animating the other transform parameters.
+
+Scale:
+    #id: scale
+
+    Scales the size of the fractal plane. Smaller values delve deeper into the fractal. The default pivot is in the bottom-left corner of the screen.
+
+Translate:
+    #id: translate
+
+    Translates the fractal plane.
+
+Rotate:
+    #id: rotate
+
+    Rotates the image. The default pivot is in the bottom-left corner of the screen.
+
+== Mandelbrot ==
+
+Iterations:
+    #id: iters
+
+    Number of times each pixel calculates the Mandelbrot formula.
+    :warning:
+        Unlike the Mandelbrot, the default behavior of this parm is to calculate the maximum number of iterations for each pixel. This is consistent with the canonical Pickover Stalk. Be especially careful to not oversample this value.
+
+Exponent:
+    #id: pow
+
+    The Mandelbrot formula's exponent value. '2' is the value for the canonical Mandelbrot, with higher values used for multibrots. Values below '2' are undesirable but permitted.
+
+Bailout:
+    #id: bailout
+
+    When blackhole is enabled, bailout will prematurely stop calculating iterations when the Mandelbrot's 'Z' value gets too high. This clamps the outer bounds of the Pickover stalk.
+
+Blackhole:
+    #id: blackhole
+
+    When enabled he Pickover Stalk will start prematurely break the calculation of a pixel if it has reached a bailout value. By default, blackhole is disabled and the Pickover will iterate every pixel to its maximum number of iterations.
+
+Julia Depth:
+    #id: jdepth
+
+    The number of times per-iteration the result of a Mandelbrot is fed back into itself. The canonical Julia Set has a Julia Depth of '1'. 
+    :warning:
+        This parameter directly multiplies the time the fractal takes to calculate, so use it judiciously.
+
+Julia Offset:
+    #id: joffset
+
+    An arbitary value that offsets the position of the incoming fractal coordinates for each Julia Depth value calculated. Animate this value to watch the fractal phase in-and-out of existence.
+
+== Pickover Options ==
+
+Pickover Mode:
+    #id: pomode
+
+    The type of measure object used by the Pickover Stalk. Supports a 'closest position to point' mode, and a 'closest position to line' mode.
+    :tip:
+        Point mode is pretty boring, and is only here for the sake of completionism. Don't expect anything visually dazzling from it.
+
+Pickover Point:
+    #id: popoint
+
+    When 'point' mode is enabled, the position of the point measured. When 'line' mode is enabled, an offset for the line.
+
+
+Pickover Rotate:
+    #id: porotate
+
+    When 'line' mode is enabled, the 2D rotational value of the line.
+    :dev:
+        Under the hood, this line is extrapolated from a line segment that points down the +X axis.
+
+Display Reference:
+    #id: poreference
+
+    Displays a reference object in the green channel that helps the user understand where the distance-reference object is. The reference object changes to match the chosen Pickover Mode.
+
+Reference Size:
+    #id: porefsize
+
+    The size of the the reference object in screen space. In point mode, this is an exact screen-space pixel size. In line mode, this is a multiplier on a reference line that changes with scale.
+    :dev:
+        The discrepency in technique between point mode and line mode references exists because to make a line-mode work in screen space would involve wasteful extra calculations. At a mostly-default scale, a multiplier on a default value is sufficient. At extreme depth, a reference line wouldn't be visible. An analogy to this would be like putting a miscroscope in the middle of a world map, and not being able to see the longitudinal and latitudinal lines most of the time.
+
+== Support ==
+
+Want to help improve the CC Fractal Suite? Join us by contributing code or feedback at the project's [Github Page|https://github.com/colevfx/CC-Fractal-Suite] We'd love to hear from you!
+
+@related
+
+* [Node:cop2/CC--fractal_buddhabrot]
+* [Node:cop2/CC--fractal_pickover]
+* [Node:cop2/CC--fractal_mandelbrot]
