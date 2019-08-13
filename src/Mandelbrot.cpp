@@ -93,6 +93,13 @@ FractalCoordsInfo Pickover::calculate(COMPLEX coords)
 		// Assign distance if a smaller length than current distance.
 		if (zLength < distance)
 			distance = zLength;
+
+		// If blackhole is enabled, the pickover will prematurely terminate
+		// Based on the bailout value calculated on the pixel. This
+		// isn't in the canonical Pickover stalk, but it plays nicely and
+		// is consistent with the spirit of the CCFS.
+		if (data.blackhole && abs(z) > data.bailout)
+			break;
 	}
 
 	return FractalCoordsInfo(0, 0, distance);
