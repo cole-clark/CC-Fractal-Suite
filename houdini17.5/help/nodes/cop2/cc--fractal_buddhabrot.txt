@@ -1,1 +1,148 @@
-Test Help.
+= Fractal Buddhabrot =
+
+#icon: /nodes/cop2/COP2_cc-fractal_buddhabrot.svg
+
+"""Full-Image Filter that generates Buddhabrot Fractals."""
+
+== Overview ==
+
+Fractal Buddhabrot is a full-image filter that specializes in the creation of Buddhabrots. The Buddhabrot is a special rendering technique for escape-time fractals, and is not a different kind of fractal altogether.
+
+The Buddhabrot shares all of its fractal creation functionality from the Fractal Mandelbrot node. What differs the Buddhabrot from the Mandelbrot is what it does with the data after the fractal is calculated. While the Fractal Mandelbrot relies on returning the size of the Mandelbrot set for a a given position in space, the Buddhabrot works by representing every position calculated by the Mandelbrot in the final image.
+
+
+== A Conceptual Explanation of the Buddhabrot ==
+
+To understand how the Buddhabrot works, you must first conceptually understand how the Mandelbrot works. The basic Mandelbrot fractal takes a 2D position in space (called *c* by academics), a maximum number of iterations, and a bailout value. Then, for every iteration, it run the formula:
+
+{{{z = z ^ 2 + c}}}
+
+Every time the formula is run, the Mandelbrot increments a counter. If the value of *z* reaches the bailout value, the position 'escapes' the Mandelbrot, hence its classification as an 'escape-time fractal'.
+
+What may not be obvious is that each time the formula is run, z is a different valid 2D position in space. The Buddhabrot exploits this. Instead of incrementing a counter, the Buddhabrot actually stores all of these positions in an array for every time the formula is calculated. Then, after all the positions are calculated, they are converted to 'pixel space' and added to the final image. This is what creates the ghostly appearance of pixels that orbit the fractal.
+
+:warning:
+    The Buddhabrot is many orders of magnitude more expensive to calculate than the other fractals in the CCFS. Be patient, and be careful to not oversample the fractal.
+
+== Sampling ==
+
+The Buddhabrot relies on calculating a number of samples over a number of iterations, both values provided by the user via parameters. For each sample * iteration, a set of coordinates is created. Because of this, *offscreen pixels that are in the mandelbrot set that should affect the value of the Buddhabrot will not.* Therefore, having offscreen pixels that are in the Mandelbrot set is undesirable. 'Zooms' are not very pretty with the Buddhabrot because very little actual data is calculated. If you want a final-quality image that is 'zoomed in', the best strategy is to make an enormously high-resolution Buddhabrot. These are expensive to calculate, which is why it is extremely rare to see zoomed-in Buddhabrots.
+
+:tip:
+    If you want to see how this concept works without cooking the node forever, mask the first input of the Buddhabrot with black, and observe how even a fairly small black shape will disrupt the final image.
+
+The Buddhabrot is slow to calculate, and at lower sample values it seems like more samples equals a prettier image. However, much like with Monte Carlo raytracers, there is a point of diminishing returns. The difference between a one hour Buddhabrot and a three hour Buddhabrot is disappointingly little. Please do yourself a favor, and *do not oversample the Buddhabrot*, it's an enormous waste of your time and CPU cycles.
+
+== Inputs ==
+
+This node uses the absolute value of its input as a multiplier for the number of iterations that the Buddhabrot will calculate. By default, feeding a white color Cop2 node into the first input will give 'normal' Buddhabrot results. Feeding it a picture or pattern will yield different, but interesting results.
+
+:dev:
+    To learn about the how the Buddhabrot works, read here: [Buddhabrot|Wp:Buddhabrot]
+
+:tip:
+    To understand the Fractals this node generates, read the documentation for [Node:cop2/cc--fractal_mandelbrot].
+
+@parameters
+
+== Transformation ==
+
+TRS Order:
+    #id: xOrd
+
+    Sets the Translate, Rotate, and Scale order for the fractal plane transformation. 
+    :tip:
+        *Scale Translate Rotate* is the best Rotation Order mode for the Buddhabrot. Other modes may be 'offset' between the Buddhabrot and the reference fractal, though will calculate correctly.
+
+Scale:
+    #id: scale
+
+    Scales the size of the fractal plane. Smaller values delve deeper into the fractal. The default pivot is in the bottom-left corner of the screen.
+
+Translate:
+    #id: translate
+
+    Translates the fractal plane.
+
+Rotate:
+    #id: rotate
+
+    Rotates the image. The default pivot is in the bottom-left corner of the screen.
+
+== Mandelbrot ==
+
+Iterations:
+    #id: iters
+
+    The maximum number of times each sample calculates the Mandelbrot formula.
+
+Exponent:
+    #id: pow
+
+    The Mandelbrot formula's exponent value. '2' is the value for the canonical Mandelbrot, with higher values used for multibrots. Values below '2' are undesirable but permitted.
+
+Bailout:
+    #id: bailout
+
+    The threshold value for when a pixel escapes the Mandelbrot formula.
+
+Blackhole:
+    #id: blackhole
+
+    Determines the number of iterations used for samples whose positions escape the Mandelbrot formula within the number of iterations required. When checked off, the samples return positions equal to the maximum number of iterations. This is called an *anti-Buddhabrot*. When checked on, the samples calculate no iterations and return no positions. Some areas will always hit the iteration limit. These are called 'cardioids'.
+
+Julia Depth:
+    #id: jdepth
+
+    The number of times per-iteration the result of a Mandelbrot is fed back into itself. The canonical Julia Set has a Julia Depth of '1'. 
+    :warning:
+        This parameter directly multiplies the time the fractal takes to calculate, so use it judiciously.
+
+Julia Offset:
+    #id: joffset
+
+    An arbitary value that offsets the position of the incoming fractal coordinates for each Julia Depth value calculated. Animate this value to watch the fractal phase in-and-out of existence.
+
+== Buddhabrot Options ==
+
+Samples:
+    #id: samples
+
+    Specifies a percentage of the screen to randomly scatter samples onto. A value of '1' means that the number of samples and the number of pixels in the image are the same. This percentage helps make Buddhabrots of different resolutions look roughly the same.
+
+Seed:
+    #id: seed
+
+    Specifies the seed used to generate the random image samples.
+    :dev:
+        The Fractal Buddhabrot uses Mersenne Twister random values.
+
+Normalize:
+    #id: normalize
+
+    The maximum value of for a given Buddhabrot is stored internally, and when enabled, will be normalized to that value.
+    :tip:
+        Normalize is very useful for working easily with a quick preview. However, for expensive final-quality Buddhabrot calculations it's recommended to disable this parm, and use a levels node downstream to normalize the values.
+
+Normalize Raw Value:
+    #id: maxval
+
+    A maximum internal value that 'clamps' the upper limit of the Buddhabrot. This is useful for animated Buddhabrots, whose maximum values may vary and when normalized will flicker over time. When set to '-1', this clamping is disabled.
+
+Display Reference Fractal:
+    #id: displayreffractal
+
+    When enabled, a Mandelbrot fractal representing the source for the Buddhabrot will be shuffled into the green channel to help the user understand how their fractal is being calculated.
+
+    :tip:
+        The iteration count is kept lower than than what the Buddhabrot will calculate to save time. It is recommended to only use the reference fractal as needed, because it significantly increases the overall node's cook time. 
+
+== Support ==
+
+Want to help improve the CC Fractal Suite? Join us by contributing code or feedback at the project's [Github Page|https://github.com/colevfx/CC-Fractal-Suite] We'd love to hear from you!
+
+@related
+
+* [Node:cop2/CC--fractal_buddhabrot]
+* [Node:cop2/CC--fractal_pickover]
+* [Node:cop2/CC--fractal_mandelbrot]
