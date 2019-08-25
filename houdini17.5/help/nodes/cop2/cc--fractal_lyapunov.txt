@@ -1,1 +1,96 @@
-Test Help.
+= Fractal Lyapunov =
+
+#icon: /nodes/cop2/COP2_cc-fractal_lyapunov.svg
+
+"""Generator for Lyapunov Fractals."""
+
+== Overview ==
+
+Fractal Lyapunov is a general-purpose fractal generator that specializes in creating Lyapunov fractals.
+
+== Calculating Lyapunov Fractals ==
+
+Lyapunov fractals are unique in that they are not escape-time fractals, and share no relationship to Mandelbrots.
+
+Instead of iterating complex numbers ad nauseam, Lyapunov fractals take a user-generated sequence of 'A's and 'B's that correspond to the X and Y axes of a 2D image, and return a float value based using the pixel coordinates of an image as a seed.
+
+This node has the added functionality of linearly interpolating the 'X' and 'Y' axes per item in the user-generated sequence of 'A's and 'B's. This means that biases individual axes, and animating values between the axes in the sequence are easier than with the canonical Lyapunov fractal.
+
+:dev:
+    To learn about the how Lyapunov Fractals work, read here: [Lyapunov Fractals|Wp:Lyapunov_fractal].
+
+:tip:
+    To understand the Fractals this node generates, read the documentation for [Node:cop2/cc--fractal_mandelbrot].
+
+:warning:
+    This node has more restrictions than other nodes in the CC Fractal Suite. Iterations are limited to 40, and the number of items in a sequence is restricted to 40. This is because the Lyapunov equation very easily can surpass values that are 32bit float precision, and calculating those values are non-visual.
+
+:warning:
+    If Fractal Lyanpuv is cooking 'black tiles', try increasing the floating point precision of your COP2 cache by going to _Edit->Compositing Settings_ and increasing the 'Pixel Format' to '32 Bit FP'.
+
+@parameters
+
+== Transformation ==
+
+TRS Order:
+    #id: xOrd
+
+    Sets the Translate, Rotate, and Scale order for the fractal plane transformation. 
+    :tip:
+        Set this value to your desired transform behavior *before* animating the other transform parameters.
+
+Scale:
+    #id: scale
+
+    Scales the size of the fractal plane. Smaller values delve deeper into the fractal. The default pivot is in the bottom-left corner of the screen.
+
+Translate:
+    #id: translate
+
+    Translates the fractal plane.
+
+Rotate:
+    #id: rotate
+
+    Rotates the image. The default pivot is in the bottom-left corner of the screen.
+
+== Lyapunov ==
+
+Iterations:
+    #id: iters
+
+    The number of times the Lyapunov calculates items from the user's 'AB' sequence.
+
+    This value is capped at 40 to prevent floating point errors. Lyapunovs are not self-similar at tiny scales, which makes this an acceptable tradeoff.
+
+Seq Start Value:
+    #id: seqstart
+
+    In addition to the user-fed 'AB' sequence, Lyapunov fractals calculate a default value of _0.5_ before the sequence. This value has been exposed so the user may animate it for more flexibility.
+
+    Seq Start Value is calmped between 0.001 and 0.999 because values of 0 or 1 fail to produce a Lyapunov fractal outright.
+
+Ceiling Value:
+    #id: ceilval
+
+    Ceiling Value is used to clamp the extremely-high values produced by the Lyapunov fractal to those that are artist-friendly. Artistically, the lower the value the more easy the 'internal values' of the fractal are to see, but less detail is observed at the border edges of the Lyapunov.
+
+Invert Negative:
+    #id: invertnegative
+
+    When enabled, will return the absolute value of a negative number. Internal pixels are often negative. Artistically, when enabled, the center of the Lyapunov will generally be black, but when enabled the center will have additional form.
+
+Sequence:
+    #id: seq
+
+    The 'AB' sequence of values, where values of '0' correspond to the 'X' axis, or traditional 'A', and values of '1' correspond to the 'Y' axis, or traditional 'B'.
+
+    Values that are not '0' or '1' are linearly interpolated between the value of a Pixel's 'x' and 'y' position, enabling artists to animate Lyapunovs between the axes, or to simulate different positions by feeding negative values or greater-than-one values.
+
+== Support ==
+
+Want to help improve the CC Fractal Suite? Join us by contributing code or feedback at the project's [Github Page|https://github.com/colevfx/CC-Fractal-Suite] We'd love to hear from you!
+
+@related
+
+* [Node:cop2/CC--fractal_mandelbrot]

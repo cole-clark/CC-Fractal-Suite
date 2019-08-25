@@ -8,10 +8,10 @@
 
 Fractal Pickover is a fractal generator specializing in the creation of Pickover Stalks. It is a unique rendering technique for escape-time fractals, not a different kind of fractal altogether.
 
-At its core, the Fractal Pickover inherits almost all of its fractal functionality from the Fractal Mandelbrot node. What differs is what it does with the data after the fractal is calculated. While the Fractal Mandelbrot relies on returning the number of numbers in the Mandelbrot set a given position in space possesses, the Fractal Pickover works by returning the closest distance of the numbers in a Mandelbrot set to an artibrary point or line in space.
+At its core, the Fractal Pickover inherits almost all of its fractal functionality from the Fractal Mandelbrot node. What differs is what it does with the data after the fractal is calculated. While the Fractal Mandelbrot relies on returning the size the Mandelbrot set for a given position in space, the Fractal Pickover works by returning the closest distance of the numbers in a Mandelbrot set to an artibrary point or line in space.
 
 :dev:
-    To learn about the how the pickover stalk works, read here: [Pickover Stalk|Wp:Pickover Stalk]
+    To learn about the how the Pickover Stalk works, read here: [Pickover Stalk|Wp:Pickover Stalk]
 
 :tip:
     To understand the Fractals this node generates, read the documentation for [Node:cop2/cc--fractal_mandelbrot].
