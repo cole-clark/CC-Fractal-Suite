@@ -30,6 +30,7 @@ static PRM_Name menuNameModes[]
 {
 	PRM_Name("modulus", "Modulus"),
 	PRM_Name("comparison", "Comparison"),
+	PRM_Name("blendcolors", "Blend Colors"),
 	PRM_Name(0)
 };
 
@@ -130,11 +131,23 @@ COP2_FractalMatte::addPixelFunction(
 		double offset = evalFloat(nameOffset.getToken(), 0, t);
 		return new cop2_FractalMatteFunc(modulo, offset, invert);
 	}
-	else  // Use the comparison type constructor
+	else if (mode == ModeType::COMPARISON)  // Use the comparison type constructor
 	{
 		double compValue = evalFloat(nameCompValue.getToken(), 0, t);
 		ComparisonType compType = (ComparisonType)evalInt(nameCompType.getToken(), 0, t);
 		return new cop2_FractalMatteFunc(compValue, compType, invert);
+	}
+	else if (mode == ModeType::BLENDCOLOR)  // Use Blend Color Constructor
+	{
+		// TODO, get these from a parameter interface
+		std::vector<double>sizes = { 10, 20, 10 };
+		std::vector<UT_Color>colors = {
+			UT_Color(UT_RGB, 1.0, 0.0, 0.0),
+			UT_Color(UT_RGB, 0.0, 1.0, 0.0),
+			UT_Color(UT_RGB, 0.0, 0.0, 1.0) };
+		auto blendType{ cop2_FractalMatteFunc::BlendType::LINEAR };
+
+		return new cop2_FractalMatteFunc(sizes, colors, blendType);
 	}
 }
 
@@ -173,17 +186,6 @@ COP2_FractalMatte::COP2_FractalMatte(
 
 COP2_FractalMatte::~COP2_FractalMatte() {}
 
-const char*
-COP2_FractalMatte::getInfoPopup()
-{
-	fpreal t = CHgetEvalTime();
-
-	static UT_WorkBuffer info;
-	info.sprintf("Generating fractal mattes in chunks of %g",
-		evalInt(nameModulo.getToken(), 0, t));
-	return nullptr;
-}
-
 cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 	double modulo, double offset, bool invert)
 {
@@ -201,6 +203,17 @@ cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 	this->compType = compType;
 	this->invert = invert;
 	this->mode = ModeType::COMPARISON;
+}
+
+cop2_FractalMatteFunc::cop2_FractalMatteFunc(
+	std::vector<double>sizes,
+	std::vector<UT_Color>colors,
+	BlendType blendType)
+{
+	this->sizes = sizes;
+	this->colors = colors;
+	this->blendType = blendType;
+	this->mode = ModeType::BLENDCOLOR;
 }
 
 float cop2_FractalMatteFunc::checkModulus(
@@ -249,10 +262,19 @@ float cop2_FractalMatteFunc::checkComparison(
 	}
 
 	// Get the complement of the pixel value if invert is on.
-	if (pfCasted->invert)
+	// And in the first channel.
+	if (pfCasted->invert && comp == 0)
 		output = 1 - output;
 
 	return output;
+}
+
+float cop2_FractalMatteFunc::checkBlendColors(
+	RU_PixelFunction* pf, float pixelValue, int comp)
+{
+	auto pfCasted = (cop2_FractalMatteFunc*)pf;
+
+	return pfCasted->sizes[0] + comp;
 }
 
 
