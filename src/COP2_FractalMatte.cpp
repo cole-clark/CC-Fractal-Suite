@@ -274,6 +274,18 @@ float cop2_FractalMatteFunc::checkBlendColors(
 {
 	auto pfCasted = (cop2_FractalMatteFunc*)pf;
 
+	// TODO: CALCULATE WHICH COLORS ARE THE NEIGHBORING COLORS
+	//		 AND A 0-1 VALUE INDICATING WHERE BETWEEN THE COLORS
+	//		 THEY ARE.
+	// Calculate the 
+	UT_Vector2F range{ 0, 0 };
+	UT_Vector2T<UT_Color> colors;
+	bool measuring{ true };
+	while (measuring)
+	{
+
+	}
+
 	return pfCasted->sizes[0] + comp;
 }
 
