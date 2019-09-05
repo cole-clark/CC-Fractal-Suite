@@ -10,6 +10,8 @@
 
 #include "COP2_FractalMatte.h"
 
+#define MAX_BLEND_ITERATIONS 1000
+
 using namespace CC;
 
 typedef cop2_FractalMatteFunc::ModeType ModeType;
@@ -140,11 +142,11 @@ COP2_FractalMatte::addPixelFunction(
 	else if (mode == ModeType::BLENDCOLOR)  // Use Blend Color Constructor
 	{
 		// TODO, get these from a parameter interface
-		std::vector<double>sizes = { 10, 20, 10 };
+		std::vector<double>sizes = { 0.3, 0.2, 0.1 };
 		std::vector<UT_Color>colors = {
-			UT_Color(UT_RGB, 1.0, 0.0, 0.0),
-			UT_Color(UT_RGB, 0.0, 1.0, 0.0),
-			UT_Color(UT_RGB, 0.0, 0.0, 1.0) };
+			UT_Color(UT_RGB, 1.0, 0.2, 0.2),
+			UT_Color(UT_RGB, 0.2, 1.0, 0.2),
+			UT_Color(UT_RGB, 0.2, 0.2, 1.0) };
 		auto blendType{ cop2_FractalMatteFunc::BlendType::LINEAR };
 
 		return new cop2_FractalMatteFunc(sizes, colors, blendType);
@@ -277,16 +279,57 @@ float cop2_FractalMatteFunc::checkBlendColors(
 	// TODO: CALCULATE WHICH COLORS ARE THE NEIGHBORING COLORS
 	//		 AND A 0-1 VALUE INDICATING WHERE BETWEEN THE COLORS
 	//		 THEY ARE.
-	// Calculate the 
-	UT_Vector2F range{ 0, 0 };
-	UT_Vector2T<UT_Color> colors;
-	bool measuring{ true };
-	while (measuring)
-	{
+	UT_Color blendColor = pfCasted->colors[0];
 
+	fpreal32 max_val{ 0.0 };
+	for (fpreal32 weight : pfCasted->sizes)
+		max_val += weight;
+
+	pixelValue = SYSfmod(pixelValue, max_val);
+
+	// Check If exactly equal, set color directly
+	for (int i = 0; i < pfCasted->colors.size(); ++i)
+	{
+		
+		if (pixelValue == pfCasted->sizes[i])
+		{
+			blendColor = pfCasted->colors[i];
+			break;
+		}
 	}
 
-	return pfCasted->sizes[0] + comp;
+	// Examine each 'range' of values, and attempt to calculate a blendcolor
+	float low = 0.0f, high =0.0f;
+	for (int i = 0; i < pfCasted->colors.size(); ++i)
+	{
+		// Loops back to 0 on last entry
+		
+		high = low + pfCasted->sizes[i];
+
+		// Check if in range
+		if (pixelValue > low && pixelValue < high)
+		{
+			float weight = SYSfit(pixelValue, low, high, 0.0f, 1.0f);
+			blendColor = pfCasted->colors[i];
+			int nextColorIdx = (i + 1) % pfCasted->colors.size();
+			blendColor.blendRGB(pfCasted->colors[nextColorIdx], weight);
+			break;
+		}
+		low = high;
+	}
+
+	// Filter by plane.
+	float val;
+	UT_Vector3F rgb{ blendColor.rgb() };
+	if (comp == 0)
+		val = rgb.r();
+	else if (comp == 1)
+		val = rgb.g();
+	else if (comp == 2)
+		val = rgb.b();
+
+	return val;
+
 }
 
 
