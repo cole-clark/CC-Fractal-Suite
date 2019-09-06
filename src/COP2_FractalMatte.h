@@ -85,7 +85,8 @@ namespace CC
 		cop2_FractalMatteFunc(
 			std::vector<double>sizes,
 			std::vector<UT_Color>colors,
-			BlendType blendType);
+			BlendType blendType,
+			fpreal32 offset);
 	protected:
 		virtual bool eachComponentDifferent() const
 		{
@@ -140,7 +141,7 @@ namespace CC
 		}
 
 	private:
-		double modulo{ 0 };
+		fpreal32 modulo{ 0 };
 		double offset{ 0 };
 		bool invert{ false };
 		double compValue{ 0 };
@@ -149,5 +150,6 @@ namespace CC
 		BlendType blendType;
 		ComparisonType compType{ ComparisonType::LESS_THAN };
 		ModeType mode{ ModeType::MODULUS };
+		fpreal32 colorOffset{ 0.0 };
 	};
 }

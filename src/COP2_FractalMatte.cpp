@@ -17,7 +17,7 @@ using namespace CC;
 typedef cop2_FractalMatteFunc::ModeType ModeType;
 typedef cop2_FractalMatteFunc::ComparisonType ComparisonType;
 
-COP_PIXEL_OP_SWITCHER(6, "Mattes");
+COP_PIXEL_OP_SWITCHER(9, "Mattes");
 
 /// Declare Parm Names
 static PRM_Name nameModulo{ "modulo", "Modulo" };
@@ -26,6 +26,10 @@ static PRM_Name nameInvert{ "invert", "Invert" };
 static PRM_Name nameMode{ "mode", "Mode" };
 static PRM_Name nameCompType{ "comptype", "Comparison" };
 static PRM_Name nameCompValue{ "compvalue", "Value" };
+static PRM_Name nameColors{ "colors", "Colors" };
+static PRM_Name nameColor{ "color_#", "Color #" };
+static PRM_Name nameWeight{ "weight_#", "Weight #" };
+static PRM_Name nameColorOffset{ "coloroffset", "Color Offset" };
 
 /// Declare Mode Menu
 static PRM_Name menuNameModes[]
@@ -75,11 +79,32 @@ static PRM_Range rangeOffset
 	PRM_RangeFlag::PRM_RANGE_UI, 10
 };
 
+static PRM_Range rangeWeight
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.0,
+	PRM_RangeFlag::PRM_RANGE_FREE, 10
+};
+
+static PRM_Range rangeColors
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
+	PRM_RangeFlag::PRM_RANGE_FREE, 10
+};
+
+static PRM_Template templatesColors[] =
+{
+	PRM_Template(PRM_RGB, TOOL_PARM, 3, &nameColor, PRMoneDefaults), // White Default
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameWeight, PRMfiveDefaults, 0, &rangeWeight),
+	PRM_Template()
+};
+
 PRM_Template
 COP2_FractalMatte::myTemplateList[] =
 {
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMode, PRMzeroDefaults, &menuMode),
+	PRM_Template(PRM_MULTITYPE_LIST, templatesColors, 2, &nameColors, PRMoneDefaults, &rangeColors),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameColorOffset),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameCompType, PRMzeroDefaults, &menuComparison),
@@ -141,15 +166,30 @@ COP2_FractalMatte::addPixelFunction(
 	}
 	else if (mode == ModeType::BLENDCOLOR)  // Use Blend Color Constructor
 	{
-		// TODO, get these from a parameter interface
-		std::vector<double>sizes = { 0.3, 0.2, 0.1 };
-		std::vector<UT_Color>colors = {
-			UT_Color(UT_RGB, 1.0, 0.2, 0.2),
-			UT_Color(UT_RGB, 0.2, 1.0, 0.2),
-			UT_Color(UT_RGB, 0.2, 0.2, 1.0) };
+		std::vector<double>sizes;
+		std::vector<UT_Color>colors;
+
+		int numInstances = evalInt(nameColors.getToken(), 0, t);
+		for (int i = 0; i < numInstances; ++i)
+		{
+			int idx = i + 1;
+			sizes.emplace_back(evalFloatInst(nameWeight.getToken(), &idx, 0, t));
+			UT_Color color
+			{
+				UT_ColorType::UT_RGB,
+				evalFloatInst(nameColor.getToken(), &idx, 0, t),
+				evalFloatInst(nameColor.getToken(), &idx, 1, t),
+				evalFloatInst(nameColor.getToken(), &idx, 2, t)
+			};
+
+			colors.emplace_back(color);
+		}
+
 		auto blendType{ cop2_FractalMatteFunc::BlendType::LINEAR };
 
-		return new cop2_FractalMatteFunc(sizes, colors, blendType);
+		fpreal colorOffset = evalFloat(nameColorOffset.getToken(), 0, t);
+
+		return new cop2_FractalMatteFunc(sizes, colors, blendType, colorOffset);
 	}
 }
 
@@ -161,14 +201,18 @@ bool COP2_FractalMatte::updateParmsFlags()
 		(ModeType)evalInt(nameMode.getToken(), 0, t);
 
 	// Set variables for hiding
-	bool displayModulus{ true };
+	bool displayModulus{ false };
 	bool displayComparison{ false };
+	bool displayBlendColors{ false };
 
 	if (type == ModeType::COMPARISON)
-	{
-		displayModulus = false;
 		displayComparison = true;
-	}
+
+	else if (type == ModeType::MODULUS)
+		displayModulus = true;
+
+	else if (type == ModeType::BLENDCOLOR)
+		displayBlendColors = true;
 
 	// Set the visibility state for hidable parms.
 	bool changed = COP2_PixelOp::updateParmsFlags();
@@ -177,7 +221,8 @@ bool COP2_FractalMatte::updateParmsFlags()
 	changed |= setVisibleState(nameCompValue.getToken(), displayComparison);
 	changed |= setVisibleState(nameModulo.getToken(), displayModulus);
 	changed |= setVisibleState(nameOffset.getToken(), displayModulus);
-
+	changed |= setVisibleState(nameColors.getToken(), displayBlendColors);
+	changed |= setVisibleState(nameColorOffset.getToken(), displayBlendColors);
 	return changed;
 }
 
@@ -210,12 +255,14 @@ cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 	std::vector<double>sizes,
 	std::vector<UT_Color>colors,
-	BlendType blendType)
+	BlendType blendType,
+	fpreal32 colorOffset)
 {
 	this->sizes = sizes;
 	this->colors = colors;
 	this->blendType = blendType;
 	this->mode = ModeType::BLENDCOLOR;
+	this->colorOffset = colorOffset;
 }
 
 float cop2_FractalMatteFunc::checkModulus(
@@ -225,7 +272,7 @@ float cop2_FractalMatteFunc::checkModulus(
 {
 	auto pfCasted = (cop2_FractalMatteFunc*)pf;
 
-	float output = SYSfmod(pixelValue + pfCasted->offset, pfCasted->modulo);
+	float output = SYSfmod(pixelValue + pfCasted->colorOffset, pfCasted->modulo);
 	output = SYSclamp(output, 0.0f, 1.0f);
 
 	// Get the complement of the pixel value if invert is on.
@@ -276,16 +323,13 @@ float cop2_FractalMatteFunc::checkBlendColors(
 {
 	auto pfCasted = (cop2_FractalMatteFunc*)pf;
 
-	// TODO: CALCULATE WHICH COLORS ARE THE NEIGHBORING COLORS
-	//		 AND A 0-1 VALUE INDICATING WHERE BETWEEN THE COLORS
-	//		 THEY ARE.
 	UT_Color blendColor = pfCasted->colors[0];
 
 	fpreal32 max_val{ 0.0 };
 	for (fpreal32 weight : pfCasted->sizes)
 		max_val += weight;
 
-	pixelValue = SYSfmod(pixelValue, max_val);
+	pixelValue = SYSfmod(pixelValue + pfCasted->colorOffset, max_val);
 
 	// Check If exactly equal, set color directly
 	for (int i = 0; i < pfCasted->colors.size(); ++i)
@@ -331,5 +375,3 @@ float cop2_FractalMatteFunc::checkBlendColors(
 	return val;
 
 }
-
-
