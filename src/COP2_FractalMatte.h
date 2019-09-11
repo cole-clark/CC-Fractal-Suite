@@ -44,8 +44,6 @@ namespace CC
 
 		virtual ~COP2_FractalMatte();
 
-		/// Optional description for OP info popup.
-		virtual const char* getInfoPopup();
 	};
 
 	class cop2_FractalMatteFunc : public RU_PixelFunction
@@ -55,7 +53,8 @@ namespace CC
 		enum class ModeType
 		{
 			MODULUS,
-			COMPARISON
+			COMPARISON,
+			BLENDCOLOR
 		};
 
 		enum class ComparisonType
@@ -67,15 +66,35 @@ namespace CC
 			GREATER_THAN
 		};
 
+		enum class BlendType
+		{
+			LINEAR,
+			QUADRAIC,
+			CONSTANT
+		};
+
+		// For Modulus
 		cop2_FractalMatteFunc(
 			double modulo, double offset, bool invert=false);
 
+		// For Comparison
 		cop2_FractalMatteFunc(
 			double compValue, ComparisonType compType, bool invert = false);
 
+		// For Color Blending
+		cop2_FractalMatteFunc(
+			std::vector<double>sizes,
+			std::vector<UT_Color>colors,
+			BlendType blendType,
+			fpreal32 offset,
+			fpreal32 blendOffset,
+			bool invert = false);
 	protected:
 		virtual bool eachComponentDifferent() const
 		{
+			if (mode == ModeType::BLENDCOLOR)
+				return true;
+			// Unless a BLENDCOLOR, all components can be the same.
 			return false;
 		}
 
@@ -99,25 +118,41 @@ namespace CC
 			float pixelValue,
 			int comp);
 
+		/// Calculate Blended Colors based on a vector of colors and weights.
+		static float checkBlendColors(
+			RU_PixelFunction* pf,
+			float pixelValue,
+			int comp);
+
 		/// This is how we signal to RU_PixelFunction what method must be called
 		/// per-pixel.
 		/// Returns a different function depending on what mode type is used.
 		virtual RUPixelFunc getPixelFunction() const
 		{
-			if (mode == ModeType::MODULUS)
+			switch (mode)
+			{
+			case ModeType::MODULUS:
 				return checkModulus;
-			else if (mode == ModeType::COMPARISON)
+			case ModeType::COMPARISON:
 				return checkComparison;
-			else  // Default
+			case ModeType::BLENDCOLOR:
+				return checkBlendColors;
+			default:
 				return checkModulus;
+			}
 		}
 
 	private:
-		double modulo{ 0 };
+		fpreal32 modulo{ 0 };
 		double offset{ 0 };
 		bool invert{ false };
 		double compValue{ 0 };
+		std::vector<double> sizes;
+		std::vector<UT_Color> colors;
+		BlendType blendType;
 		ComparisonType compType{ ComparisonType::LESS_THAN };
 		ModeType mode{ ModeType::MODULUS };
+		fpreal32 colorOffset{ 0.0 };
+		fpreal32 blendOffset{ 1.0 };
 	};
 }
