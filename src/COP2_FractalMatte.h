@@ -70,7 +70,7 @@ namespace CC
 		{
 			LINEAR,
 			QUADRAIC,
-			STEPPED
+			CONSTANT
 		};
 
 		// For Modulus
@@ -86,7 +86,8 @@ namespace CC
 			std::vector<double>sizes,
 			std::vector<UT_Color>colors,
 			BlendType blendType,
-			fpreal32 offset);
+			fpreal32 offset,
+			bool invert = false);
 	protected:
 		virtual bool eachComponentDifferent() const
 		{

@@ -17,7 +17,7 @@ using namespace CC;
 typedef cop2_FractalMatteFunc::ModeType ModeType;
 typedef cop2_FractalMatteFunc::ComparisonType ComparisonType;
 
-COP_PIXEL_OP_SWITCHER(9, "Mattes");
+COP_PIXEL_OP_SWITCHER(10, "Mattes");
 
 /// Declare Parm Names
 static PRM_Name nameModulo{ "modulo", "Modulo" };
@@ -30,6 +30,7 @@ static PRM_Name nameColors{ "colors", "Colors" };
 static PRM_Name nameColor{ "color_#", "Color #" };
 static PRM_Name nameWeight{ "weight_#", "Weight #" };
 static PRM_Name nameColorOffset{ "coloroffset", "Color Offset" };
+static PRM_Name nameBlendMode{ "blendmode", "Blend Mode" };
 
 /// Declare Mode Menu
 static PRM_Name menuNameModes[]
@@ -40,10 +41,24 @@ static PRM_Name menuNameModes[]
 	PRM_Name(0)
 };
 
+static PRM_Name menuBlendModes[]
+{
+	PRM_Name("linear", "Linear"),
+	PRM_Name("quadratic", "Quadratic"),
+	PRM_Name("constant", "Constant"),
+	PRM_Name(0)
+};
+
 static PRM_ChoiceList menuMode
 (
 	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
 	menuNameModes
+);
+
+static PRM_ChoiceList menuBlendMode
+(
+	(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+	menuBlendModes
 );
 
 /// Declare Comparison Menu
@@ -105,6 +120,7 @@ COP2_FractalMatte::myTemplateList[] =
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMode, PRMzeroDefaults, &menuMode),
 	PRM_Template(PRM_MULTITYPE_LIST, templatesColors, 2, &nameColors, PRMoneDefaults, &rangeColors),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameColorOffset),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameBlendMode, PRMoneDefaults, &menuBlendMode),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameModulo, &defaultModulo, 0, &rangeModulo),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameOffset, PRMzeroDefaults, 0, &rangeOffset),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameCompType, PRMzeroDefaults, &menuComparison),
@@ -185,11 +201,12 @@ COP2_FractalMatte::addPixelFunction(
 			colors.emplace_back(color);
 		}
 
-		auto blendType{ cop2_FractalMatteFunc::BlendType::LINEAR };
+		using BT = cop2_FractalMatteFunc::BlendType;
+		BT blendType = (BT)evalInt(nameBlendMode.getToken(), 0, t);
 
 		fpreal colorOffset = evalFloat(nameColorOffset.getToken(), 0, t);
 
-		return new cop2_FractalMatteFunc(sizes, colors, blendType, colorOffset);
+		return new cop2_FractalMatteFunc(sizes, colors, blendType, colorOffset, invert);
 	}
 }
 
@@ -223,6 +240,7 @@ bool COP2_FractalMatte::updateParmsFlags()
 	changed |= setVisibleState(nameOffset.getToken(), displayModulus);
 	changed |= setVisibleState(nameColors.getToken(), displayBlendColors);
 	changed |= setVisibleState(nameColorOffset.getToken(), displayBlendColors);
+	changed |= setVisibleState(nameBlendMode.getToken(), displayBlendColors);
 	return changed;
 }
 
@@ -256,13 +274,15 @@ cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 	std::vector<double>sizes,
 	std::vector<UT_Color>colors,
 	BlendType blendType,
-	fpreal32 colorOffset)
+	fpreal32 colorOffset,
+	bool invert)
 {
 	this->sizes = sizes;
 	this->colors = colors;
 	this->blendType = blendType;
 	this->mode = ModeType::BLENDCOLOR;
 	this->colorOffset = colorOffset;
+	this->invert = invert;
 }
 
 float cop2_FractalMatteFunc::checkModulus(
@@ -356,7 +376,27 @@ float cop2_FractalMatteFunc::checkBlendColors(
 			float weight = SYSfit(pixelValue, low, high, 0.0f, 1.0f);
 			blendColor = pfCasted->colors[i];
 			int nextColorIdx = (i + 1) % pfCasted->colors.size();
-			blendColor.blendRGB(pfCasted->colors[nextColorIdx], weight);
+			// Blend the colors. Linear Blendtype will not be blended.
+			bool doBlend{ false };
+			if (pfCasted->blendType == BlendType::LINEAR)
+				doBlend = true;
+			else if (pfCasted->blendType == BlendType::QUADRAIC)
+			{
+				doBlend = true;
+				if (weight != 0.0f)  // Zero Protection
+				{
+					weight = 1.0 - SYSsqrt(weight);
+				}
+			}
+
+			// Get complement of weight when inverted
+			if (pfCasted->invert)
+				weight = 1.0f - weight;
+
+			// Blend
+			if (doBlend)
+				blendColor.blendRGB(pfCasted->colors[nextColorIdx], weight);
+			
 			break;
 		}
 		low = high;
