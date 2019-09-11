@@ -87,6 +87,7 @@ namespace CC
 			std::vector<UT_Color>colors,
 			BlendType blendType,
 			fpreal32 offset,
+			fpreal32 blendOffset,
 			bool invert = false);
 	protected:
 		virtual bool eachComponentDifferent() const
@@ -152,5 +153,6 @@ namespace CC
 		ComparisonType compType{ ComparisonType::LESS_THAN };
 		ModeType mode{ ModeType::MODULUS };
 		fpreal32 colorOffset{ 0.0 };
+		fpreal32 blendOffset{ 1.0 };
 	};
 }
