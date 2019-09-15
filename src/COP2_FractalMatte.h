@@ -63,13 +63,14 @@ namespace CC
 			LESS_THAN_EQUALS,
 			EQUALS,
 			GREATER_THAN_EQUALS,
-			GREATER_THAN
+			GREATER_THAN,
+			NOT_EQUALS
 		};
 
 		enum class BlendType
 		{
 			LINEAR,
-			QUADRAIC,
+			QUADRATIC,
 			CONSTANT
 		};
 
@@ -88,6 +89,7 @@ namespace CC
 			BlendType blendType,
 			fpreal32 offset,
 			fpreal32 blendOffset,
+			fpreal32 weightMult = 1.0f,
 			bool invert = false);
 	protected:
 		virtual bool eachComponentDifferent() const
@@ -143,16 +145,16 @@ namespace CC
 		}
 
 	private:
-		fpreal32 modulo{ 0 };
-		double offset{ 0 };
+		fpreal32 modulo{ 0.0f };
+		fpreal32 offset{ 0.0f };
 		bool invert{ false };
-		double compValue{ 0 };
+		fpreal32 compValue{ 0.0 };
 		std::vector<double> sizes;
 		std::vector<UT_Color> colors;
 		BlendType blendType;
 		ComparisonType compType{ ComparisonType::LESS_THAN };
 		ModeType mode{ ModeType::MODULUS };
-		fpreal32 colorOffset{ 0.0 };
-		fpreal32 blendOffset{ 1.0 };
+		fpreal32 colorOffset{ 0.0f };
+		fpreal32 blendOffset{ 1.0f };
 	};
 }

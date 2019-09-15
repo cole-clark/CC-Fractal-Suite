@@ -44,8 +44,8 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	// Itersations set to -1 for bailed out values, making it a unique value for mattes.
 	if (data.blackhole && iterations == data.iters)
 	{
-		iterations = -1;
-		smoothcolor = -1;
+		iterations = -1.0;
+		smoothcolor = -1.0;
 	}
 	return FractalCoordsInfo(iterations, z, smoothcolor);
 }
