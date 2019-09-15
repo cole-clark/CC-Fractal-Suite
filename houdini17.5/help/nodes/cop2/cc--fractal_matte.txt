@@ -1,1 +1,156 @@
-Test Help.
+= Fractal Matte =
+
+#icon: /nodes/cop2/COP2_cc-fractal_matte.svg
+
+"""Pixel Filter for created mattes and blending colors for fractals."""
+
+== Overview ==
+
+Fractal Matte is a pixel filter node that was designed to help artistically manipulate raw fractals.
+
+Fractals are one of the most resource-intensive types of images to calculate; in extreme cases they are more expensive to create than raytraced renders. In internal testing, it was common practice to animate a basic fractal, cache it to disk, and then do all the artistic manipulation with complex trees of cheaper-to-calculate pixel filter nodes like this one. Where the fractal generators were written with as few parameters as possible to avoid recooks, this node is meant to be used frequently and interactively.
+
+While Fractal Matte will work with any source, most cleanly with ramps, its development is primarily driven by its interaction with CCFS Fractal nodes.
+
+Fractal Matte supports three types of modes for processing fractals:
+
+Modulus:
+    #display: red
+    Returns a black and white alternating pattern based on the luminance the incoming channels. Resembles zebra stripes.
+Comparison:
+    #display: green
+    Returns a black and white matte based on whether a pixel value is either larger, smaller, or equal to a given value.
+Blend Colors:
+    #display: blue
+    Returns a full color image that blends between different user-specified colors.
+
+== Using Modulus ==
+    
+Modulus was originally designed with Fractal Mandelbrot's 'Raw' mode in mind, but works well with any integer input or float input with consistent stepped values. It returns the 'remainder' of a modulus operation with the incoming pixel value, which results in cleanly-isolated stripes from a stepped fractal.
+
+TIP:
+    Try experimenting with Fractal Mandelbrot, specifically with its mode set to 'Raw' and 'Fit' checked off.
+
+:warning:
+    Modulus values less-than-one and are allowed, but may result in mattes whose values aren't normalized.
+
+:warning:
+    Offset values are allowed to be non-integer, but may result in mattes whose values aren't normalized. 
+
+== Using Comparison ==
+
+Comparison is most useful for extracting extremely specific mattes from a fractal. In internal testing, it was frequently used for isolating the [Cardioid|Wp:Cardioid] of the fractal by querying values less-than-or-equal-to zero. It is also the greatest mechanism for slicing major sections of a fractal.
+
+TIP:
+    Try experimenting with comparison by setting the cardioid of a fractal to a unique color. Also try cutting a fractal in half, and replacing half the fractal with a different image.
+
+TIP:
+    Equals and Not-Equals are the trickiest comparison types to use, and are mostly intended for integer-based inputs.
+
+== Using Blend Colors ==
+
+Blend Colors is an advanced mode that uses a list of colors and weights to create full-color images. Blend colors is the most robust way to create pretty images in the fractal suite, and is likely to be the base for many of the images you will create.
+
+:warning:
+    Blend Colors requires the input to be white to work correctly. However, fractals in the Fractal Suite are usually shuffled into the 'Red' channel to save time on calculating expensive fractals. To ensure this mode works correctly, you can insert a *Channel Copy* Cop an input, and set the 'Target' value to 'C' and the 'Source' value to 'Input1:C.r'.
+
+TIP:
+    Try experimenting with the weights of the colors. At all times, colors will attempt to blend to each other, so making the values larger does not necessarily mean you will see 'more' of a particular color, but rather 'more' of a blend between the color and the colors around it. To most clearly see more of a specific color, it is normal and acceptable to have two parameters with the same color, but different weight values.
+
+@parameters
+
+== General ==
+
+Mode:
+    #id: mode
+
+    Specifies what type of operation will be used to interpret the input and produce mattes or colors.
+
+
+Invert:
+    #id: invert
+    Invert has slightly different behavior depending on which mode is selected.
+
+    Modulus:
+        #display: red
+        Calculates the complement of the image as a post-process.
+    Comparison:
+        #display: green
+        Calculates the complement of the image as a post-process.
+    Blend Colors:
+        #display: blue
+        Reverses the sequence of the colors. For example, colors red to green to blue becomes green to red to blue.
+
+== Modulus ==
+
+Modulo:
+    #id: modulo
+    The size used to determine how big the 'stripes' the matte will have. Smaller values generally create more 'stripes'.
+
+Offset:
+    #id: offset
+    Shifts the position of the stripes.
+
+== Comparison ==
+
+Comparison:
+    #id: comptype
+    The type of comparison that will be used by the fractal. These correspond directly to C++'s relational operators.
+
+Value:
+    #id: compvalue
+    The value that the pixels will be compared to.
+
+== Blend Colors ==
+
+Colors:
+    #id: colors
+    The number of colors that will be used.
+
+Color #:
+    #id: color_1
+    A specific color that can be blended.
+
+Weight #:
+    #id: weight_1
+    The relative size this color and the next will be seen compared to other colors.
+
+Blend Mode:
+    #id: blendmode
+    The style used to determine how different colors will be blended together.
+
+    Linear:
+        #display: purple
+        Will perform a linear interpolation between the colors.
+
+    Quadratic:
+        #display: magenta
+        Will perform modify the interpolation based on the square root of the weight's value.
+
+    Constant:
+        #display: teal
+        Will treat the pixel values as though they were stepped, resulting in an image with stripes.
+
+Color Offset:
+    #id: coloroffset
+    Shifts the positions of the colors.
+
+Blend Offset:
+    #id: blendoffset
+    Offsets the attenuation of the colors. Values less-than-one prioritize the 'inner' colors, whereas values greater-than-one prioritize the 'outer' colors.
+
+Weight Multiplier:
+    #id: blendweightscale
+    Multiplies the values of all the weights. Higher values result in less stripes, whereas lower values result in more stripes.
+
+== Support ==
+
+Want to help improve the CC Fractal Suite? Join us by contributing code or feedback at the project's [Github Page|https://github.com/colevfx/CC-Fractal-Suite] We'd love to hear from you!
+
+@related
+
+* [Node:cop2/CC--fractal_buddhabrot]
+* [Node:cop2/CC--fractal_pickover]
+* [Node:cop2/CC--fractal_buddhabrot]
+* [Node:cop2/CC--fractal_lyapunov]
+* [Node:cop2/channelcopy]
