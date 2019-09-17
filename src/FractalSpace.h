@@ -43,11 +43,6 @@ namespace CC
 		double r;
 	};
 
-	class FractalXform
-	{
-		FractalXformData data;
-	};
-
 	class FractalSpace
 	{
 		int image_x{ 0 };
@@ -59,14 +54,6 @@ namespace CC
 
 		FractalSpace();
 		FractalSpace(int x, int y);
-
-		void set_xform(
-			double tx,
-			double ty,
-			double r,
-			double sx,
-			double sy,
-			RSTORDER xord);
 
 		void set_xform(XformStashData& xdata);
 

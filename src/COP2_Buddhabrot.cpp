@@ -46,7 +46,7 @@ COP2_Buddhabrot::myTemplateList[]
 {
 	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
-	TEMPLATES_XFORM,
+	TEMPLATES_XFORM_BUDDHABROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
@@ -100,6 +100,7 @@ COP2_Buddhabrot::newContextData(
 	data->space.set_image_size(image_sizex, image_sizey);
 
 	XformStashData xformData;
+	// Force override xformData
 	xformData.evalArgs(this, t);
 	data->space.set_xform(xformData);
 

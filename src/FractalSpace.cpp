@@ -71,24 +71,6 @@ FractalSpace::FractalSpace(int x, int y)
 	set_image_size(x, y);
 }
 
-/// Constructs the matrix. from fed parameters
-/// TODO: Deprecate this method in favor of the stashdata method.
-void FractalSpace::set_xform(
-	double tx,
-	double ty,
-	double r,
-	double sx,
-	double sy,
-	RSTORDER xord = RSTORDER::TRS)
-{
-	// We are treating the parametric Y pivot relative to the size of the X axis.
-	double image_ratio_y = image_y / (double)image_x;
-
-	post_matrix.xform(xord, tx, ty, r, sx, sy);// , s_pivx, s_pivy * s_image_pivy_size);
-	
-	xdata = XformStashData(tx, ty, r, sx, xord);
-}
-
 
 void FractalSpace::set_xform(XformStashData& xformData)
 {

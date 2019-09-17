@@ -65,6 +65,7 @@ static PRM_Default defaultOffset[] = { -0.6, -0.28125 };
 static PRM_Default defaultRotate{ 0.0f };
 static PRM_Default defaultXOrd{ 0.0f };  // TRS
 
+static PRM_Default defaultOffsetBuddhabrot[] = { -3.0, -1.3 };
 
 /// Mandelbrot Defaults Data
 static PRM_Default defaultIter{ 50 };
@@ -162,6 +163,11 @@ static PRM_Name nameSepC("sep_C", "Sep C");
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameXOrd, &defaultXOrd, &xOrdMenu), \
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate)
+
+#define TEMPLATES_XFORM_BUDDHABROT \
+	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffsetBuddhabrot), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate)
 
 /// Definition of Mandelbrot Templates. Add 7 to COP_SWITCHER calls

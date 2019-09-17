@@ -20,7 +20,6 @@ namespace CC
 		virtual void evalArgs(const OP_Node* node, fpreal t) = 0;
 	};
 
-
 	/// Struct meant to simplify the stashing of xform parm data.
 	struct XformStashData : public StashData
 	{

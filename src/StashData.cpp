@@ -24,7 +24,13 @@ void XformStashData::evalArgs(const OP_Node* node, fpreal t)
 	offset_x = node->evalFloat(TRANSLATE_NAME.first, 0, t);
 	offset_y = node->evalFloat(TRANSLATE_NAME.first, 1, t);
 	rotate = node->evalFloat(ROTATE_NAME.first, 0, t);
-	xord = get_rst_order(node->evalInt(XORD_NAME.first, 0, t));
+
+	// Make xord not necessary, mainly to play nice with
+	// TEMPLATES_XFORM_BUDDHABROT which has it removed
+	if (node->hasParm(XORD_NAME.first))
+		xord = get_rst_order(node->evalInt(XORD_NAME.first, 0, t));
+	else
+		xord = RSTORDER::STR;
 }
 
 MandelbrotStashData::MandelbrotStashData(
