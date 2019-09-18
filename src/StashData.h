@@ -9,6 +9,9 @@
 
 #include "typedefs.h"
 
+#include <vector>
+#include <initializer_list>
+
 #include <OP/OP_Node.h>
 
 namespace CC
@@ -23,10 +26,10 @@ namespace CC
 	/// Struct meant to simplify the stashing of xform parm data.
 	struct XformStashData : public StashData
 	{
-		double offset_x, offset_y{ 0 };
+		double offset_x{ 0 }, offset_y{ 0 };
 		double rotate{ 0 };
 		double scale{ 1 };
-		RSTORDER xord{ RSTORDER::TRS };
+		RSTORDER xord{ RSTORDER::RST };
 
 		XformStashData(
 			double offset_x = 0,
@@ -36,6 +39,14 @@ namespace CC
 			RSTORDER xord = RSTORDER::RST);
 
 		void evalArgs(const OP_Node* node, fpreal t);
+	};
+
+	// 
+	struct MultiXformStashData : StashData
+	{
+		std::vector<XformStashData> xforms;
+
+		void evalArgs(const OP_Node* node, fpreal t) override;
 	};
 
 	/// Struct meant to simplify the stashing of Mandelbrot parm data

@@ -89,7 +89,7 @@ void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 	invertnegative = node->evalInt(LYAINVERTNEGATIVE_NAME.first, 0, t);
 
 	// Multiparm load attribs
-	int seqSize = node->evalInt(LYASEQ_NAME.first, 0, 1);
+	int seqSize = node->evalInt(LYASEQ_NAME.first, 0, t);
 	seq.reserve(seqSize);
 	
 	for (int i = 1; i <= seqSize; ++i)
@@ -101,4 +101,29 @@ void LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 
 LyapunovStashData::~LyapunovStashData()
 {
+}
+
+void MultiXformStashData::evalArgs(
+		const OP_Node * node, fpreal t)
+{
+	int numXforms = node->evalInt(XFORMS_NAME.first, 0, t);
+	xforms.reserve(numXforms);
+
+	double offset_x, offset_y, rotate, scale;
+	offset_x = offset_y = rotate = scale = 0;
+
+	RSTORDER xord{ RSTORDER::RST };
+
+	// Create a XformStashData object for each # in the multiparm.
+	for (int i = 1; i <= numXforms; ++i)
+	{
+		offset_x = node->evalFloatInst(TRANSLATE_M_NAME.first, &i, 0, t);
+		offset_y = node->evalFloatInst(TRANSLATE_M_NAME.first, &i, 1, t);
+		rotate = node->evalFloatInst(ROTATE_M_NAME.first, &i, 0, t);
+		scale = node->evalFloatInst(SCALE_M_NAME.first, &i, 0, t);
+		xord = static_cast<RSTORDER>(
+			node->evalIntInst(XORD_M_NAME.first, &i, 0, t));
+
+		xforms.emplace_back(XformStashData(offset_x, offset_y, rotate, scale, xord));
+	}
 }

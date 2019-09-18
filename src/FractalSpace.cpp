@@ -72,15 +72,66 @@ FractalSpace::FractalSpace(int x, int y)
 }
 
 
+void FractalSpace::set_xform(MultiXformStashData & xdata)
+{
+	UT_Matrix3D m;
+	m.identity();
+
+	auto xforms = xdata.xforms;
+
+	// Set ident matrix is xdata vector is zero.
+	if (xforms.size() < 1)
+		post_matrix = m;
+
+	fpreal px, py;
+	px = py = 0.0f;
+	/*
+	// We are treating the parametric Y pivot relative to the size of the X axis.
+	double r_image_pivy_size = 0.5 * image_y / (double)image_x;
+	double s_image_pivy_size = 0.5 * image_y / (double)image_x;
+	*/
+	/*
+	// Pre-xform only scale and translate.
+	post_matrix.xform(
+		xord, tx, ty, 0, sx, sy,
+		s_pivx,
+		s_pivy * s_image_pivy_size);
+
+	// XForm with only rotate and rotate pivot.
+	post_matrix.xform(
+		xord, 0, 0, r, 1, 1,
+		post_matrix(2, 0) + (sx * r_pivx),
+		post_matrix(2, 1) + (sy * r_image_pivy_size));
+	*/
+	for (int i = 0; i < xforms.size(); ++i)
+	{
+		m.xform(
+			xforms[i].xord, xforms[i].offset_x, xforms[i].offset_y,
+			xforms[i].rotate,
+			xforms[i].scale, xforms[i].scale,
+			px, py);
+		// Set current pivot as pivot for the next transform so they behave as stacks.
+		px = xforms[i].offset_x;
+		py = xforms[i].offset_y;
+	}
+
+	post_matrix = m;
+}
+
 void FractalSpace::set_xform(XformStashData& xformData)
 {
-	this->xdata = xformData;
+	xdata = xformData;
 
 	post_matrix.xform(
 		xdata.xord,
 		xdata.offset_x, xdata.offset_y,
 		xdata.rotate,
 		xdata.scale, xdata.scale);
+}
+
+void FractalSpace::set_xform(UT_Matrix3D & xform)
+{
+	post_matrix = xform;
 }
 
 /// Return the fractal coordinates, which use the size of the image as a relative

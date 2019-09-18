@@ -23,6 +23,13 @@ static PRM_Name nameOffset(TRANSLATE_NAME.first, TRANSLATE_NAME.second);
 static PRM_Name nameRotate(ROTATE_NAME.first, ROTATE_NAME.second);
 static PRM_Name nameXOrd(XORD_NAME.first, XORD_NAME.second);
 
+/// Fractal Xform Multi Name Data
+static PRM_Name nameXforms{ XFORMS_NAME.first, XFORMS_NAME.second };
+static PRM_Name nameMultiScale(SCALE_M_NAME.first, SCALE_M_NAME.second);
+static PRM_Name nameMultiOffset(TRANSLATE_M_NAME.first, TRANSLATE_M_NAME.second);
+static PRM_Name nameMultiRotate(ROTATE_M_NAME.first, ROTATE_M_NAME.second);
+static PRM_Name nameMultiXOrd(XORD_M_NAME.first, XORD_M_NAME.second);
+
 /// Mandelbrot Name  Data
 static PRM_Name nameIter{ ITERS_NAME.first, ITERS_NAME.second };
 static PRM_Name namePower{ POWER_NAME.first, POWER_NAME.second };
@@ -149,6 +156,15 @@ static PRM_Template multiparmSeqTemps[] =
 	PRM_Template()
 };
 
+static PRM_Template multiparmXformTemps[] =
+{
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMultiXOrd, &defaultXOrd, &xOrdMenu),
+	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameMultiScale, &defaultScale, 0, &rangeScale),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameMultiOffset, defaultOffset),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameMultiRotate, PRMzeroDefaults, 0, &rangeRotate),
+	PRM_Template()
+};
+
 /// Create separator names.
 static PRM_Name nameSeparatorMandelbrot("sep_mandelbrot", "Sep Mandelbrot");
 static PRM_Name nameSepA("sep_A", "Sep A");
@@ -164,6 +180,10 @@ static PRM_Name nameSepC("sep_C", "Sep C");
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameOffset, defaultOffset), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameRotate, PRMzeroDefaults, 0, &rangeRotate)
+
+#define TEMPLATES_XFORM_MULTI \
+	PRM_Template(PRM_MULTITYPE_LIST, multiparmXformTemps, 1, &nameXforms, PRMzeroDefaults)
+
 
 #define TEMPLATES_XFORM_BUDDHABROT \
 	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameScale, &defaultScale, 0, &rangeScale), \

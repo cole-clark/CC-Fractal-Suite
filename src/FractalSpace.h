@@ -13,6 +13,8 @@
 #include <TIL/TIL_Tile.h>
 
 #include <utility>
+#include <vector>
+#include <initializer_list>
 
 #include "typedefs.h"
 #include "StashData.h"
@@ -35,14 +37,6 @@ namespace CC
 		TIL_Tile* tile,
 		int pixel_index);
 
-	struct FractalXformData
-	{
-		UT_Matrix3 m;
-		RSTORDER xOrd{ RSTORDER::TSR };
-		std::pair<double, double> t, s, r_piv, s_piv;
-		double r;
-	};
-
 	class FractalSpace
 	{
 		int image_x{ 0 };
@@ -55,7 +49,9 @@ namespace CC
 		FractalSpace();
 		FractalSpace(int x, int y);
 
+		void set_xform(MultiXformStashData& xdata);
 		void set_xform(XformStashData& xdata);
+		void set_xform(UT_Matrix3D& xform);
 
 		COMPLEX get_fractal_coords(WORLDPIXELCOORDS pixel_coords);
 		COMPLEX get_fractal_coords(COMPLEX pixel_coords);

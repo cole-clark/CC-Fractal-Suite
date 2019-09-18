@@ -24,6 +24,13 @@ static NAMEPAIR ROTATE_NAME{ "rotate", "Rotate" };
 static NAMEPAIR SCALE_NAME{ "scale", "Scale" };
 static NAMEPAIR XORD_NAME{ "xOrd", "TRS Order"};
 
+/// Xform Multi Names
+static NAMEPAIR XFORMS_NAME{ "xforms", "Transforms" };
+static NAMEPAIR TRANSLATE_M_NAME{ "tranlate_#", "Translate #" };
+static NAMEPAIR ROTATE_M_NAME{ "rotate_#", "Rotate #" };
+static NAMEPAIR SCALE_M_NAME{ "scale_#", "Scale #" };
+static NAMEPAIR XORD_M_NAME{ "xOrd_#", "TRS Order #" };
+
 /// Mandelbrot Names
 static NAMEPAIR ITERS_NAME{ "iters", "Iterations" };
 static NAMEPAIR POWER_NAME{ "pow", "Exponent" };
