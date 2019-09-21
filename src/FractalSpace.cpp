@@ -136,7 +136,7 @@ COMPLEX
 FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 {
 	COMPLEX fc{ pixel_coords.first / (double)image_x, pixel_coords.second / (double)image_x };
-	UT_Matrix3 m;
+	UT_Matrix3D m;
 	m.identity();
 	m.xform(xdata.xord, fc.real(), fc.imag());
 
@@ -151,7 +151,7 @@ FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 COMPLEX FractalSpace::get_fractal_coords(COMPLEX pixel_coords)
 {
 	COMPLEX fc{ pixel_coords.real() / (double)image_x, pixel_coords.imag() / (double)image_x };
-	UT_Matrix3 m;
+	UT_Matrix3D m;
 	m.identity();
 	m.xform(xdata.xord, fc.real(), fc.imag());
 
@@ -166,7 +166,7 @@ COMPLEX FractalSpace::get_fractal_coords(COMPLEX pixel_coords)
 WORLDPIXELCOORDS
 FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 {
-	UT_Matrix3 m;
+	UT_Matrix3D m;
 	m.identity();
 
 	// Set m to fractal coordinates

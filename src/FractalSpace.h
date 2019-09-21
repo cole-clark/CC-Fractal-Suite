@@ -41,7 +41,7 @@ namespace CC
 	{
 		int image_x{ 0 };
 		int image_y{ 0 };
-		UT_Matrix3 post_matrix;
+		UT_Matrix3D post_matrix;
 		XformStashData xdata;
 
 	public:

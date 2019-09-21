@@ -157,9 +157,9 @@ COP2_Mandelbrot::generateTile(COP2_Context& context, TIL_TileList* tileList)
 					val = pixelInfo.num_iter;
 
 				if (data->fit)
-					val /= (float)data->fractal.data.iters;
+					val /= (fpreal64)data->fractal.data.iters;
 					
-				dest[i] = val;
+				dest[i] = (fpreal32)val;
 			}
 			else
 				dest[i] = 0.0f;
