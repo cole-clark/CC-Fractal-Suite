@@ -306,6 +306,16 @@ cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 	fpreal32 weightMult,
 	bool invert)
 {
+	// Zero protection of weight multiplier
+	fpreal32 scaleMult = 1.0f;
+	if (weightMult != 0.0f)
+	{
+		scaleMult = weightMult;
+		// Scale down the color offset relative to the scale mult
+		colorOffset *= scaleMult;
+	}
+
+	// Assign parameters to object.
 	this->blendType = blendType;
 	this->mode = ModeType::BLENDCOLOR;
 	this->colorOffset = colorOffset;
@@ -315,9 +325,6 @@ cop2_FractalMatteFunc::cop2_FractalMatteFunc(
 	// Skip colors if their matching size is zero
 	std::vector<double> filtered_sizes;
 	std::vector<UT_Color> filtered_colors;
-
-	// Zero protection of weight multiplier
-	fpreal32 scaleMult = (weightMult != 0.0f) ? weightMult : 1.0f;
 
 	for (int i = 0; i < sizes.size(); ++i)
 	{
