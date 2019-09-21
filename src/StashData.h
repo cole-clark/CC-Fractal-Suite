@@ -41,7 +41,6 @@ namespace CC
 		void evalArgs(const OP_Node* node, fpreal t);
 	};
 
-	// 
 	struct MultiXformStashData : StashData
 	{
 		std::vector<XformStashData> xforms;

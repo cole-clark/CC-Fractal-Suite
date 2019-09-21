@@ -83,38 +83,34 @@ void FractalSpace::set_xform(MultiXformStashData & xdata)
 	if (xforms.size() < 1)
 		post_matrix = m;
 
+	//fpreal px = 0.5 * image_y / (fpreal)image_x;
+	//fpreal py = 0.5;
+	fpreal xyRatio = (image_y / (fpreal)image_x);
 	fpreal px, py;
-	px = py = 0.0f;
-	/*
-	// We are treating the parametric Y pivot relative to the size of the X axis.
-	double r_image_pivy_size = 0.5 * image_y / (double)image_x;
-	double s_image_pivy_size = 0.5 * image_y / (double)image_x;
-	*/
-	/*
-	// Pre-xform only scale and translate.
-	post_matrix.xform(
-		xord, tx, ty, 0, sx, sy,
-		s_pivx,
-		s_pivy * s_image_pivy_size);
+	px = py = 0.0;
 
-	// XForm with only rotate and rotate pivot.
-	post_matrix.xform(
-		xord, 0, 0, r, 1, 1,
-		post_matrix(2, 0) + (sx * r_pivx),
-		post_matrix(2, 1) + (sy * r_image_pivy_size));
-	*/
+	UT_Matrix3D m_pivXform{ 1, 0, 0, 0, 1, 0, 0.5, 0.5 * xyRatio, 1 };
+	UT_Matrix3D m_pivIterated, m_local;
 	for (int i = 0; i < xforms.size(); ++i)
 	{
-		m.xform(
+		// Create center pivot from xform space.
+		m_pivIterated = m_pivXform * m;
+		px = m_pivIterated(2, 0);
+		py = m_pivIterated(2, 1);
+
+		// Get the local transform
+		m_local.identity();
+		m_local.xform(
 			xforms[i].xord, xforms[i].offset_x, xforms[i].offset_y,
 			xforms[i].rotate,
 			xforms[i].scale, xforms[i].scale,
 			px, py);
-		// Set current pivot as pivot for the next transform so they behave as stacks.
-		px = xforms[i].offset_x;
-		py = xforms[i].offset_y;
+		
+		// Add the local transform to our transform chain.
+		m *= m_local;
 	}
 
+	// Apply our resolved xform to the node's viewer xform
 	post_matrix = m;
 }
 

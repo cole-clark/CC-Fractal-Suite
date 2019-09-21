@@ -70,7 +70,8 @@ static PRM_ChoiceList xOrdMenu
 static PRM_Default defaultScale{ 5 };
 static PRM_Default defaultOffset[] = { -0.6, -0.28125 };
 static PRM_Default defaultRotate{ 0.0f };
-static PRM_Default defaultXOrd{ 0.0f };  // TRS
+static PRM_Default defaultXOrd{ RSTORDER::TRS };
+static PRM_Default defaultMultiXOrd{ RSTORDER::RST };
 
 static PRM_Default defaultOffsetBuddhabrot[] = { -3.0, -1.3 };
 
@@ -158,9 +159,9 @@ static PRM_Template multiparmSeqTemps[] =
 
 static PRM_Template multiparmXformTemps[] =
 {
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMultiXOrd, &defaultXOrd, &xOrdMenu),
-	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameMultiScale, &defaultScale, 0, &rangeScale),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameMultiOffset, defaultOffset),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMultiXOrd, &defaultMultiXOrd, &xOrdMenu),
+	PRM_Template(PRM_FLT_LOG, TOOL_PARM, 1, &nameMultiScale, PRMoneDefaults, 0, &rangeScale),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameMultiOffset, PRMzeroDefaults),
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameMultiRotate, PRMzeroDefaults, 0, &rangeRotate),
 	PRM_Template()
 };
