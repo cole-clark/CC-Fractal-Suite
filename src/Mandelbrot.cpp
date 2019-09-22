@@ -44,7 +44,7 @@ FractalCoordsInfo CC::Mandelbrot::calculate(COMPLEX coords)
 	// Itersations set to -1 for bailed out values, making it a unique value for mattes.
 	if (data.blackhole && iterations == data.iters)
 	{
-		iterations = -1.0;
+		iterations = -1;
 		smoothcolor = -1.0;
 	}
 	return FractalCoordsInfo(iterations, z, smoothcolor);
@@ -72,6 +72,9 @@ FractalCoordsInfo Pickover::calculate(COMPLEX coords)
 	COMPLEX z{ 0 };
 	COMPLEX c{ coords.real(), coords.imag() };
 
+	// Arbitrary extremely far distance. The user would only notice
+	// this limit if they are phenominally far away from the fractal,
+	// In which case they would mostly be seeing flat values anyways.
 	double distance{ 1e10 };
 
 	for (int i = 0; i < data.iters; i++)
@@ -114,7 +117,7 @@ double Pickover::distance_to_point(COMPLEX z, COMPLEX point)
 	// sqrt(a^2 + b^2)
 	double distance = std::sqrt(
 		std::pow(z.imag() - z.real(), 2) +
-		std::pow(zDist.imag() - zDist.real(), 2));
+		std::pow(zDist.imag() - zDist.real(), 2.0));
 
 	return distance;
 }
@@ -147,12 +150,13 @@ double Pickover::distance_to_line(COMPLEX z, COMPLEX offset, fpreal theta)
 	);
 
 	double denominator = sqrt(
-		pow(pntB.imag() - pntA.imag(), 2) +
-		pow(pntB.real() - pntA.real(), 2)
+		pow(pntB.imag() - pntA.imag(), 2.0) +
+		pow(pntB.real() - pntA.real(), 2.0)
 	);
 
 	if (denominator == 0.0)
-		denominator = 1.0f;
+		denominator = 1.0;
 
 	return numerator / denominator;
 }
+ 

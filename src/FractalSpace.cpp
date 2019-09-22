@@ -83,14 +83,13 @@ void FractalSpace::set_xform(MultiXformStashData & xdata)
 	if (xforms.size() < 1)
 		post_matrix = m;
 
-	//fpreal px = 0.5 * image_y / (fpreal)image_x;
-	//fpreal py = 0.5;
 	fpreal xyRatio = (image_y / (fpreal)image_x);
 	fpreal px, py;
 	px = py = 0.0;
 
 	UT_Matrix3D m_pivXform{ 1, 0, 0, 0, 1, 0, 0.5, 0.5 * xyRatio, 1 };
 	UT_Matrix3D m_pivIterated, m_local;
+	fpreal overall_scale = 1.0;
 	for (int i = 0; i < xforms.size(); ++i)
 	{
 		// Create center pivot from xform space.
@@ -98,14 +97,21 @@ void FractalSpace::set_xform(MultiXformStashData & xdata)
 		px = m_pivIterated(2, 0);
 		py = m_pivIterated(2, 1);
 
+		// Store overall scale. This will be applied to
+		// The offsets, so that their transforms are local
+		// and are accounting previous transformations.
+		overall_scale *= xforms[i].scale;
+
 		// Get the local transform
 		m_local.identity();
 		m_local.xform(
-			xforms[i].xord, xforms[i].offset_x, xforms[i].offset_y,
+			xforms[i].xord,
+			xforms[i].offset_x * overall_scale,
+			xforms[i].offset_y * overall_scale,
 			xforms[i].rotate,
 			xforms[i].scale, xforms[i].scale,
 			px, py);
-		
+
 		// Add the local transform to our transform chain.
 		m *= m_local;
 	}
