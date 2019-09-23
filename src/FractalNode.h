@@ -13,6 +13,9 @@
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_ChoiceList.h>
 #include <OP/OP_Network.h>
+#include <CH/CH_Manager.h>
+#include <sstream>
+#include <iomanip>
 
 #include "typedefs.h"
 
@@ -229,4 +232,53 @@ namespace CC
 			return new T(net, name, op);
 		}
 	};
+
+	struct MultiXformData
+	{
+		fpreal scale{ 1.0 };
+		COMPLEX offset{ 0.0, 0.0 };
+		fpreal rotate{ 0.0 };
+	};
+
+
+	/// Takes a node with TEMPLATES_XFORM_MULTI defined, and return
+	/// The overall requested offset and scale.
+	static MultiXformData
+	get_multi_xform_sums(OP_Node* node)
+	{
+		MultiXformData data;
+
+		fpreal t = CHgetEvalTime();
+
+		int numXforms = node->evalInt(XFORMS_NAME.first, 0, t);
+		for (int i = 1; i <= numXforms; ++i)
+		{
+			data.scale *= node->evalFloatInst(
+				SCALE_M_NAME.first, &i, 0, t);
+
+			data.offset += (
+				node->evalFloatInst(TRANSLATE_M_NAME.first, &i, 0, t),
+				node->evalFloatInst(TRANSLATE_M_NAME.first, &i, 1, t));
+
+			data.rotate += node->evalFloatInst(
+				ROTATE_M_NAME.first, &i, 0, t);
+		}
+
+		return data;
+	};
+
+	static std::string
+	formatMultiXformData(MultiXformData data)
+	{
+		std::ostringstream oss;
+
+		oss << std::setprecision(2);
+		oss << "Fractal Transformation:" << std::endl;
+		oss << "Scale: " << data.scale << std::endl;
+		oss << "Transform: " << data.offset.real() << " "
+			<< data.offset.imag() << std::endl;
+		oss << "Rotate: " << data.rotate << std::endl;
+		
+		return oss.str();
+	}
 }
