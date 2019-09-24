@@ -11,7 +11,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(18, "Fractal");
+COP_GENERATOR_SWITCHER(15, "Fractal");
 
  /// Private Constructor
 COP2_Pickover::COP2_Pickover(
@@ -62,7 +62,7 @@ PRM_Template
 COP2_Pickover::myTemplateList[]
 {
 	TEMPLATE_SWITCHER,
-	TEMPLATES_XFORM,
+	TEMPLATES_XFORM_MULTI,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
@@ -117,9 +117,10 @@ COP2_Pickover::newContextData
 	// Set the image size and stash the parameters.
 	data->space.set_image_size(image_sizex, image_sizey);
 	
-	XformStashData xformData;
-	xformData.evalArgs(this, t);
-	data->space.set_xform(xformData);
+	// Stash xform data.
+	MultiXformStashData multiXformData;
+	multiXformData.evalArgs(this, t);
+	data->space.set_xform(multiXformData);
 
 	PickoverStashData pickoverData;
 	pickoverData.evalArgs(this, t);

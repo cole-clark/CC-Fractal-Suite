@@ -13,7 +13,7 @@
 using namespace CC;
 
 /// Parm Switcher used by this interface
-COP_GENERATOR_SWITCHER(15, "Fractal");
+COP_GENERATOR_SWITCHER(12, "Fractal");
 
 /// Private Constructor
 COP2_Mandelbrot::COP2_Mandelbrot(
