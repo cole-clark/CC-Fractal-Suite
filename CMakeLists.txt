@@ -35,4 +35,11 @@ add_library( ${library_name} SHARED
 # Link against the Houdini libraries, and add required include directories and compile definitions.
 target_link_libraries( ${library_name} Houdini )
 # Configure several common target properties, such as its output directory.
-houdini_configure_target( ${library_name} )
+
+set(release_path ${CC_Fractal_Suite_BINARY_DIR}/release)
+set(houdini_ver houdini17.5)
+
+file(COPY ${CC_Fractal_Suite_SOURCE_DIR}/media DESTINATION ${release_path})
+file(COPY ${CC_Fractal_Suite_SOURCE_DIR}/${houdini_ver} DESTINATION ${release_path})
+
+houdini_configure_target( ${library_name} INSTDIR ${release_path}/${houdini_ver}/dso )

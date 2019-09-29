@@ -20,27 +20,31 @@ At its core, the Fractal Pickover inherits almost all of its fractal functionali
 
 == Transformation ==
 
+Xforms:
+    #id: xforms
+    The number of transforms to apply to the fractal plane.
+
 TRS Order:
-    #id: xOrd
+    #id: xOrd_1
 
     Sets the Translate, Rotate, and Scale order for the fractal plane transformation. 
     :tip:
-        Set this value to your desired transform behavior *before* animating the other transform parameters.
+        Set this value to your desired transform behavior *before* animating the other transform parameters. But the default is usually fine.
 
 Scale:
-    #id: scale
+    #id: scale_1
 
     Scales the size of the fractal plane. Smaller values delve deeper into the fractal. The default pivot is in the bottom-left corner of the screen.
 
 Translate:
-    #id: translate
+    #id: translate_1
 
     Translates the fractal plane.
 
 Rotate:
-    #id: rotate
+    #id: rotate_1
 
-    Rotates the image. The default pivot is in the bottom-left corner of the screen.
+    Rotates the image. Pivot is in the center of the screen.
 
 == Mandelbrot ==
 
