@@ -1,37 +1,40 @@
-# Specify the minimum required version of CMake to build the project.
 cmake_minimum_required( VERSION 3.6 )
 project( CC_Fractal_Suite )
-# Locate Houdini's libraries and header files.
-# Registers an imported library target named 'Houdini'.
+
 find_package( Houdini REQUIRED )
-# Add a library with two source files.
+# Add a library with source files
 set( library_name CC_Fractal_Suite )
 add_library( ${library_name} SHARED
 	src/COP2_Buddhabrot.cpp
-	src/COP2_Buddhabrot.h
+	include/COP2_Buddhabrot.h
     src/COP2_FractalMatte.cpp
-	src/COP2_FractalMatte.h
+	include/COP2_FractalMatte.h
 	src/COP2_Lyapunov.cpp
-	src/COP2_Lyapunov.h
+	include/COP2_Lyapunov.h
 	src/COP2_Mandelbrot.cpp
-    src/COP2_Mandelbrot.h
+    include/COP2_Mandelbrot.h
 	src/COP2_Pickover.cpp
-	src/COP2_Pickover.h
+	include/COP2_Pickover.h
     src/Fractal.cpp
-    src/Fractal.h
-	src/FractalNode.h
+    include/Fractal.h
+	include/FractalNode.h
     src/FractalSpace.cpp
-    src/FractalSpace.h
+    include/FractalSpace.h
 	src/Lyapunov.cpp
-	src/Lyapunov.h
+	include/Lyapunov.h
     src/Mandelbrot.cpp
-    src/Mandelbrot.h
+    include/Mandelbrot.h
     src/register.cpp
-    src/register.h
+    include/register.h
 	src/StashData.cpp
-	src/StashData.h
-	src/typedefs.h
+	include/StashData.h
+	include/typedefs.h
 )
+
+# Specify repo's include dir as a cmake include directory.
+# Without this, the cpp files won't find our headers'
+target_include_directories(${library_name} PUBLIC include)
+
 # Link against the Houdini libraries, and add required include directories and compile definitions.
 target_link_libraries( ${library_name} Houdini )
 # Configure several common target properties, such as its output directory.
