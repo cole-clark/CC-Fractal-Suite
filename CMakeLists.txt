@@ -36,10 +36,47 @@ add_library( ${library_name} SHARED
 target_link_libraries( ${library_name} Houdini )
 # Configure several common target properties, such as its output directory.
 
+# Configure some variables
 set(release_path ${CC_Fractal_Suite_BINARY_DIR}/release)
 set(houdini_ver houdini17.5)
+set(ccfs_hfs_version hfs17.5.229.0)  # hfs{HMAJOR}.{HMINOR}.{HBUILD}.{CCFSBUILDVERSOIN}
 
 file(COPY ${CC_Fractal_Suite_SOURCE_DIR}/media DESTINATION ${release_path})
 file(COPY ${CC_Fractal_Suite_SOURCE_DIR}/${houdini_ver} DESTINATION ${release_path})
 
+# Configure the Houdini target
 houdini_configure_target( ${library_name} INSTDIR ${release_path}/${houdini_ver}/dso )
+
+# Set 'Release' as the default build type, which will build Doxygen.
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+# Build Docs, only if in release mode and if Doxygen found
+option(BUILD_DOC "Build documentation" ON)
+
+if (BUILD_DOC)
+	find_package(Doxygen)
+	if (Doxygen_FOUND)
+		if (CMAKE_BUILD_TYPE MATCHES "[Rr]elease")
+			# Set the input and output Doxyfiles
+			set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+			set(DOXYGEN_OUT ${release_path}/Doxyfile)
+
+			configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+			message("Doxygen build started")
+			# note the option ALL which allows to build the docs together with the application
+			add_custom_target( doc_doxygen ALL
+				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+				COMMENT "Generating API documentation with Doxygen"
+				VERBATIM )
+		else()
+			message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE} does not match '[Rr]elease. Doxygen not run.'")
+			endif()
+	else()
+		message(STATUS "Doxygen not found.")
+	endif()
+else()
+	message(STATUS "Doxygen not run because BUILD_DOC option not enabled.")
+endif()

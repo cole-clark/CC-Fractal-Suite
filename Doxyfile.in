@@ -5,10 +5,10 @@
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "CC Fractal Suite"
-PROJECT_NUMBER         = 17.5.229.0
+PROJECT_NUMBER         = @ccfs_hfs_version@
 PROJECT_BRIEF          = "A Suite of Houdini C++ Fractal Compositing Operators"
-PROJECT_LOGO           = ./media/doxygen_banner.png
-OUTPUT_DIRECTORY       = .\docs
+PROJECT_LOGO           = @release_path@/media/doxygen_banner.png
+OUTPUT_DIRECTORY       = @release_path@/docs/
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 OUTPUT_LANGUAGE        = English
@@ -116,7 +116,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = .\src
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/src/
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
