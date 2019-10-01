@@ -15,13 +15,14 @@ namespace CC
 	class COP2_FractalMatte : public COP2_PixelOp
 	{
 	public:
-		static OP_Node* myConstructor(OP_Network*, const char*, OP_Operator*);
 
 		static OP_TemplatePair myTemplatePair;
 		static OP_VariablePair myVariablePair;
 		static PRM_Template myTemplateList[];
 		static CH_LocalVariable myVariableList[];
 		static const char* myInputLabels[];
+
+		friend class OP;
 
 	protected:
 		/// We must override this method, which returns a pixel function.

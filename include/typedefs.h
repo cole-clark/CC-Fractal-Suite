@@ -10,12 +10,16 @@
  * the first c-string in the NAMEPAIR, and to rename the nice name of a
  * parameter (safe), rename the second c-string in the NAMEPAIR.
  */
-							
+
 #pragma once
 
+ // STL
 #include <complex>
 #include <utility>
+
+// HDK
 #include <UT/UT_XformOrder.h>
+#include <SYS/SYS_Types.h>
 
 /** Double precision complex numbers, as defined by the HDK. */
 typedef std::complex<fpreal64> COMPLEX;
@@ -37,7 +41,7 @@ static NAMEPAIR ROTATE_NAME{ "rotate", "Rotate" };
 static NAMEPAIR SCALE_NAME{ "scale", "Scale" };
 
 /** Xform transformation order parm name */
-static NAMEPAIR XORD_NAME{ "xOrd", "TRS Order"};
+static NAMEPAIR XORD_NAME{ "xOrd", "TRS Order" };
 
 /** Number of transforms for a multi-transform fractal space multiparm name */
 static NAMEPAIR XFORMS_NAME{ "xforms", "Transforms" };

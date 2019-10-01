@@ -162,15 +162,6 @@ const char* COP2_FractalMatte::myInputLabels[] =
 	0
 };
 
-OP_Node* 
-COP2_FractalMatte::myConstructor(
-	OP_Network* net,
-	const char* name,
-	OP_Operator* op)
-{
-	return new COP2_FractalMatte(net, name, op);
-}
-
 RU_PixelFunction*
 COP2_FractalMatte::addPixelFunction(
 	const TIL_Plane *,

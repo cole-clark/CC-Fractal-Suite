@@ -19,44 +19,6 @@ COP2_Pickover::COP2_Pickover(
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
-/// Define node-specific attributes
-static PRM_Name namePoPoint(POPOINT_NAME.first, POPOINT_NAME.second);
-static PRM_Name namePoMode(POMODE_NAME.first, POMODE_NAME.second);
-static PRM_Name namePoLineRotate(POROTATE_NAME.first, POROTATE_NAME.second);
-static PRM_Name namePoReference(POREFERENCE_NAME.first, POREFERENCE_NAME.second);
-static PRM_Name namePoRefSize(POREFSIZE_NAME.first, POREFSIZE_NAME.second);
-
-/// Define node-specific defaults
-static PRM_Default defaultPoRefSize{ 10.0 };
-
-/// Define node-specific ranges
-static PRM_Range rangePoRotate
-{
-	PRM_RangeFlag::PRM_RANGE_UI, -180,
-	PRM_RangeFlag::PRM_RANGE_UI, 180
-};
-
-static PRM_Range rangePoRefSize
-{
-	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.0,
-	PRM_RangeFlag::PRM_RANGE_FREE, 25
-};
-
-/// ChoiceList Lists
-static PRM_Name poModeMenuNames[] =
-{
-	PRM_Name("point", "Point"),
-	PRM_Name("line", "Line"),
-	PRM_Name(0)
-};
-
-
-static PRM_ChoiceList poModeMenu
-(
-(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
-::poModeMenuNames
-);
-
 /// Create Template List
 PRM_Template
 COP2_Pickover::myTemplateList[]
@@ -65,12 +27,7 @@ COP2_Pickover::myTemplateList[]
 	TEMPLATES_XFORM_MULTI,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
-	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &namePoMode, PRMoneDefaults, &poModeMenu),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePoPoint, PRMzeroDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults, 0, &rangePoRotate),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePoReference, PRMoneDefaults),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoRefSize, &defaultPoRefSize, 0, &rangePoRefSize),
+	TEMPLATES_PICKOVER,
 	PRM_Template()
 };
 

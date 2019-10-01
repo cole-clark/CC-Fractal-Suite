@@ -1,12 +1,18 @@
-/*
-	Cole Clark's Fractal Suite
+/** \file register.h
+	Header for source declares new(Context)Operator functions.
 
-	register.h
-	Header defining code that adds nodes from the dso to Houdini.
+ * Houdini automatically calls these methods to add our Operators to the
+ * operator table. Therefore, these are kept in the global namespace as the
+ * usage of these functions do not belong to us.
+ * The newCop2Operator method cannot have its header re-declared here,
+ * so it only exists in source.
  */
 
 #pragma once
 
-#include <OP/OP_OperatorTable.h>
+namespace CC
+{
+/** Declares the Tab Op Menu Path for Nodes in the CCFS. */
+static UT_String menuPath{ "Fractal" };
 
-void newCop2Operator(OP_OperatorTable* Table);
+}  // End of CC Namespace

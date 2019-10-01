@@ -1,96 +1,92 @@
-/*
-	Cole Clark's Fractal Suite
+/** \file register.cpp
+	Source that declares new(Context)Operator functions.
 
-	register.cpp
-	Code that adds nodes from the dso to Houdini.
+ * Houdini automatically calls these methods to add our Operators to the
+ * operator table. Therefore, these are kept in the global namespace as the
+ * usage of these functions do not belong to us.
  */
 
-#include <UT/UT_String.h>
- // Houdini never finds this dso without this included.
-#include <UT/UT_DSOVersion.h>
-
+ // Local
+#include "FractalNode.h"
+#include "register.h"
 #include "COP2_Buddhabrot.h"
 #include "COP2_FractalMatte.h"
 #include "COP2_Mandelbrot.h"
 #include "COP2_Lyapunov.h"
 #include "COP2_Pickover.h"
 
-#include "FractalNode.h"
+// HDK
+/** Only one UT_DSOVersion include is allowed per-plugin. */
+#include <UT/UT_DSOVersion.h>
+#include <UT/UT_String.h>
+#include <OP/OP_OperatorTable.h>
 
-#include "register.h"
-
-using namespace CC;
-
-/// Installs the Fractal Generator Cop.
-/// Houdini enforces this name for adding Cop2 Nodes.
+ /** Registers Cop2 nodes with Houdini. */
 void newCop2Operator(OP_OperatorTable* table)
 {
-	// TODO: Update other nodes to call 'CC::get_new_op<Node>'
-
-	// Creates the Buddhabrot Definition
+	/** Creates the Buddhabrot Definition */
 	OP_Operator* buddhabrot = new OP_Operator(
 		"cc::fractal_buddhabrot",
 		"CC Fractal Buddhabrot",
-		&OP::get_new_op<COP2_Buddhabrot>,
-		&COP2_Buddhabrot::myTemplatePair,
+		&CC::OP::get_new_op<CC::COP2_Buddhabrot>,
+		&CC::COP2_Buddhabrot::myTemplatePair,
 		0,
 		2, // optional mask input.
-		&COP2_Buddhabrot::myVariablePair,
+		&CC::COP2_Buddhabrot::myVariablePair,
 		0, // not generator
-		COP2_Buddhabrot::myInputLabels);
+		CC::COP2_Buddhabrot::myInputLabels);
 
-	// Creates the Fractal Matte Definition
+	/** Creates the Fractal Matte Definition */
 	OP_Operator* fractalMatte = new OP_Operator(
 		"cc::fractal_matte",
 		"CC Fractal Matte",
-		COP2_FractalMatte::myConstructor,
-		&COP2_FractalMatte::myTemplatePair,
+		&CC::OP::get_new_op<CC::COP2_FractalMatte>,
+		&CC::COP2_FractalMatte::myTemplatePair,
 		1,
 		2, // optional mask input.
-		&COP2_FractalMatte::myVariablePair,
+		&CC::COP2_FractalMatte::myVariablePair,
 		0, // not generator
-		COP2_FractalMatte::myInputLabels);
+		CC::COP2_FractalMatte::myInputLabels);
 
-	// Creates the Lyapunov Definition
+	/** Creates the Lyapunov Fractal Definition */
 	OP_Operator* lyapunov = new OP_Operator(
 		"cc::fractal_lyapunov", // Node Name
 		"CC Fractal Lyapunov", // Pretty Name
-		&OP::get_new_op<COP2_Lyapunov>,
-		&COP2_Lyapunov::myTemplatePair,
+		&CC::OP::get_new_op<CC::COP2_Lyapunov>,
+		&CC::COP2_Lyapunov::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs
-		&COP2_Lyapunov::myVariablePair,
+		&CC::COP2_Lyapunov::myVariablePair,
 		OP_FLAG_GENERATOR);
 
-	// Creates the Mandelbrot Definition
+	/** Creates the Mandelbrot Fractal Definition */
 	OP_Operator* mandelbrot = new OP_Operator(
 		"cc::fractal_mandelbrot", // Node Name
 		"CC Fractal Mandelbrot", // Pretty Name
-		&OP::get_new_op<COP2_Mandelbrot>,
-		&COP2_Mandelbrot::myTemplatePair,
+		&CC::OP::get_new_op<CC::COP2_Mandelbrot>,
+		&CC::COP2_Mandelbrot::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs
-		&COP2_Mandelbrot::myVariablePair,
+		&CC::COP2_Mandelbrot::myVariablePair,
 		OP_FLAG_GENERATOR);
 
-	// Creates the Pickover Definition
+	/** Creates the Pickover Definition */
 	OP_Operator* pickover = new OP_Operator(
 		"cc::fractal_pickover", // Node Name
 		"CC Fractal Pickover", // Pretty Name
-		&OP::get_new_op<COP2_Pickover>,
-		&COP2_Pickover::myTemplatePair,
+		&CC::OP::get_new_op<CC::COP2_Pickover>,
+		&CC::COP2_Pickover::myTemplatePair,
 		0,  // min inputs
 		0,  // max inputs
-		&COP2_Pickover::myVariablePair,
+		&CC::COP2_Pickover::myVariablePair,
 		OP_FLAG_GENERATOR);
 
 	std::vector<OP_Operator*> nodes{
 		buddhabrot, fractalMatte, lyapunov, mandelbrot, pickover };
 
-	UT_String menuPath{ "Fractal" };
 	for (auto node : nodes)
 	{
-		node->setOpTabSubMenuPath(menuPath);
+		node->setOpTabSubMenuPath(CC::menuPath);
 		table->addOperator(node);
 	}
 }

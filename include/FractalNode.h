@@ -14,6 +14,7 @@
 #include <PRM/PRM_ChoiceList.h>
 #include <OP/OP_Network.h>
 #include <CH/CH_Manager.h>
+#include <COP2/COP2_Common.h>
 #include <sstream>
 #include <iomanip>
 
@@ -33,13 +34,20 @@ static PRM_Name nameMultiOffset(TRANSLATE_M_NAME.first, TRANSLATE_M_NAME.second)
 static PRM_Name nameMultiRotate(ROTATE_M_NAME.first, ROTATE_M_NAME.second);
 static PRM_Name nameMultiXOrd(XORD_M_NAME.first, XORD_M_NAME.second);
 
-/// Mandelbrot Name  Data
+/// Mandelbrot Name Data
 static PRM_Name nameIter{ ITERS_NAME.first, ITERS_NAME.second };
 static PRM_Name namePower{ POWER_NAME.first, POWER_NAME.second };
 static PRM_Name nameBailout{ BAILOUT_NAME.first, BAILOUT_NAME.second };
 static PRM_Name nameJDepth{ JDEPTH_NAME.first, JDEPTH_NAME.second };
 static PRM_Name nameJOffset{ JOFFSET_NAME.first, JOFFSET_NAME.second };
 static PRM_Name nameBlackhole{ BLACKHOLE_NAME.first, BLACKHOLE_NAME.second };
+
+/// Pickover Name Data
+static PRM_Name namePoPoint(POPOINT_NAME.first, POPOINT_NAME.second);
+static PRM_Name namePoMode(POMODE_NAME.first, POMODE_NAME.second);
+static PRM_Name namePoLineRotate(POROTATE_NAME.first, POROTATE_NAME.second);
+static PRM_Name namePoReference(POREFERENCE_NAME.first, POREFERENCE_NAME.second);
+static PRM_Name namePoRefSize(POREFSIZE_NAME.first, POREFSIZE_NAME.second);
 
 /// Declare Lyapunov Parm Names
 static PRM_Name nameLyaSeq(LYASEQ_NAME.first, LYASEQ_NAME.second);
@@ -67,6 +75,20 @@ static PRM_ChoiceList xOrdMenu
 	::xordMenuNames
 );
 
+/// ChoiceList Lists
+static PRM_Name poModeMenuNames[] =
+{
+	PRM_Name("point", "Point"),
+	PRM_Name("line", "Line"),
+	PRM_Name(0)
+};
+
+static PRM_ChoiceList poModeMenu
+(
+(PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+::poModeMenuNames
+);
+
 /// Xform Defaults Data
 /// The Y value is equal to the default rez coefficient * 50%.
 /// Literally, 1080 / 1920 * 0.5
@@ -85,6 +107,9 @@ static PRM_Default defaultBailout{ 4 };  // 4 Looks good at 4k when smoothing.
 static PRM_Default defaultJDepth{ 0 };
 static PRM_Default defaultJOffset[] = { 0, 0 };
 static PRM_Default defaultBlackhole{ false };
+
+/// Define Pickover Defaults
+static PRM_Default defaultPoRefSize{ 10.0 };
 
 /// Declare Lyapunov Defaults
 static PRM_Default defaultLyaMaxValue(5.0f);
@@ -129,6 +154,8 @@ static PRM_Range rangeJDepth
 	PRM_RangeFlag::PRM_RANGE_UI, 5
 };
 
+/// Lyapunov Ranges
+
 static PRM_Range rangeLyaStartValue
 {
 	PRM_RangeFlag::PRM_RANGE_UI, 0.001f,
@@ -151,6 +178,19 @@ static PRM_Range rangeLyaIters
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 1,
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 40
+};
+
+/// Define Pickover ranges
+static PRM_Range rangePoRotate
+{
+	PRM_RangeFlag::PRM_RANGE_UI, -180,
+	PRM_RangeFlag::PRM_RANGE_UI, 180
+};
+
+static PRM_Range rangePoRefSize
+{
+	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.0,
+	PRM_RangeFlag::PRM_RANGE_FREE, 25
 };
 
 /// Multiparm Templates
@@ -203,6 +243,17 @@ static PRM_Name nameSepC("sep_C", "Sep C");
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSeparatorMandelbrot, PRMzeroDefaults), \
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameJDepth, PRMzeroDefaults, 0, &rangeJDepth), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &nameJOffset, PRMzeroDefaults)
+
+/// Definition of Pickover Template. Add 6 to COP_SWITCHER calls.
+/// Pickovers are dependent on TEMPLATES_MANDELBROT also being 
+#define TEMPLATES_PICKOVER \
+	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB), \
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &namePoMode, PRMoneDefaults, &poModeMenu), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 2, &namePoPoint, PRMzeroDefaults), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoLineRotate, PRMzeroDefaults, 0, &rangePoRotate), \
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &namePoReference, PRMoneDefaults), \
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &namePoRefSize, &defaultPoRefSize, 0, &rangePoRefSize)
+
 
 /// Definition of Lyapunov Templates. Add 5 to COP_SWITCHER calls
 #define TEMPLATES_LYAPUNOV \
