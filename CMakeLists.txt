@@ -7,25 +7,24 @@ set( library_name CC_Fractal_Suite )
 add_library( ${library_name} SHARED
 	src/COP2_Buddhabrot.cpp
 	include/COP2_Buddhabrot.h
-    src/COP2_FractalMatte.cpp
+	src/COP2_FractalMatte.cpp
 	include/COP2_FractalMatte.h
 	src/COP2_Lyapunov.cpp
 	include/COP2_Lyapunov.h
 	src/COP2_Mandelbrot.cpp
-    include/COP2_Mandelbrot.h
+	include/COP2_Mandelbrot.h
 	src/COP2_Pickover.cpp
 	include/COP2_Pickover.h
-    src/Fractal.cpp
-    include/Fractal.h
+	include/Fractal.h
 	include/FractalNode.h
-    src/FractalSpace.cpp
-    include/FractalSpace.h
+	src/FractalSpace.cpp
+	include/FractalSpace.h
 	src/Lyapunov.cpp
 	include/Lyapunov.h
-    src/Mandelbrot.cpp
-    include/Mandelbrot.h
-    src/register.cpp
-    include/register.h
+	src/Mandelbrot.cpp
+	include/Mandelbrot.h
+	src/register.cpp
+	include/register.h
 	src/StashData.cpp
 	include/StashData.h
 	include/typedefs.h

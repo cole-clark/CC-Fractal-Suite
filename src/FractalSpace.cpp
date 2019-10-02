@@ -1,17 +1,18 @@
-/*
-	Cole Clark's Fractal Suite
+/** \file FractalSpace.c[[
+	Source that manages the transformations of fractals, and
+	convertion from picture-plane (WORLDPIXEL) space to fractal
+	space.
 
-	FractalSpace.h
-	Code related to everything related to Xforms in Fractal Space.
  */
 
-#include <sys/SYS_Math.h>
-
+ // Local
 #include "FractalSpace.h"
 
-using namespace CC;
+// HDK
+#include <sys/SYS_Math.h>
 
-RSTORDER CC::get_rst_order(const int val)
+RSTORDER
+CC::get_rst_order(const int val)
 {
 	auto order = RSTORDER();
 
@@ -21,8 +22,8 @@ RSTORDER CC::get_rst_order(const int val)
 	return order;
 }
 
-/// Calculates the minimum and maximum pixel positions for a given tile.
-void CC::calculate_tile_minmax(
+void
+CC::calculate_tile_minmax(
 	TIL_Tile* tile,
 	WORLDPIXELCOORDS& min,
 	WORLDPIXELCOORDS& max)
@@ -41,9 +42,9 @@ void CC::calculate_tile_minmax(
 
 }
 
-/// Calculates the 'tile origin', or the pixel number for where the tile 's first pixel is.
-/// This is used as a reference point for the world pixel.
-WORLDPIXELCOORDS CC::calculate_world_pixel(TIL_TileList* tiles, TIL_Tile* tile, int pixel_index)
+WORLDPIXELCOORDS
+CC::calculate_world_pixel(
+	TIL_TileList* tiles, TIL_Tile* tile, int pixel_index)
 {
 	int tile_x, tile_y;
 	// Note that these tile->getTileSizeX() sizes are generic,
@@ -56,23 +57,23 @@ WORLDPIXELCOORDS CC::calculate_world_pixel(TIL_TileList* tiles, TIL_Tile* tile, 
 
 	// Divide the pixel index into the size of x rounded down
 	// For the tile's y, and add the base Y pos.
-	y = SYSfloor((double)pixel_index / tile_x) + (tiles->myY1);
+	y = SYSfloor((fpreal)pixel_index / tile_x) + (tiles->myY1);
 	return std::pair<int, int>(x, y);
 }
 
-/// Set Identity Matrix to matrix on construction.
-FractalSpace::FractalSpace()
+/** Set Identity Matrix to matrix on construction. */
+CC::FractalSpace::FractalSpace()
 {
 	post_matrix.identity();
 }
 
-FractalSpace::FractalSpace(int x, int y)
+CC::FractalSpace::FractalSpace(int x, int y)
 {
 	set_image_size(x, y);
 }
 
-
-void FractalSpace::set_xform(MultiXformStashData & xdata)
+void
+CC::FractalSpace::set_xform(MultiXformStashData & xdata)
 {
 	UT_Matrix3D m;
 	m.identity();
@@ -87,6 +88,7 @@ void FractalSpace::set_xform(MultiXformStashData & xdata)
 	fpreal px, py;
 	px = py = 0.0;
 
+	// Identity matrix with a (0.5, 0.5 * image_x_to_y_ratio) translation.
 	UT_Matrix3D m_pivXform{ 1, 0, 0, 0, 1, 0, 0.5, 0.5 * xyRatio, 1 };
 	UT_Matrix3D m_pivIterated, m_local;
 	fpreal overall_scale = 1.0;
@@ -120,7 +122,8 @@ void FractalSpace::set_xform(MultiXformStashData & xdata)
 	post_matrix = m;
 }
 
-void FractalSpace::set_xform(XformStashData& xformData)
+void
+CC::FractalSpace::set_xform(XformStashData& xformData)
 {
 	xdata = xformData;
 
@@ -131,46 +134,48 @@ void FractalSpace::set_xform(XformStashData& xformData)
 		xdata.scale, xdata.scale);
 }
 
-void FractalSpace::set_xform(UT_Matrix3D & xform)
+void
+CC::FractalSpace::set_xform(UT_Matrix3D & xform)
 {
 	post_matrix = xform;
 }
 
-/// Return the fractal coordinates, which use the size of the image as a relative
-/// Size. The scale is 0-1 in the x axis of the image.
 COMPLEX
-FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
+CC::FractalSpace::_get_fractal_coords(COMPLEX pixel_coords)
 {
-	COMPLEX fc{ pixel_coords.first / (double)image_x, pixel_coords.second / (double)image_x };
+	COMPLEX fc{
+		pixel_coords.real() / (fpreal)image_x,
+		pixel_coords.imag() / (fpreal)image_x };
 	UT_Matrix3D m;
 	m.identity();
 	m.xform(xdata.xord, fc.real(), fc.imag());
 
 	m *= post_matrix;
 
-	fc = { m(2, 0), m(2, 1) };  // xz, yz.
+	fc = { m(2, 0), m(2, 1) };  // Matrix(row, col) xz, yz.
 
 	return fc;
 }
 
-// TODO: Move the body of this code and the other version to remove code duplication
-COMPLEX FractalSpace::get_fractal_coords(COMPLEX pixel_coords)
+COMPLEX
+CC::FractalSpace::get_fractal_coords(WORLDPIXELCOORDS pixel_coords)
 {
-	COMPLEX fc{ pixel_coords.real() / (double)image_x, pixel_coords.imag() / (double)image_x };
-	UT_Matrix3D m;
-	m.identity();
-	m.xform(xdata.xord, fc.real(), fc.imag());
-
-	m *= post_matrix;
-
-	fc = { m(2, 0), m(2, 1) };  // xz, yz.
-
-	return fc;
+	// Cast to fpreal.
+	COMPLEX fpreal_coords{
+		(fpreal)pixel_coords.first,
+		(fpreal)pixel_coords.second };
+	return _get_fractal_coords(fpreal_coords);
 }
 
-/// Return the world coords from source
+COMPLEX
+CC::FractalSpace::get_fractal_coords(COMPLEX pixel_coords)
+{
+	return _get_fractal_coords(pixel_coords);
+}
+
+
 WORLDPIXELCOORDS
-FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
+CC::FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 {
 	UT_Matrix3D m;
 	m.identity();
@@ -183,7 +188,7 @@ FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 		xdata.xord,
 		xdata.offset_x, xdata.offset_y,
 		xdata.rotate,
-		xdata.scale, xdata.scale * (image_y / (double)image_x),
+		xdata.scale, xdata.scale * (image_y / (fpreal)image_x),
 		0, 0,
 		true);
 
@@ -193,31 +198,31 @@ FractalSpace::get_pixel_coords(COMPLEX fractal_coords)
 	return WORLDPIXELCOORDS(x, y);
 }
 
-COMPLEX FractalSpace::get_minimum()
+COMPLEX
+CC::FractalSpace::get_minimum()
 {
 	return get_fractal_coords(WORLDPIXELCOORDS(0, 0));
 }
 
-COMPLEX FractalSpace::get_maximum()
+COMPLEX
+CC::FractalSpace::get_maximum()
 {
 	return get_fractal_coords(get_image_size());
 }
 
-/// A fractal space must be populated with a default image size to be used by the context
-/// Correctly.
-/// The image size is used as a rest size for the fractal, which is normalized by
-/// The size of the image. This is done so that changes in resolution don't require
-/// Changes in transformation to see the same Fractal.
-void FractalSpace::set_image_size(int x, int y)
+
+void
+CC::FractalSpace::set_image_size(int x, int y)
 {
 	image_x = x;
 	image_y = y;
 }
 
-WORLDPIXELCOORDS FractalSpace::get_image_size()
+WORLDPIXELCOORDS
+CC::FractalSpace::get_image_size()
 {
 	return WORLDPIXELCOORDS(image_x, image_y);
 }
 
-/// Destructor
-FractalSpace::~FractalSpace() {}
+/** Destructor */
+CC::FractalSpace::~FractalSpace() {}

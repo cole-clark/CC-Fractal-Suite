@@ -38,22 +38,22 @@ public:
 struct XformStashData : public StashData
 {
 	/**< Translates*/
-	double offset_x{ 0 }, offset_y{ 0 };
+	fpreal offset_x{ 0 }, offset_y{ 0 };
 
 	/**< Rotation value*/
-	double rotate{ 0 };
+	fpreal rotate{ 0 };
 
 	/**< Uniform Scale value */
-	double scale{ 1 };
+	fpreal scale{ 1 };
 
 	/**< Transformation Order */
 	RSTORDER xord{ RSTORDER::RST };
 
 	XformStashData(
-		double offset_x = 0,
-		double offset_y = 0,
-		double rotate = 0,
-		double scale = 0,
+		fpreal offset_x = 0,
+		fpreal offset_y = 0,
+		fpreal rotate = 0,
+		fpreal scale = 0,
 		RSTORDER xord = RSTORDER::RST);
 
 	void evalArgs(const OP_Node* node, fpreal t);
@@ -78,10 +78,10 @@ struct MandelbrotStashData : public StashData
 	int iters{ 50 };
 
 	/**< Exponent calculated by z. */
-	double power{ 0 };
+	fpreal power{ 0 };
 
 	/**< Value that 'escapes' the fractal set. */
-	double bailout{ 2 };
+	fpreal bailout{ 2 };
 
 	/**< Number of times Julia set coorinates are iterated. */
 	int jdepth{ 0 };
@@ -94,8 +94,8 @@ struct MandelbrotStashData : public StashData
 
 	MandelbrotStashData(
 		int iters = 50,
-		double power = 2,
-		double bailout = 2,
+		fpreal power = 2,
+		fpreal bailout = 2,
 		int jdepth = 0,
 		COMPLEX joffset = (0.0f, 0.0f),
 		bool blackhole = false);
@@ -113,7 +113,7 @@ struct PickoverStashData : public MandelbrotStashData
 	COMPLEX popoint{ 0, 0 };
 
 	/** Rotation of the pickover's line. */
-	double porotate{ 0 };
+	fpreal porotate{ 0 };
 
 	/** Mode deciding whether the fractal measures against a point or line. */
 	bool pomode{ false };
@@ -126,13 +126,13 @@ struct PickoverStashData : public MandelbrotStashData
 
 	PickoverStashData(
 		int iters = 50,
-		double power = 2.0,
-		double bailout = 2.0,
+		fpreal power = 2.0,
+		fpreal bailout = 2.0,
 		int jdepth = 0,
 		COMPLEX joffset = (0.0, 0.0),
 		bool blackhole = false,
 		COMPLEX popoint = (0.0, 0.0),
-		double porotate = 0.0,
+		fpreal porotate = 0.0,
 		bool pomode = false,
 		bool poref = true,
 		fpreal porefsize = 10.0);
@@ -150,17 +150,17 @@ struct LyapunovStashData : public StashData
 	int iters{ 25 };
 
 	/** The value of the first item in fractal. */
-	double start{ 0.5 };
+	fpreal start{ 0.5 };
 
 	/** The highest value returned by the fractal. */
-	double maxval{ 5.0f };
+	fpreal maxval{ 5.0f };
 
 	/** Toggles whether negative values return their absolute value. */
 	bool invertnegative{ true };
 
 	/** Sequence of 0-1 values, where 0 represents an X axis, 1 represents a
 	 * Y axis, and intermediary values are in between. */
-	std::vector<double> seq;
+	std::vector<fpreal> seq;
 
 	void evalArgs(const OP_Node* node, fpreal t);
 

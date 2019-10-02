@@ -16,12 +16,13 @@
 #include "FractalSpace.h"
 
 CC::XformStashData::XformStashData(
-	double offset_x, double offset_y,
-	double rotate, double scale, RSTORDER xord) :
+	fpreal offset_x, fpreal offset_y,
+	fpreal rotate, fpreal scale, RSTORDER xord) :
 	offset_x(offset_x), offset_y(offset_y),
 	rotate(rotate), scale(scale), xord(xord) {}
 
-void CC::XformStashData::evalArgs(const OP_Node* node, fpreal t)
+void
+CC::XformStashData::evalArgs(const OP_Node* node, fpreal t)
 {
 	scale = node->evalFloat(SCALE_NAME.first, 0, t);
 	offset_x = node->evalFloat(TRANSLATE_NAME.first, 0, t);
@@ -37,7 +38,7 @@ void CC::XformStashData::evalArgs(const OP_Node* node, fpreal t)
 }
 
 CC::MandelbrotStashData::MandelbrotStashData(
-	int iters, double power, double bailout,
+	int iters, fpreal power, fpreal bailout,
 	int jdepth, COMPLEX joffset,
 	bool blackhole) :
 	iters(iters), power(power), bailout(bailout),
@@ -46,37 +47,39 @@ CC::MandelbrotStashData::MandelbrotStashData(
 	blackhole(blackhole)
 {}
 
-void CC::MandelbrotStashData::evalArgs(const OP_Node * node, fpreal t)
+void
+CC::MandelbrotStashData::evalArgs(const OP_Node * node, fpreal t)
 {
 	iters = node->evalInt(ITERS_NAME.first, 0, t);
 	power = node->evalFloat(POWER_NAME.first, 0, t);
 	bailout = node->evalFloat(BAILOUT_NAME.first, 0, t);
 	jdepth = node->evalInt(JDEPTH_NAME.first, 0, t);
-	double joffset_x = node->evalFloat(JOFFSET_NAME.first, 0, t);
-	double joffset_y = node->evalFloat(JOFFSET_NAME.first, 1, t);
+	fpreal joffset_x = node->evalFloat(JOFFSET_NAME.first, 0, t);
+	fpreal joffset_y = node->evalFloat(JOFFSET_NAME.first, 1, t);
 	joffset = COMPLEX(joffset_x, joffset_y);
 	int rawblackhole = node->evalInt(BLACKHOLE_NAME.first, 0, t);
 	blackhole = rawblackhole > 0; // Make boolean
 }
 
 CC::PickoverStashData::PickoverStashData(
-	int iters, double power, double bailout,
+	int iters, fpreal power, fpreal bailout,
 	int jdepth, COMPLEX joffset, bool blackhole,
-	COMPLEX popoint, double porotate, bool pomode,
+	COMPLEX popoint, fpreal porotate, bool pomode,
 	bool poref, fpreal porefsize) :
 	MandelbrotStashData(iters, power, bailout, jdepth, joffset, blackhole),
 	popoint(popoint), porotate(porotate), pomode(pomode),
 	poref(poref), porefsize(porefsize)
 {}
 
-void CC::PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
+void
+CC::PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
 {
 	/// Call the mandelbrot stash values first.
 	CC::MandelbrotStashData::evalArgs(node, t);
 
 	/// Call pickover-specific methods second.
-	double popoint_x = node->evalFloat(POPOINT_NAME.first, 0, t);
-	double popoint_y = node->evalFloat(POPOINT_NAME.first, 1, t);
+	fpreal popoint_x = node->evalFloat(POPOINT_NAME.first, 0, t);
+	fpreal popoint_y = node->evalFloat(POPOINT_NAME.first, 1, t);
 	popoint = COMPLEX(popoint_x, popoint_y);
 	porotate = node->evalFloat(POROTATE_NAME.first, 0, t);
 	pomode = node->evalInt(POMODE_NAME.first, 0, t);
@@ -84,7 +87,8 @@ void CC::PickoverStashData::evalArgs(const OP_Node * node, fpreal t)
 	porefsize = node->evalFloat(POREFSIZE_NAME.first, 0, t);
 }
 
-void CC::LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
+void
+CC::LyapunovStashData::evalArgs(const OP_Node * node, fpreal t)
 {
 	iters = node->evalFloat(ITERS_NAME.first, 0, t);
 	start = node->evalFloat(LYASTART_NAME.first, 0, t);
@@ -106,13 +110,14 @@ CC::LyapunovStashData::~LyapunovStashData()
 {
 }
 
-void CC::MultiXformStashData::evalArgs(
+void
+CC::MultiXformStashData::evalArgs(
 	const OP_Node * node, fpreal t)
 {
 	int numXforms = node->evalInt(XFORMS_NAME.first, 0, t);
 	xforms.reserve(numXforms);
 
-	double offset_x, offset_y, rotate, scale;
+	fpreal offset_x, offset_y, rotate, scale;
 	offset_x = offset_y = rotate = scale = 0;
 
 	RSTORDER xord{ RSTORDER::RST };
