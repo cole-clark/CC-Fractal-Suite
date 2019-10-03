@@ -1,24 +1,21 @@
-/*
-	Cole Clark's Fractal Suite
-
-	Lyapunov.cpp
-	Code for a Lyapunov Fractal.
+/** \file Lyapunov.cpp
+	Source declaring the Lyapunov fractal class.
  */
 
+ // Local
 #include "Lyapunov.h"
 
-using namespace CC;
-
-Lyapunov::Lyapunov(LyapunovStashData & lyaData)
+CC::Lyapunov::Lyapunov(LyapunovStashData & lyaData)
 {
 	data = lyaData;
 }
 
-FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
+CC::FractalCoordsInfo
+CC::Lyapunov::calculate(COMPLEX coords)
 {
 	auto preseq = generate_sequence(coords.real(), coords.imag());
 
-	std::vector<double> seq;
+	std::vector<fpreal> seq;
 
 	int niters = data.iters;
 	if (niters > preseq.size())
@@ -36,8 +33,8 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	}
 
 	// Calculate Lyapunov
-	double value{ 0 };
-	float log2mult = 1.0 / SYSlog(2.0);
+	fpreal value{ 0 };
+	fpreal log2mult = 1.0 / SYSlog(2.0);
 	for (int i = 1; i <= niters; i++)
 	{
 		value += SYSlog(SYSabs(
@@ -45,7 +42,7 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 			(1.0 - 2.0) * seq[i])) * log2mult;
 	}
 	value /= niters;
-	
+
 	if (value < 0)
 		if (data.invertnegative)
 			value *= -1;
@@ -58,11 +55,10 @@ FractalCoordsInfo Lyapunov::calculate(COMPLEX coords)
 	return FractalCoordsInfo(0, 0, value);
 }
 
-/// Returns a sequence of values lerped between the x and y coordinates.
-std::vector<double>
-Lyapunov::generate_sequence(double x, double y)
+std::vector<fpreal>
+CC::Lyapunov::generate_sequence(fpreal x, fpreal y)
 {
-	std::vector<double> vals;
+	std::vector<fpreal> vals;
 
 	for (int i = 0; i < data.seq.size(); ++i)
 	{
@@ -72,6 +68,6 @@ Lyapunov::generate_sequence(double x, double y)
 	return vals;
 }
 
-Lyapunov::~Lyapunov()
+CC::Lyapunov::~Lyapunov()
 {
 }

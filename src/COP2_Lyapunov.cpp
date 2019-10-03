@@ -1,42 +1,40 @@
-/*
-	Cole Clark's Fractal Suite
+/** \file COP2_Lyapunov.cpp
+	Source declaring the Lyapunov Cop2 Operator.
+ */
 
-	COP2_Lyapunov.cpp
-	Code for CC Lyapunov Fracatal Generator Cop Node.
- */ 
-
+ // Local
 #include "COP2_Lyapunov.h"
 #include "FractalNode.h"
 
 COP_GENERATOR_SWITCHER(10, "Fractal");
 
-using namespace CC;
 
-/// Private Constructor
-COP2_Lyapunov::COP2_Lyapunov(
+CC::COP2_Lyapunov::COP2_Lyapunov(
 	OP_Network* parent,
 	const char* name,
 	OP_Operator* entry) : COP2_Generator(parent, name, entry) {}
 
-TIL_Sequence* COP2_Lyapunov::cookSequenceInfo(OP_ERROR & error)
+TIL_Sequence*
+CC::COP2_Lyapunov::cookSequenceInfo(OP_ERROR & error)
 {
+	// Fetch sequence info from parent class.
 	COP2_Generator::cookSequenceInfo(error);
 
 	return &mySequence;
 }
 
-/// Stashes data for cooking image
+
 COP2_ContextData*
-COP2_Lyapunov::newContextData
+CC::COP2_Lyapunov::newContextData
 
 (
-	const TIL_Plane*,  // planename
-	int,               // array index
-	float t,
-	int image_sizex,   // xsize
-	int image_sizey,   // ysize
-	int,               // thread
-	int                // max_num_threads
+	const TIL_Plane* planename, /** planename */
+	int index,                  /** array index */
+	fpreal32 t,                 /** time*/
+	int image_sizex,            /** xsize*/
+	int image_sizey,            /** ysize*/
+	int thread,                 /** thread*/
+	int maxthreads              /** max_num_threads*/
 )
 {
 	COP2_LyapunovData* data{ new COP2_LyapunovData };
@@ -54,23 +52,24 @@ COP2_Lyapunov::newContextData
 	return data;
 }
 
-/// Assign Template Pair of node to generator
-OP_TemplatePair COP2_Lyapunov::myTemplatePair
+
+OP_TemplatePair
+CC::COP2_Lyapunov::myTemplatePair
 (
 	COP2_Lyapunov::myTemplateList,
 	&COP2_Generator::myTemplatePair
 );
 
-/// Assign empty variable pairing
-OP_VariablePair COP2_Lyapunov::myVariablePair
+
+OP_VariablePair
+CC::COP2_Lyapunov::myVariablePair
 (
 	0,
 	&COP2_Node::myVariablePair
 );
 
-/// Create Template List
 PRM_Template
-COP2_Lyapunov::myTemplateList[]
+CC::COP2_Lyapunov::myTemplateList[]
 {
 	TEMPLATE_SWITCHER,
 	TEMPLATES_XFORM,
@@ -81,12 +80,13 @@ COP2_Lyapunov::myTemplateList[]
 
 /// Creates the image. This is called by multiple worker threads by Houdini.
 OP_ERROR
-COP2_Lyapunov::generateTile(COP2_Context& context, TIL_TileList* tileList)
+CC::COP2_Lyapunov::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
 	COP2_LyapunovData* data{ static_cast<COP2_LyapunovData*>(context.data()) };
 
-	// Initialize float array the size of current tile list for values to write to.
-	float *dest = new float[tileList->mySize]{ 0 };
+	// Initialize float array the size of current tile list for values
+	// to write to.
+	fpreal32 *dest = new fpreal32[tileList->mySize]{ 0 };
 
 	TIL_Tile* tile;
 	int tileIndex;
@@ -105,9 +105,12 @@ COP2_Lyapunov::generateTile(COP2_Context& context, TIL_TileList* tileList)
 		{
 			if (tileIndex == 0)
 			{
-				WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(tileList, tile, i);
-				COMPLEX fractalCoords = data->space.get_fractal_coords(worldPixel);
-				FractalCoordsInfo pixelInfo = data->fractal.calculate(fractalCoords);
+				WORLDPIXELCOORDS worldPixel = CC::calculate_world_pixel(
+					tileList, tile, i);
+				COMPLEX fractalCoords = data->space.get_fractal_coords(
+					worldPixel);
+				FractalCoordsInfo pixelInfo = data->fractal.calculate(
+					fractalCoords);
 
 				dest[i] = pixelInfo.smooth;
 			}
@@ -123,6 +126,6 @@ COP2_Lyapunov::generateTile(COP2_Context& context, TIL_TileList* tileList)
 	return error();
 }
 
-COP2_LyapunovData::~COP2_LyapunovData()
+CC::COP2_LyapunovData::~COP2_LyapunovData()
 {
 }

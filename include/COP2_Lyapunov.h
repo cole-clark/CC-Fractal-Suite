@@ -1,50 +1,65 @@
-/*
-	Cole Clark's Fractal Suite
-
-	COP2_Lyapunov.h
-	Header for CC Lyapunov Cop Node.
+/** \file COP2_Lyapunov.h
+	Header declaring the Lyapunov Cop2 Operator.
  */
 
 #pragma once
 
-#include <COP2/COP2_Generator.h>
-
+ // Local
 #include "Lyapunov.h"
 #include "FractalSpace.h"
 
+// HDK
+#include <COP2/COP2_Generator.h>
+
 namespace CC
 {
-	class COP2_Lyapunov : public COP2_Generator
-	{
-		COP2_Lyapunov(OP_Network* parent, const char* name, OP_Operator* entry);
+/**Lyapunov Operator class. Inherits from COP2_Generator, meaning it will cook
+ * in tiles. See 'COP Concepts' in the HDK documentation.*/
 
-	public:
+class COP2_Lyapunov : public COP2_Generator
+{
+	/** Private constructor, only accessed through the OP friend class. */
+	COP2_Lyapunov(OP_Network* parent, const char* name, OP_Operator* entry);
 
-		static PRM_Template myTemplateList[];
-		static OP_TemplatePair myTemplatePair;
-		static OP_VariablePair myVariablePair;
-		static CH_LocalVariable myVariableList[];
+public:
 
-		/// Determine Frame Range, Image Composition, and other Sequence Info
-		virtual TIL_Sequence* cookSequenceInfo(OP_ERROR& error);
+	/**Populated heavily from macros from FractalNode.h*/
+	static PRM_Template myTemplateList[];
+	
+	/** Assign Template Pair of node to generator.*/
+	static OP_TemplatePair myTemplatePair;
 
-		friend class OP;
+	/** Assign empty variable pairing.*/
+	static OP_VariablePair myVariablePair;
 
-	protected:
-		/// Evaluate Parms and Stash Data for Cooking In a COP2_ContextData object
-		virtual COP2_ContextData* newContextData(const TIL_Plane*, int,
-			float t, int xres, int yres, int thread, int max_threads);
+	/**Empty.*/
+	static CH_LocalVariable myVariableList[];
 
-		/// Creates the image. This is called by multiple worker threads by Houdini.
-		OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tileList);
-	};
+	/** Determine Frame Range, Image Composition, and other Sequence Info */
+	virtual TIL_Sequence* cookSequenceInfo(OP_ERROR& error);
 
-	struct COP2_LyapunovData : public COP2_ContextData
-	{
-		FractalSpace space;
-		Lyapunov fractal;
+	/**Accessor used to construct this object in register.cpp*/
+	friend class OP;
 
-		COP2_LyapunovData() = default;
-		virtual ~COP2_LyapunovData();
-	};
+protected:
+	/** Evaluate Parms and Stash Data for Cooking in a contextData object. */
+	virtual COP2_ContextData* newContextData(const TIL_Plane*, int,
+		fpreal32 t, int xres, int yres, int thread, int max_threads);
+
+	/** Generates the image. This is a multi-threaded call. */
+	OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tileList);
+};
+
+/**Small object storing both the Fractal and the Transformation space info.
+ * This is necessary because its values are copied to each tile, so the data
+ * within can be sourced a single time, but accessed many times across multiple
+ * threads without forcing const types. */
+struct COP2_LyapunovData : public COP2_ContextData
+{
+	FractalSpace space; /**> The transformation space of the Lyapunov.*/
+	Lyapunov fractal; /**> The Lyapunov fractal calculator.*/
+
+	COP2_LyapunovData() = default;
+	virtual ~COP2_LyapunovData();
+};
 }

@@ -23,8 +23,6 @@
 #include <COP2/COP2_Common.h>
 
 
-
-
 // Fractal Xform Name Data
 static PRM_Name nameScale(SCALE_NAME.first, SCALE_NAME.second);
 static PRM_Name nameOffset(TRANSLATE_NAME.first, TRANSLATE_NAME.second);
