@@ -1,67 +1,78 @@
-/*
-	CC Fractal Suite
-
-	COP2_Pickover.h
-	Header for CC Lyapunov Cop2 Node.
+/** \file COP2_Pickover.h
+	Header declaring the Pickover Cop2 Operator.
  */
 
 #pragma once
 
-#include <COP2/COP2_Generator.h>
-
+ // Local
 #include "FractalSpace.h"
 #include "Mandelbrot.h"
 #include "FractalNode.h"
 
+// HDK
+#include <COP2/COP2_Generator.h>
+
 
 namespace CC
 {
-	/// Public Import the COP2_Generator base class
-	class COP2_Pickover : public COP2_Generator
-	{
-		COP2_Pickover(OP_Network* parent, const char* name, OP_Operator* entry);
+/**Pickover Operator class. Inherits from COP2_Generator, meaning it will cook
+ * in tiles. See 'COP Concepts' in the HDK documentation.*/
+class COP2_Pickover : public COP2_Generator
+{
+	/** Private constructor, only accessed through the OP friend class. */
+	COP2_Pickover(OP_Network* parent, const char* name, OP_Operator* entry);
 
-	public:
-		/// Static Lists to define parameters and local variables
-		static PRM_Template myTemplateList[];
-		static OP_TemplatePair myTemplatePair;
-		static OP_VariablePair myVariablePair;
-		static CH_LocalVariable myVariableList[];
+public:
+	/**Populated heavily from macros from FractalNode.h*/
+	static PRM_Template myTemplateList[];
 
-		/// Determine Frame Range, Image Composition, and other Sequence Info
-		virtual TIL_Sequence* cookSequenceInfo(OP_ERROR& error);
+	/** Assign Template Pair of node to generator.*/
+	static OP_TemplatePair myTemplatePair;
 
-		friend class OP;
+	/** Assign empty variable pairing.*/
+	static OP_VariablePair myVariablePair;
 
-	protected:
-		/// Evaluate Parms and Stash Data for Cooking In a COP2_ContextData object
-		virtual COP2_ContextData* newContextData(const TIL_Plane*, int,
-			float t, int xres, int yres, int thread, int max_threads);
+	/**Empty.*/
+	static CH_LocalVariable myVariableList[];
 
-		/// Create the image data for a single tile list -- multithreaded call
-		virtual OP_ERROR generateTile(COP2_Context& context, TIL_TileList* tilelist);
+	/** Determine Frame Range, Image Composition, and other Sequence Info */
+	virtual TIL_Sequence* cookSequenceInfo(OP_ERROR& error);
 
-		/// Use to hide/unhide parameters.
-		virtual bool updateParmsFlags() override;
+	/**Accessor used to construct this object in register.cpp*/
+	friend class OP;
 
-		/// Destructor
-		virtual ~COP2_Pickover();
-	};
+protected:
+	/** Evaluate Parms and Stash Data for Cooking in a contextData object. */
+	virtual COP2_ContextData* newContextData(const TIL_Plane*, int,
+		fpreal32 t, int xres, int yres, int thread, int max_threads);
 
-	/// This class is used to stash the evaluated parms and data.
-	/// The data here is fed to several worker threads when cooking the node.
-	struct COP2_PickoverData : public COP2_ContextData
-	{
-		FractalSpace space;
-		Pickover fractal;
+	/** Generates the image. This is a multi-threaded call. */
+	virtual OP_ERROR generateTile(
+		COP2_Context& context, TIL_TileList* tilelist);
 
-		float calculate_reference(
-			COMPLEX fractalCoords, WORLDPIXELCOORDS worldPixel);
+	/** Used to hide/unhide parameters. */
+	virtual bool updateParmsFlags() override;
 
-		// The pixel-space location of the pickover point position.
-		WORLDPIXELCOORDS world_point;
+	virtual ~COP2_Pickover();
+};
 
-		COP2_PickoverData() = default;
-		virtual ~COP2_PickoverData();
-	};
+/**Small object storing both the Fractal and the Transformation space info.
+ * This is necessary because its values are copied to each tile, so the data
+ * within can be sourced a single time, but accessed many times across multiple
+ * threads without forcing const types. */
+struct COP2_PickoverData : public COP2_ContextData
+{
+	FractalSpace space;
+	Pickover fractal;
+
+	/**Calculates the reference fractal.*/
+	fpreal32 calculate_reference(
+		COMPLEX fractalCoords, WORLDPIXELCOORDS worldPixel);
+
+	/** The pixel-space location of the pickover point position.*/
+	WORLDPIXELCOORDS world_point;
+
+	COP2_PickoverData() = default;
+	virtual ~COP2_PickoverData();
+};
 }

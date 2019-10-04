@@ -15,7 +15,6 @@ namespace CC
 {
 /**Lyapunov Operator class. Inherits from COP2_Generator, meaning it will cook
  * in tiles. See 'COP Concepts' in the HDK documentation.*/
-
 class COP2_Lyapunov : public COP2_Generator
 {
 	/** Private constructor, only accessed through the OP friend class. */
@@ -25,7 +24,7 @@ public:
 
 	/**Populated heavily from macros from FractalNode.h*/
 	static PRM_Template myTemplateList[];
-	
+
 	/** Assign Template Pair of node to generator.*/
 	static OP_TemplatePair myTemplatePair;
 

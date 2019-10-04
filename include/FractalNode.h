@@ -327,7 +327,7 @@ static PRM_Name nameSepC("sep_C", "Sep C");
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, \
 		&namePoLineRotate, PRMzeroDefaults, 0, &rangePoRotate), \
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, \
-		&namePoReference, PRMoneDefaults), \
+		&namePoReference, PRMzeroDefaults), \
 	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, \
 		&namePoRefSize, &defaultPoRefSize, 0, &rangePoRefSize)
 

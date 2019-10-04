@@ -78,7 +78,7 @@ CC::COP2_Lyapunov::myTemplateList[]
 	PRM_Template()
 };
 
-/// Creates the image. This is called by multiple worker threads by Houdini.
+// Creates the image. This is called by multiple worker threads by Houdini.
 OP_ERROR
 CC::COP2_Lyapunov::generateTile(COP2_Context& context, TIL_TileList* tileList)
 {
