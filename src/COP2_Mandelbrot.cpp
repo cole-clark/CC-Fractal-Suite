@@ -84,7 +84,6 @@ CC::COP2_Mandelbrot::cookSequenceInfo(OP_ERROR& error)
 
 COP2_ContextData*
 CC::COP2_Mandelbrot::newContextData
-
 (
 	const TIL_Plane* planename, /** planename */
 	int index,                  /** array index */

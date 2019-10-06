@@ -1,33 +1,30 @@
-/*
-	Cole Clark's Fractal Suite
-
-	COP2_Buddhabrot.cpp
-	Code for CC Buddhabrot Generator Cop Node.
+/** \file COP2_Buddhabrot.cpp
+	Source declaring the Buddhabrot Cop2 Operator.
  */
 
+ // Local
+#include "COP2_Buddhabrot.h"
+
+// HDK
 #include <CH/CH_Manager.h>
 #include <COP2/COP2_CookAreaInfo.h>
 
-#include "COP2_Buddhabrot.h"
-
-using namespace CC;
-
+/** Parm Switcher used by this interface to generate default generator parms */
 COP_MASK_SWITCHER(19, "Fractal");
 
-/// Declare Parm Names
-
+// Declare Parm Names
 static PRM_Name nameSamples("samples", "Samples");
 static PRM_Name nameSeed("seed", "Seed");
 static PRM_Name nameNormalize("normalize", "Normalize");
 static PRM_Name nameMaxval("maxval", "Maximum Raw Value");
-static PRM_Name nameDisplayReferenceFractal("displayreffractal", "Display Reference Fractal");
+static PRM_Name nameDisplayReferenceFractal(
+	"displayreffractal", "Display Reference Fractal");
 
-/// Declare Parm Defaults
-
-static PRM_Default defaultSamples{ 0.25 };  // Sample by 25% of image size.
+// Declare Parm Defaults
+static PRM_Default defaultSamples{ 0.05 };  // Sample by 5% of image size.
 static PRM_Default defaultMaxval{ -1 };  // Off by default
 
-/// Deflare Parm Ranges
+// Deflare Parm Ranges
 static PRM_Range rangeSamples
 {
 	PRM_RangeFlag::PRM_RANGE_RESTRICTED, 0.01,
@@ -40,41 +37,48 @@ static PRM_Range rangeMaxval
 	PRM_RangeFlag::PRM_RANGE_UI, 100
 };
 
-/// Create Template List
+// Create Template List
 PRM_Template
-COP2_Buddhabrot::myTemplateList[]
+CC::COP2_Buddhabrot::myTemplateList[]
 {
-	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence. +1 for ours.
+	// The Cop2 generator defaults to having 3 tabs: Mask, Image, Sequence.
+	//  +1 for ours.
 	PRM_Template(PRM_SWITCHER, 3, &PRMswitcherName, switcher),
 	TEMPLATES_XFORM_BUDDHABROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepA),
 	TEMPLATES_MANDELBROT,
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepB),
-	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSamples, &defaultSamples, 0, &rangeSamples),
+	PRM_Template(PRM_FLT_J, TOOL_PARM, 1, &nameSamples,
+		&defaultSamples, 0, &rangeSamples),
 	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameSeed, PRMzeroDefaults),
 	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameNormalize, PRMoneDefaults),
-	PRM_Template(PRM_INT_J, TOOL_PARM, 1, &nameMaxval, &defaultMaxval, 0, &rangeMaxval),
+	PRM_Template(PRM_INT_J, TOOL_PARM, 1,
+		&nameMaxval, &defaultMaxval, 0, &rangeMaxval),
 	PRM_Template(PRM_SEPARATOR, TOOL_PARM, 1, &nameSepC),
-	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1, &nameDisplayReferenceFractal, PRMoneDefaults),
+	PRM_Template(PRM_TOGGLE_J, TOOL_PARM, 1,
+		&nameDisplayReferenceFractal, PRMoneDefaults),
 	PRM_Template()
 };
 
-OP_TemplatePair COP2_Buddhabrot::myTemplatePair(
+OP_TemplatePair
+CC::COP2_Buddhabrot::myTemplatePair(
 	COP2_Buddhabrot::myTemplateList,
 	&COP2_MaskOp::myTemplatePair);
 
-OP_VariablePair COP2_Buddhabrot::myVariablePair(
+OP_VariablePair
+CC::COP2_Buddhabrot::myVariablePair(
 	0,
 	&COP2_MaskOp::myVariablePair);
 
-const char* COP2_Buddhabrot::myInputLabels[] =
+const char*
+CC::COP2_Buddhabrot::myInputLabels[] =
 {
 	"Image to Filter",
 	"Mask Input",
 	0
 };
 
-COP2_Buddhabrot::COP2_Buddhabrot(
+CC::COP2_Buddhabrot::COP2_Buddhabrot(
 	OP_Network* parent,
 	const char* name,
 	OP_Operator* entry)
@@ -84,15 +88,19 @@ COP2_Buddhabrot::COP2_Buddhabrot(
 	setDefaultScope(true, true, 0);
 }
 
-COP2_Buddhabrot::~COP2_Buddhabrot() {}
+CC::COP2_Buddhabrot::~COP2_Buddhabrot() {}
 
 COP2_ContextData *
-COP2_Buddhabrot::newContextData(
-	const TIL_Plane* /*plane*/,
-	int /*arrayindex*/,
-	float t,
-	int image_sizex, int image_sizey,
-	int /*thread*/, int /*maxthreads*/)
+CC::COP2_Buddhabrot::newContextData
+(
+	const TIL_Plane* planename, /** planename */
+	int index,                  /** array index */
+	fpreal32 t,                 /** time*/
+	int image_sizex,            /** xsize*/
+	int image_sizey,            /** ysize*/
+	int thread,                 /** thread*/
+	int maxthreads              /** max_num_threads*/
+)
 {
 	// Stash Node Parms into this data object and return
 	COP2_BuddhabrotData *data = new COP2_BuddhabrotData();
@@ -114,20 +122,22 @@ COP2_Buddhabrot::newContextData(
 	data->seed = evalInt(nameSeed.getToken(), 0, t);
 	data->normalize = evalInt(nameNormalize.getToken(), 0, t);
 	data->maxval = evalInt(nameMaxval.getToken(), 0, t);
-	data->displayreffractal = evalInt(nameDisplayReferenceFractal.getToken(), 0, t);
+	data->displayreffractal = evalInt(
+		nameDisplayReferenceFractal.getToken(), 0, t);
 
 	return data;
 }
 
 void
-COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
+CC::COP2_Buddhabrot::computeImageBounds(COP2_Context &context)
 {
 	context.setImageBounds(0, 0, context.myXres - 1, context.myYres - 1);
 	// In theory `copyInputBounds(0, context);` should work, but it
 	// results in a black image in 17.5.
 }
 
-bool COP2_Buddhabrot::updateParmsFlags()
+bool
+CC::COP2_Buddhabrot::updateParmsFlags()
 {
 	// Determine If Normalizing
 	fpreal t = CHgetEvalTime();
@@ -150,7 +160,7 @@ bool COP2_Buddhabrot::updateParmsFlags()
 }
 
 void
-COP2_Buddhabrot::getInputDependenciesForOutputArea(
+CC::COP2_Buddhabrot::getInputDependenciesForOutputArea(
 	COP2_CookAreaInfo& output_area,
 	const COP2_CookAreaList& input_areas,
 	COP2_CookAreaList& needed_areas)
@@ -171,7 +181,7 @@ COP2_Buddhabrot::getInputDependenciesForOutputArea(
 }
 
 std::vector<COMPLEX>
-COP2_Buddhabrot::buddhabrotPoints(
+CC::COP2_Buddhabrot::buddhabrotPoints(
 	Mandelbrot* fractal, const COMPLEX & c, unsigned int nIterations)
 {
 	std::vector<COMPLEX> points;
@@ -203,7 +213,7 @@ COP2_Buddhabrot::buddhabrotPoints(
 }
 
 OP_ERROR
-COP2_Buddhabrot::doCookMyTile(COP2_Context& context, TIL_TileList* tiles)
+CC::COP2_Buddhabrot::doCookMyTile(COP2_Context& context, TIL_TileList* tiles)
 {
 	COP2_BuddhabrotData* sdata =
 		static_cast<COP2_BuddhabrotData*>(context.data());
@@ -217,7 +227,7 @@ COP2_Buddhabrot::doCookMyTile(COP2_Context& context, TIL_TileList* tiles)
 }
 
 OP_ERROR
-COP2_Buddhabrot::filter(
+CC::COP2_Buddhabrot::filter(
 	COP2_Context& context,
 	const TIL_Region* input,
 	TIL_Region* output,
@@ -229,7 +239,8 @@ COP2_Buddhabrot::filter(
 	return ((COP2_Buddhabrot*)me)->filterImage(context, input, output);
 }
 
-int COP2_Buddhabrot::evaluateBuddhabrot(
+int
+CC::COP2_Buddhabrot::evaluateBuddhabrot(
 	COP2_BuddhabrotData* sdata,
 	const COP2_Context& context,
 	char* idata,
@@ -242,8 +253,10 @@ int COP2_Buddhabrot::evaluateBuddhabrot(
 
 	// Choose a random x, y coordinate along the image plane.
 	// The '0's refer to lower left corner, the second argument the upper right
-	std::uniform_real_distribution<double> realDistribution(0, context.myXsize - 1);
-	std::uniform_real_distribution<double> imagDistribution(0, context.myYsize - 1);
+	std::uniform_real_distribution<fpreal> realDistribution(
+		0, context.myXsize - 1);
+	std::uniform_real_distribution<fpreal> imagDistribution(
+		0, context.myYsize - 1);
 
 	for (exint idxSample = 0; idxSample < numSamples; idxSample++)
 	{
@@ -252,22 +265,30 @@ int COP2_Buddhabrot::evaluateBuddhabrot(
 
 
 		// Look at the sample's input as a multiplier on the iters
-		WORLDPIXELCOORDS inputPixelCoords = sdata->space.get_pixel_coords(fractalCoords);
-		float* inputPixel = (float *)idata;
+		WORLDPIXELCOORDS inputPixelCoords =
+			sdata->space.get_pixel_coords(fractalCoords);
+		fpreal32* inputPixel = (fpreal32 *)idata;
 
-		inputPixel += inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
+		inputPixel +=
+			inputPixelCoords.first + inputPixelCoords.second * context.myXsize;
 		// The buddhabrotPoints function takes unsigned integers.
-		int nIters = (int)SYSrint(abs(*inputPixel) * sdata->fractal.data.iters);
-		std::vector<COMPLEX> points = buddhabrotPoints(&sdata->fractal, fractalCoords, nIters);
+		int nIters =
+			(int)SYSrint(abs(*inputPixel) * sdata->fractal.data.iters);
+		std::vector<COMPLEX> points =
+			buddhabrotPoints(&sdata->fractal, fractalCoords, nIters);
 
 		for (COMPLEX& point : points)
 		{
-			float *outputPixel = (float *)odata;
+			fpreal32 *outputPixel = (fpreal32 *)odata;
 
-			WORLDPIXELCOORDS samplePixelCoords = sdata->space.get_pixel_coords(point);
-			int samplePixel = samplePixelCoords.first + (samplePixelCoords.second * context.myXsize);
+			WORLDPIXELCOORDS samplePixelCoords =
+				sdata->space.get_pixel_coords(point);
+			int samplePixel =
+				samplePixelCoords.first +
+				(samplePixelCoords.second * context.myXsize);
 
-			if (samplePixel >= 0 && samplePixel <= context.myXsize * context.myYsize)
+			if (samplePixel >= 0 && samplePixel <=
+				context.myXsize * context.myYsize)
 			{
 				outputPixel += samplePixel;
 				++*outputPixel;
@@ -282,7 +303,8 @@ int COP2_Buddhabrot::evaluateBuddhabrot(
 	return highest_sample_value;
 }
 
-void COP2_Buddhabrot::normalizeBuddhabrot(
+void
+CC::COP2_Buddhabrot::normalizeBuddhabrot(
 	COP2_BuddhabrotData* sdata,
 	const COP2_Context& context,
 	char* odata,
@@ -297,13 +319,13 @@ void COP2_Buddhabrot::normalizeBuddhabrot(
 			sdata->maxval < highest_sample_value && sdata->maxval != -1.0 ?
 			sdata->maxval : highest_sample_value);
 
-		float multiplier = 1.0 / highest_sample_value;
+		fpreal32 multiplier = 1.0 / highest_sample_value;
 		for (int x = 0; x < context.myXsize; ++x)
 		{
 			for (int y = 0; y < context.myYsize; ++y)
 			{
 				int currentPixel = x + y * context.myXsize;
-				float* outputPixel = (float*)odata;
+				fpreal32* outputPixel = (fpreal32*)odata;
 				outputPixel += currentPixel;
 
 				// Clamp maximum pixel value if maxval is not -1
@@ -315,27 +337,29 @@ void COP2_Buddhabrot::normalizeBuddhabrot(
 	}
 }
 
-void COP2_Buddhabrot::displayReferenceFractal(
+void
+CC::COP2_Buddhabrot::displayReferenceFractal(
 	COP2_BuddhabrotData* sdata,
 	const COP2_Context& context,
 	char* idata,
 	char* odata,
 	Mandelbrot& refFractal)
 {
-	float fitmult = 1.0 / (float)refFractal.data.iters;
+	fpreal32 fitmult = 1.0 / (fpreal32)refFractal.data.iters;
 	for (int x = 0; x < context.myXsize; ++x)
 	{
 		for (int y = 0; y < context.myYsize; ++y)
 		{
 			int currentPixel = x + y * context.myXsize;
-			
-			float *inputPixel = (float *)idata;
-			float *outputPixel = (float *)odata;
-			
+
+			fpreal32 *inputPixel = (fpreal32 *)idata;
+			fpreal32 *outputPixel = (fpreal32 *)odata;
+
 			inputPixel += currentPixel;
 			outputPixel += currentPixel;
 
-			COMPLEX fractalCoords = sdata->space.get_fractal_coords(WORLDPIXELCOORDS(x, y));
+			COMPLEX fractalCoords = sdata->space.get_fractal_coords(
+				WORLDPIXELCOORDS(x, y));
 
 			// Assign as a normalized value, made absolute value
 			*outputPixel = refFractal.calculate(fractalCoords).num_iter *
@@ -345,7 +369,7 @@ void COP2_Buddhabrot::displayReferenceFractal(
 }
 
 OP_ERROR
-COP2_Buddhabrot::filterImage(
+CC::COP2_Buddhabrot::filterImage(
 	COP2_Context& context,
 	const TIL_Region* input,
 	TIL_Region* output)
@@ -362,7 +386,8 @@ COP2_Buddhabrot::filterImage(
 	rng.seed(sdata->seed);
 
 	// Scale num of samples to the size of the image.
-	exint numSamples = SYSrint(context.myXsize * context.myYsize * sdata->samples);
+	exint numSamples = SYSrint(
+		context.myXsize * context.myYsize * sdata->samples);
 
 	// Declare reference fractal (with lower iteration count) if requested.
 	Mandelbrot refFractal;
@@ -383,7 +408,10 @@ COP2_Buddhabrot::filterImage(
 		{
 			// since we aren't guarenteed to write to every pixel with this
 			// 'algorithm', the output data array needs to be zeroed. 
-			memset(odata, 0, context.myXsize*context.myYsize * sizeof(float));
+			memset(
+				odata,
+				0,
+				context.myXsize*context.myYsize * sizeof(fpreal32));
 		}
 
 		if (idata && odata)
