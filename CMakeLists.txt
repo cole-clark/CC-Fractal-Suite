@@ -40,8 +40,8 @@ target_link_libraries( ${library_name} Houdini )
 
 # Configure some variables
 set(release_path ${CC_Fractal_Suite_BINARY_DIR}/release)
-set(houdini_ver houdini17.5)
-set(ccfs_hfs_version hfs17.5.229.0)  # hfs{HMAJOR}.{HMINOR}.{HBUILD}.{CCFSBUILDVERSOIN}
+set(houdini_ver houdini18.0)
+set(ccfs_hfs_version hfs18.0.287.0)  # hfs{HMAJOR}.{HMINOR}.{HBUILD}.{CCFSBUILDVERSOIN}
 
 file(COPY ${CC_Fractal_Suite_SOURCE_DIR}/media DESTINATION ${release_path})
 file(COPY ${CC_Fractal_Suite_SOURCE_DIR}/${houdini_ver} DESTINATION ${release_path})
