@@ -10,7 +10,7 @@
 #include <COP2/COP2_CookAreaInfo.h>
 
 /** Parm Switcher used by this interface to generate default generator parms */
-COP_MASK_SWITCHER(19, "Fractal");
+COP_MASK_SWITCHER(18, "Fractal");
 
 // Declare Parm Names
 static PRM_Name nameSamples("samples", "Samples");

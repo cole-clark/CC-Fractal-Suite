@@ -1,7 +1,7 @@
 # CC-Fractal-Suite
 A Suite of Fractal Cop2 Operators for Houdini!
 
-__ Current for Houdini 18.0.287__
+__ Current for Houdini 18.0.391__
 
 Created originally by the *Doji Dojo*
 
@@ -14,7 +14,7 @@ Icons by [Mihoshi Clark](mihoshiclark.com)
 - Install Visual Studio 2017 with VS15 (64 Bit)
 - Clone this repository
 - Make a release directory on your file system for where you want the executables to live (can be anywhere)
-- Run: `_cmake -G "Visual Studio 15 2017 Win64" 
+- Run: `cmake -G "Visual Studio 15 2017 Win64" 
      {RELEASE_DIR_PATH}`
 - Open the visual studio solution CMake created.
 - Build! Be sure your solution configuration is set to 'Release'
