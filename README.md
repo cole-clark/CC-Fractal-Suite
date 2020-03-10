@@ -1,7 +1,7 @@
 # CC-Fractal-Suite
 A Suite of Fractal Cop2 Operators for Houdini!
 
-__ Current for Houdini 18.0.391__
+### Current for Houdini 18.0.391
 
 Created originally by the *Doji Dojo*
 
@@ -9,7 +9,7 @@ Code by [Cole Clark](coleclark.com)
 
 Icons by [Mihoshi Clark](mihoshiclark.com)
 
-##Windows Installation Guide
+## Windows Installation Guide
 - Learn and download Git and CMake if you haven't already.
 - Install Visual Studio 2017 with VS15 (64 Bit)
 - Clone this repository
@@ -22,5 +22,5 @@ Icons by [Mihoshi Clark](mihoshiclark.com)
 - For Houdini to actually see the plugin, you must add the `../release/{$HOUDINI_VERSION}` directory to the `$HOUDINI_PATH` environment variable. The easiest way to do this is to add it to your Houdini version's `houdini.env` file in your user folder. An example of what you'd add is:
 `HOUDINI_PATH = D:\HDK\staging\CC-Fractal-Suite\build\release\houdini18.0;&`
 
-##Linux Installation Guide
+## Linux Installation Guide
 Just do it
