@@ -5,9 +5,9 @@ A Suite of Fractal Cop2 Operators for Houdini!
 
 Created originally by the *Doji Dojo*
 
-Code by [Cole Clark](coleclark.com)
+Code by [Cole Clark](http://www.coleclark.com/)
 
-Icons by [Mihoshi Clark](mihoshiclark.com)
+Icons by [Mihoshi Clark](https://www.mihoshiclark.com/)
 
 ## Windows Installation Guide
 - Learn and download Git and CMake if you haven't already.
